@@ -100,7 +100,7 @@ def clean_df(df, country_column, year_column):
      
 
      if df[year_column].dtype != 'datetime64[ns]':
-         df[year_column] = pd.to_datetime(df[year_column])
+         df[year_column] = pd.to_datetime(df[year_column], format='%Y')
 
      return df
 
