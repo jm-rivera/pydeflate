@@ -1,8 +1,5 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Apr 21 13:06:14 2021
+"""Top-level package for pydeflate."""
 
-@author: jorge
-"""
-
+__author__ = """Jorge Rivera"""
+__email__ = 'jorge.rivera@one.org'
+__version__ = '0.1.0'
