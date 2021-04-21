@@ -23,7 +23,7 @@ def update_data(indicators=['xe', 'gdp']):
 
     #Exchange rate data
 
-    def update_exchange():
+    def _update_exchange():
         try:
 
             e = wb.data.DataFrame('PA.NUS.FCRF', mrv=25, numericTimeKeys=True, labels=False,
@@ -42,7 +42,7 @@ def update_data(indicators=['xe', 'gdp']):
         e.to_csv(path+r'/data/exchange_data.csv', index=False)
         print('Updated exchange data')
 
-    def update_gdp():
+    def _update_gdp():
         try:
             gdp_lcu = wb.data.DataFrame('NY.GDP.MKTP.CN', mrv=25, numericTimeKeys=True, labels=False,
                                         columns='series', timeColumns=True).reset_index()
@@ -69,11 +69,11 @@ def update_data(indicators=['xe', 'gdp']):
 
         print('Updated GDP data')
 
-    indicators_dict = {'xe': update_exchange, 'gdp': update_gdp}
+    indicators_dict = {'xe': _update_exchange, 'gdp': _update_gdp}
 
     if isinstance(indicators, str):
         if indicators == 'all':
-            _, _ = update_exchange(), update_gdp()
+            _, _ = _update_exchange(), _update_gdp()
         else:
             raise ValueError(f'"{indicators}" is not valid. Indicators must be a list of valid indicators, or \
                              the string "all" to update all indicators at once')

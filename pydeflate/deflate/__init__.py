@@ -6,5 +6,3 @@ __version__ = '0.1.2'
 
 
 from pydeflate.deflate.deflate import deflate_data
-
-from pydeflate.utils import update_data

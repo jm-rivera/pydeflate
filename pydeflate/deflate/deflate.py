@@ -9,12 +9,6 @@ Created on Wed Apr 21 13:06:41 2021
 # %% Import required packages and create paths
 import pydeflate.utils as utils
 import pandas as pd
-import os
-
-
-path = os.path.dirname(__file__)
-ppath = os.path.dirname(path)
-
 
 # %%
 

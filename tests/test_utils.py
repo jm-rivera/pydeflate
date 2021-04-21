@@ -5,20 +5,34 @@
 import pytest
 
 
-from pydeflate import pydeflate
+from pydeflate import utils
 
 
-@pytest.fixture
-def response():
-    """Sample pytest fixture.
+#@pytest.fixture
+def test_update_data():
+    ...
+    
+    
+def test_clean_df():
+    ...
+    
+def test_exchange_rates():
+    ...
+    
+def test_country_rebase():
+    ...
+    
+    
+def test_gdp_deflator():
+    ...
+    
+def test_exchange_deflator():
+    ...
+    
+def test_gdp_xe_deflator():
+    ...
+    
+def test_gdp_factor():
+    ...
+    
 
-    See more at: http://doc.pytest.org/en/latest/fixture.html
-    """
-    # import requests
-    # return requests.get('https://github.com/audreyr/cookiecutter-pypackage')
-
-
-def test_content(response):
-    """Sample pytest test function with the pytest fixture as an argument."""
-    # from bs4 import BeautifulSoup
-    # assert 'GitHub' in BeautifulSoup(response.content).title.string
