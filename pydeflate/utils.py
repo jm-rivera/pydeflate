@@ -93,13 +93,16 @@ def update_data(indicators=['xe', 'gdp']):
 #%%
 
 def clean_df(df, country_column, year_column):
+    
      """Rename/clean df to match provided data"""
-      df.columns = [country_column, year_column, 'deflator']
+     
+     df.columns = [country_column, year_column, 'deflator']
+     
 
-       if df[year_column].dtype != 'datetime64[ns]':
-            df[year_column] = pd.to_datetime(df[year_column])
+     if df[year_column].dtype != 'datetime64[ns]':
+         df[year_column] = pd.to_datetime(df[year_column])
 
-        return df
+     return df
 
 
 def exchange_rates():
