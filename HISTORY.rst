@@ -9,6 +9,16 @@ History
 
 * Minor release.
 
+This is a minor update to fix a couple of small errors in doc strings.
+It also adds unit testing for updating the underlying data.
+
+
+
+0.1.2 (2021-04-21)
+------------------
+
+* Minor release.
+
 This version achieves the basic task at hand. It does not yet have full testing.
 
 
