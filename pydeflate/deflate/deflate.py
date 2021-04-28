@@ -12,8 +12,10 @@ import pandas as pd
 
 # %%
 
-def deflate_data(df: pd.DataFrame, method: str = 'gdp_xe', country_column: str = 'iso_code', year_column: str = 'year',
-                 value_column: str = 'value', base: int = 2019, to_current: bool = False) -> pd.DataFrame:
+
+def deflate_data(df: pd.DataFrame, method: str = 'gdp_xe', country_column: str = 'iso_code', 
+                 year_column: str = 'year', value_column: str = 'value', 
+                 base: int = 2019, to_current: bool = False) -> pd.DataFrame:
     """
     Converts a column in a pandas dataframe to constant prices or vice-versa. 
     Two methods are posible at present: 

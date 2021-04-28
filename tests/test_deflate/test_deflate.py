@@ -30,7 +30,6 @@ def dummy_data():
     
     return df
 
-
 def test_deflate_data():
     
     df = dummy_data()
@@ -42,4 +41,4 @@ def test_deflate_data():
     
     assert round(df2c.difference.mean(),1) <0.1
     
-    
+  

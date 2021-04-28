@@ -16,64 +16,67 @@ path = os.path.dirname(__file__)
 ppath = os.path.dirname(path)
 
 
-#%% update data
+# %% update data
+
+def update_exchange(test=False):
+
+    try:
+
+        e = wb.data.DataFrame('PA.NUS.FCRF', mrv=25, numericTimeKeys=True, labels=False,
+                              columns='series', timeColumns=True).reset_index()
+
+    except:
+        raise ConnectionError(
+            'Failed to retreive data from WorldBank. Try again or use update=False')
+
+    e = e.rename(columns={'economy': 'iso_code',
+                          'PA.NUS.FCRF': 'value',
+                          'time': 'year'})
+
+    e = e.dropna(subset=['value'])
+
+    e.to_csv(path+r'/data/exchange_data.csv', index=False)
+    print('Updated exchange data')
+    if test:
+        return e
+
+
+def update_gdp(test=False):
+    try:
+        gdp_lcu = wb.data.DataFrame('NY.GDP.MKTP.CN', mrv=25, numericTimeKeys=True, labels=False,
+                                    columns='series', timeColumns=True).reset_index()
+
+        gdp_const = wb.data.DataFrame('NY.GDP.MKTP.KD', mrv=25, numericTimeKeys=True, labels=False,
+                                      columns='series', timeColumns=True).reset_index()
+
+    except:
+        raise ConnectionError(
+            'Failed to retreive data from WorldBank. Try again or use update=False')
+
+    gdp_lcu = gdp_lcu.rename(columns={'economy': 'iso_code',
+                                      'NY.GDP.MKTP.CN': 'value',
+                                      'time': 'year'})
+
+    gdp_const = gdp_const.rename(columns={'economy': 'iso_code',
+                                          'NY.GDP.MKTP.KD': 'value',
+                                          'time': 'year'})
+
+    gdp_lcu.to_csv(path+r'/data/gdp_lcu_raw.csv', index=False)
+    gdp_const.to_csv(path+r'/data/gdp_const_raw.csv', index=False)
+
+    print('Updated GDP data')
+    if test:
+        return gdp_lcu, gdp_const
 
 
 def update_data(indicators=['xe', 'gdp']):
 
-    #Exchange rate data
-
-    def _update_exchange():
-        try:
-
-            e = wb.data.DataFrame('PA.NUS.FCRF', mrv=25, numericTimeKeys=True, labels=False,
-                                  columns='series', timeColumns=True).reset_index()
-
-        except:
-            raise ConnectionError(
-                'Failed to retreive data from WorldBank. Try again or use update=False')
-
-        e = e.rename(columns={'economy': 'iso_code',
-                              'PA.NUS.FCRF': 'value',
-                              'time': 'year'})
-
-        e = e.dropna(subset=['value'])
-
-        e.to_csv(path+r'/data/exchange_data.csv', index=False)
-        print('Updated exchange data')
-
-    def _update_gdp():
-        try:
-            gdp_lcu = wb.data.DataFrame('NY.GDP.MKTP.CN', mrv=25, numericTimeKeys=True, labels=False,
-                                        columns='series', timeColumns=True).reset_index()
-
-            gdp_const = wb.data.DataFrame('NY.GDP.MKTP.KD', mrv=25, numericTimeKeys=True, labels=False,
-                                          columns='series', timeColumns=True).reset_index()
-
-        except:
-            raise ConnectionError(
-                'Failed to retreive data from WorldBank. Try again or use update=False')
-
-        gdp_lcu = gdp_lcu.rename(columns={'economy': 'iso_code',
-                                          'NY.GDP.MKTP.CN': 'value',
-                                          'time': 'year'})
-
-        gdp_const = gdp_const.rename(columns={'economy': 'iso_code',
-                                              'NY.GDP.MKTP.KD': 'value',
-                                              'time': 'year'})
-
-        gdp_lcu.to_csv(
-            path+r'/data/gdp_lcu_raw.csv', index=False)
-        gdp_const.to_csv(
-            path+r'/data/gdp_const_raw.csv', index=False)
-
-        print('Updated GDP data')
-
-    indicators_dict = {'xe': _update_exchange, 'gdp': _update_gdp}
+    # Exchange rate data
+    indicators_dict = {'xe': update_exchange, 'gdp': update_gdp}
 
     if isinstance(indicators, str):
         if indicators == 'all':
-            _, _ = _update_exchange(), _update_gdp()
+            _, _ = update_exchange(), update_gdp()
         else:
             raise ValueError(f'"{indicators}" is not valid. Indicators must be a list of valid indicators, or \
                              the string "all" to update all indicators at once')
@@ -90,19 +93,17 @@ def update_data(indicators=['xe', 'gdp']):
             f'Indicators list is of an invalid type "{type(indicators)}"')
 
 
-#%%
+# %%
 
 def clean_df(df, country_column, year_column):
-    
-     """Rename/clean df to match provided data"""
-     
-     df.columns = [country_column, year_column, 'deflator']
-     
+    """Rename/clean df to match provided data"""
 
-     if df[year_column].dtype != 'datetime64[ns]':
-         df[year_column] = pd.to_datetime(df[year_column], format='%Y')
+    df.columns = [country_column, year_column, 'deflator']
 
-     return df
+    if df[year_column].dtype != 'datetime64[ns]':
+        df[year_column] = pd.to_datetime(df[year_column], format='%Y')
+
+    return df
 
 
 def exchange_rates():
@@ -227,7 +228,7 @@ def gdp_factor(year: int = 2010, output_type: str = 'usd', output_base=2010) -> 
     """
     Calculates a gdp deflator factor, sometimes used to convert LCU into constant USD.
     For example, ReSAKKS calculates this factor by dividing current LCU GDP by constant USD GDP.
-    
+
     This script returns the LCU-USD Constant conversion factor, or the equivalent factor
     for converting current USD into Constant USD.
 
