@@ -5,6 +5,5 @@ __email__ = 'jorge.rivera@one.org'
 __version__ = '0.1.4'
 
 
-from pydeflate.deflate.deflate import deflate_data
+from pydeflate.deflate.deflate import deflate
 
-from pydeflate.utils import update_data

@@ -1,116 +1,159 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Wed Apr 21 13:06:41 2021
+Created on Fri Oct 22 23:51:47 2021
 
 @author: jorge
 """
 
-# %% Import required packages and create paths
-import pydeflate.utils as utils
+from pydeflate.deflate.deflators import (
+    oecd_dac_deflators,
+    wb_deflators,
+    imf_deflators,
+)
+
+from pydeflate.utils import check_year_as_number
+
 import pandas as pd
+from typing import Optional
 
-# %%
 
-
-def deflate_data(df: pd.DataFrame, method: str = 'gdp_xe', country_column: str = 'iso_code', 
-                 year_column: str = 'year', value_column: str = 'value', 
-                 base: int = 2019, to_current: bool = False) -> pd.DataFrame:
+def deflate(
+    df: pd.DataFrame,
+    base_year: int,
+    source: str,
+    method: Optional[str] = None,
+    source_currency: str = "USA",
+    target_currency: str = "USA",
+    iso_column: str = "iso_code",
+    date_column: str = "date",
+    source_col: str = "value",
+    target_col: str = "value",
+    reverse: bool = False,
+) -> pd.DataFrame:
     """
-    Converts a column in a pandas dataframe to constant prices or vice-versa. 
-    Two methods are posible at present: 
-        - 'gdp_xe', which creates a common unit of measurement, taking into account changes
-        in prices (GDP deflators) and changes in exchange rates over time, for each
-        country. Data passed must be passed in current prices unless "to_current" is true.
-
-        - 'gdp_ratio', which uses a GDP ratio approach, where a factor is applied to 
-        the LCU data to transform it to constant prices. This factor is obtained by dividing
-        GDP LCU current by GDP USD Constant. Data passed must be passed in current prices
-        unless "to_current" is true.
-
-
+    Takes a DataFrame containing flows data and returns a DataFrame containing
+    the deflated amounts. It can convert from current to constant (default) or
+    from constant to current by specifying 'reverse' as True.
 
     Parameters
     ----------
     df : pd.DataFrame
-        A DataFrame, tidy-long, with iso3 codes to identify countries, and years as int or datetime.
-    method : str, optional
-        Currently two methodologies are accepted: 'gdp_xe' or 'gdp_ratio'. The default is 'gdp_xe'.
-    country_column : str, optional
-        The column containing iso3 codes. The default is iso_code.
-    year_column : str, optional
-        The column containing the years. The default is year.  
-    value_column : str, optional
-        The column containing the values to deflate. The default is value.
-    base : int, optional
-        The desired base year for the data. The default is 2019.
-    to_current : bool, optional
-        Whether to convert from constant to current instead of current to constant. The default is False.
+        A pandas DataFrame containing data formated vertically (one row, one
+        value to be deflated). The source country must be specified through a
+        column with ISO-3 codes. Users can specify the name of the source
+        country column, the value column and the column where the deflated
+        amounts.
+    base_year : int
+        If converting from current to constant, the target base year for the
+        constantfigures. If converting from constant, the base year of the data.
+    source : {‘oecd_dac’, 'wb', 'imf'}
+        The source of the data used to build the deflators. The value (and
+        completness) of the price deflators may change based on the source.
+        Additionally, the OECD DAC data is only available for DAC donors. Both
+        the IMF and WB sources use exchange rates downloaded from the World Bank.
+    method : {'gdp','gdp_linked','cpi','pcpi','pcpie', None}, optional
+        The method used to calculate the price deflator:
+
+        For World Bank (source == 'wb'):
+            •'gdp': using GDP deflators.
+
+            •'gdp_linked': a GDP deflator series which has been linked to
+            produce a consistent time series to counteract breaks in series
+            over time due to changes in base years, sources or methodologies.
+
+            •'cpi': using Consumer Price Index data
+
+        For IMF (source == 'imf'):
+            •'pcpi': Consumer Price Index data
+
+            •'pcpie': end-period Consumer Price Index (e.g for December each year).
+
+        For OECD DAC (source == 'oecd_dac'):
+            •None
+
+        The default is None.
+    source_currency : str, optional
+        The iso3 code of the source currency. Note that deflators for EU countries
+        are only in Euros from the year in which the Euro was adopted. To produce
+        deflators only in euros, use 'emu'. The default is 'USA'.
+    target_currency : str, optional
+        The iso3 code of the deflated amounts. It can be the same as the source
+        currency. In cases where they are different, the exchange rate will be
+        applied. To produce deflators only in euros, use 'emu'. The default is 'USA'.
+    iso_column : str, optional
+        The column containing the iso3 codes of the data's currency.
+        The default is 'USA'.
+    date_column : str, optional
+        The column containing the date values. The column can contain years (int)
+        or datetime objects. The default is 'date'.
+    source_col : str, optional
+        The column containing the data to be deflated. The default is 'value'.
+    target_col : str, optional
+        Column where the deflated data will be stored. It can be the same as the
+        source column if a copy of the original isn't needed.The default is 'value'.
+    reverse : bool, optional
+        If True, amounts will be treated as in constant prices and convered to
+        current prices. The default is False.
 
 
     Returns
     -------
-    Pandas DataFrame
-        The original dataframe including an additional column called either 'value_current' or 
-        'value_constant' depending on the type of operation performed.
+    deflator : pandas.DataFrame
+        A pandas DataFrame containing the deflated data. Years for which there
+        are no deflators will be returned as null values.
 
     """
 
-    # Error handling
-    if country_column not in df.columns:
-        raise ValueError(
-            f'{country_column} not a valid column name for countries')
+    # Valid deflators
+    deflators = {
+        "oecd_dac": oecd_dac_deflators,
+        "wb": wb_deflators,
+        "imf": imf_deflators,
+    }
 
-    if year_column not in df.columns:
-        raise ValueError(f'{year_column} not a valid column name for years')
+    # keep track of original columns
+    if target_col not in df.columns:
+        cols = [*df.columns, target_col]
+    else:
+        cols = df.columns
 
-    if value_column not in df.columns:
-        raise ValueError(f'{value_column} not a valid column name for values')
+    if source not in deflators.keys():
+        raise ValueError(f'source "{source}" not valid')
 
-    if df[year_column].dtype not in [int, 'datetime64[ns]']:
-        raise TypeError(
-            'Years are not correctly formatted as integers or datetime objects')
+    if source == "oecd_dac" and method is not None:
+        print(f'The oecd does not require a method, "{method}" ignored')
 
-    if df[value_column].dtype not in [int, float]:
-        raise TypeError('Values must be integers or floats')
+    # check if date format matches
+    df, year_as_number = check_year_as_number(df, date_column)
 
-    if method not in ['gdp_xe', 'gdp_ratio']:
-        raise TypeError(
-            'A valid method must be selected: "gdp_xe" or "gdp_ratio".')
+    deflator = deflators[source](
+        base_year=base_year,
+        method=method,
+        source_currency=source_currency,
+        target_currency=target_currency,
+    )
 
-    # Convert year column to datetime if needed
-    if df[year_column].dtype == int:
-        date_int = True
-        df[year_column] = pd.to_datetime(df[year_column], format='%Y')
+    df = df.merge(
+        deflator,
+        left_on=[iso_column, date_column],
+        right_on=["iso_code", "year"],
+        how="left",
+    )
 
-    # Create right deflator
-
-    if method == 'gdp_xe':
-        deflator = utils.clean_df(utils.gdp_xe_deflator(base=base),
-                                  country_column, year_column)
-
-    elif method == 'gdp_ratio':
-        deflator = utils.clean_df(utils.gdp_factor(output_type='usd', output_base=base),
-                                  country_column, year_column)
-
-    # Add deflator to provided data
-    df = df.merge(deflator, on=[country_column, year_column], how='left')
-
-    # Deflate values
-    if to_current:
-        df['value_current'] = df[value_column]*df['deflator']
+    if reverse:
+        df[target_col] = df[source_col] * (df.deflator / 100)
 
     else:
-        df['value_constant'] = df[value_column]/(df['deflator'])
+        df[target_col] = df[source_col] / (df.deflator / 100)
 
-    # drop deflator column
-    df.drop('deflator', axis=1, inplace=True)
+    df = df.filter(cols, axis=1)
 
-    # convert date column back to int if needed
-    try:
-        if date_int:
-            df[year_column] = df[year_column].dt.year
-    except:
-        pass
+    if year_as_number:
+        df[date_column] = df[date_column].dt.year
 
-    return df.reset_index(drop=True)
+    return df
+
+
+if __name__ == "__main__":
+   pass
