@@ -1,20 +1,32 @@
 # pydeflate
 
 
-[![pypi](https://img.shields.io/pypi/v/pydeflate.svg)](https://pypi.org/project/pydeflate/)
-[![python](https://img.shields.io/pypi/pyversions/pydeflate.svg)](https://pypi.org/project/pydeflate/)
-[![Build Status](https://github.com/jm-rivera/pydeflate/actions/workflows/dev.yml/badge.svg)](https://github.com/jm-rivera/pydeflate/actions/workflows/dev.yml)
-[![codecov](https://codecov.io/gh/jm-rivera/pydeflate/branch/main/graphs/badge.svg)](https://codecov.io/github/jm-rivera/pydeflate)
+<p align="center">
+<a href="https://pypi.python.org/pypi/pydeflate">
+    <img src="https://img.shields.io/pypi/v/pydeflate.svg"
+        alt = "Release Status">
+</a>
 
+<a href="https://github.com/jm-rivera/pydeflate/actions">
+    <img src="https://github.com/jm-rivera/pydeflate/actions/workflows/main.yml/badge.svg?branch=release" alt="CI Status">
+</a>
+
+<a href="https://pydeflate.readthedocs.io/en/latest/?badge=latest">
+    <img src="https://readthedocs.org/projects/pydeflate/badge/?version=latest" alt="Documentation Status">
+</a>
+
+<a href="https://pyup.io/repos/github/jm-rivera/pydeflate/">
+<img src="https://pyup.io/repos/github/jm-rivera/pydeflate/shield.svg" alt="Updates">
+</a>
+
+</p>
 
 
 Python package to convert current prices figures to constant prices and vice versa
 
 
-* Documentation: <https://jm-rivera.github.io/pydeflate>
-* GitHub: <https://github.com/jm-rivera/pydeflate>
-* PyPI: <https://pypi.org/project/pydeflate/>
 * Free software: MIT
+* Documentation: <https://pydeflate.readthedocs.io>
 
 
 ## Features
@@ -23,4 +35,4 @@ Python package to convert current prices figures to constant prices and vice ver
 
 ## Credits
 
-This package was created with [Cookiecutter](https://github.com/audreyr/cookiecutter) and the [waynerv/cookiecutter-pypackage](https://github.com/waynerv/cookiecutter-pypackage) project template.
+This package was created with [Cookiecutter](https://github.com/audreyr/cookiecutter) and the [zillionare/cookiecutter-pypackage](https://github.com/zillionare/cookiecutter-pypackage) project template.

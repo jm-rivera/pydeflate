@@ -13,8 +13,6 @@ classifiers=[
     'License :: OSI Approved :: MIT License',
     'Natural Language :: English',
     'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.6',
-    'Programming Language :: Python :: 3.7',
     'Programming Language :: Python :: 3.8',
     'Programming Language :: Python :: 3.9',
 ]
@@ -24,42 +22,38 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.6.2,<4.0"
+python = ">=3.8.5,<4.0"
 
-
-black  = { version = "^21.5b2", optional = true}
-isort  = { version = "^5.8.0", optional = true}
-flake8  = { version = "^3.9.2", optional = true}
+black  = { version = "20.8b1", optional = true}
+isort  = { version = "5.6.4", optional = true}
+flake8  = { version = "3.8.4", optional = true}
 flake8-docstrings = { version = "^1.6.0", optional = true }
-mypy = {version = "^0.900", optional = true}
-pytest  = { version = "^6.2.4", optional = true}
-pytest-cov  = { version = "^2.12.0", optional = true}
+pytest  = { version = "6.1.2", optional = true}
+pytest-cov  = { version = "2.10.1", optional = true}
 tox  = { version = "^3.20.1", optional = true}
 virtualenv  = { version = "^20.2.2", optional = true}
 pip  = { version = "^20.3.1", optional = true}
 mkdocs  = { version = "^1.1.2", optional = true}
 mkdocs-include-markdown-plugin  = { version = "^1.0.0", optional = true}
 mkdocs-material  = { version = "^6.1.7", optional = true}
-mkdocstrings  = { version = "^0.15.2", optional = true}
+mkdocstrings  = { version = "^0.13.6", optional = true}
 mkdocs-material-extensions  = { version = "^1.0.1", optional = true}
 twine  = { version = "^3.3.0", optional = true}
-mkdocs-autorefs = {version = "^0.2.1", optional = true}
+mkdocs-autorefs = {version = "0.1.1", optional = true}
 pre-commit = {version = "^2.12.0", optional = true}
 toml = {version = "^0.10.2", optional = true}
-bump2version = {version = "^1.0.1", optional = true}
 
 [tool.poetry.extras]
 test = [
     "pytest",
     "black",
     "isort",
-    "mypy",
     "flake8",
     "flake8-docstrings",
     "pytest-cov"
     ]
 
-dev = ["tox", "pre-commit", "virtualenv", "pip", "twine", "toml", "bump2version"]
+dev = ["tox", "pre-commit", "virtualenv", "pip", "twine", "toml"]
 
 doc = [
     "mkdocs",
@@ -70,10 +64,14 @@ doc = [
     "mkdocs-autorefs"
     ]
 
+
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
 [tool.black]
 line-length = 88
-skip-string-normalization = true
-target-version = ['py36', 'py37', 'py38']
 include = '\.pyi?$'
 exclude = '''
 /(
@@ -89,18 +87,3 @@ exclude = '''
   | dist
 )/
 '''
-
-[tool.isort]
-multi_line_output = 3
-include_trailing_comma = true
-force_grid_wrap = 0
-use_parentheses = true
-ensure_newline_before_comments = true
-line_length = 88
-skip_gitignore = true
-# you can skip files as below
-#skip_glob = docs/conf.py
-
-[build-system]
-requires = ["poetry-core>=1.0.0", "pandas>=1.0" ]
-build-backend = "poetry.core.masonry.api"
