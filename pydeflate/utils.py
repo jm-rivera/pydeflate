@@ -7,8 +7,52 @@ Created on Wed Apr 21 13:07:16 2021
 """
 
 
-import pandas as pd
+import datetime
+import json
+import warnings
+
 import numpy as np
+import pandas as pd
+
+from pydeflate import config
+
+
+def _diff_from_today(date: datetime.datetime):
+    """Compare to today"""
+
+    today = datetime.datetime.today()
+
+    return (today - date).days
+
+
+def warn_updates():
+    with open(config.paths.data + r'/data_updates.json') as file:
+        updates = json.load(file)
+
+    for source, date in updates.items():
+        d = datetime.datetime.strptime(date, '%Y-%m-%d')
+        if _diff_from_today(d) > 50:
+            message = (
+                f'\n\nThe underlying data for "{source}" has not been updated'
+                f' in over {_diff_from_today(d)} days. \nIn order to use'
+                ' pydeflate with the most recent data, please run:\n'
+                '"pydeflate.tools.update_data()"\n\n'
+            )
+            warnings.warn(message)
+
+
+def update_update_date(source: str):
+    """Update the most recent update date for data to today"""
+
+    today = datetime.datetime.today().strftime('%Y-%m-%d')
+
+    with open(config.paths.data + r'/data_updates.json') as file:
+        updates = json.load(file)
+
+    updates[source] = today
+
+    with open(config.paths.data + r'/data_updates.json', "w") as outfile:
+        json.dump(updates, outfile)
 
 
 oecd_codes = {
@@ -138,9 +182,7 @@ def rebase(df_: pd.DataFrame, base_year: int) -> pd.Series:
     """Rebase values to a given base year"""
 
     base_values = (
-        df_.loc[df_.year.dt.year == base_year]
-        .set_index("iso_code")["value"]
-        .to_dict()
+        df_.loc[df_.year.dt.year == base_year].set_index("iso_code")["value"].to_dict()
     )
 
     return round(100 * df_.value / df_.iso_code.map(base_values), 3)
@@ -150,18 +192,17 @@ def check_method(method: str, methods: dict):
     """Check whether a given method is in a methods dictionary"""
 
     if method not in methods.keys():
-        raise ValueError(
-            f'Method "{method}" not valid. Please see documentation.'
-        )
+        raise ValueError(f'Method "{method}" not valid. Please see documentation.')
 
-def check_year_as_number(df:pd.DataFrame, date_column:str) ->(pd.DataFrame,bool):
+
+def check_year_as_number(df: pd.DataFrame, date_column: str) -> (pd.DataFrame, bool):
     """Check whether the date column contains an int instead of datetime.
     This changes the column to datetime and returns a flag"""
-    
+
     if pd.api.types.is_numeric_dtype(df[date_column]):
         df[date_column] = pd.to_datetime(df[date_column], format="%Y")
         year_as_number = True
     else:
         year_as_number = False
-        
+
     return df, year_as_number

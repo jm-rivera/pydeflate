@@ -7,13 +7,12 @@ Created on Sun Oct 10 16:15:09 2021
 """
 
 import datetime
-import requests
-
 
 import pandas as pd
+import requests
 
 from pydeflate.config import paths
-from pydeflate.utils import oecd_codes, base_year, value_index
+from pydeflate.utils import base_year, oecd_codes, update_update_date, value_index
 
 
 def _get_zip(url: str) -> requests.models.Response:
@@ -30,17 +29,16 @@ def _get_zip(url: str) -> requests.models.Response:
 def _oecd_bulk_download(url: str, file_name: str) -> pd.DataFrame:
     """Download zip file from bulk download website"""
 
-    from bs4 import BeautifulSoup as bs
-    import requests
-    import zipfile as z
     import io
+    import zipfile as z
+
+    import requests
+    from bs4 import BeautifulSoup as bs
 
     response = requests.get(url)
 
     soup = bs(response.text, "html.parser")
-    link = (
-        list(soup.find_all("a"))[0].attrs["onclick"][15:-3].replace("_", "-")
-    )
+    link = list(soup.find_all("a"))[0].attrs["onclick"][15:-3].replace("_", "-")
     link = "https://stats.oecd.org/FileView2.aspx?IDFile=" + link
 
     file = z.ZipFile(io.BytesIO(_get_zip(link).content))
@@ -83,6 +81,7 @@ def _update_dac_deflators() -> None:
             df = df.dropna(how="all")
             df.to_csv(paths.data + r"/dac_deflators.csv", index=False)
             print(f"Updated OECD DAC deflators {year}")
+            update_update_date('oecd_dac_deflator')
             t = False
 
         except:
@@ -101,6 +100,7 @@ def _update_dac_exchange() -> None:
         df = pd.read_excel(exchange, header=2)
         df.to_csv(paths.data + r"/dac_exchange_rates.csv", index=False)
         print("Updated OECD DAC exchange rates")
+        update_update_date('oecd_dac_exchange')
 
     except:
         print("Error downloading new exchange rates")
@@ -148,6 +148,8 @@ def _update_dac1() -> None:
         df = _oecd_bulk_download(url, file_name).pipe(_clean_dac1)
         df.to_feather(paths.data + r"/dac1.feather")
         print("Sucessfully downloaded DAC1 data")
+        # write latest update date to json
+        update_update_date('oecd_dac_data')
     except:
         raise ConnectionError("Could not download data")
 
@@ -162,9 +164,7 @@ def get_usd_exchange() -> pd.DataFrame:
 
     df = _read_dac1()
 
-    return df[["iso_code", "year", "exchange"]].rename(
-        columns={"exchange": "value"}
-    )
+    return df[["iso_code", "year", "exchange"]].rename(columns={"exchange": "value"})
 
 
 def get_exchange2usd_dict(currency_iso: str) -> dict:
@@ -197,9 +197,7 @@ def get_dac_deflator() -> pd.DataFrame:
 
     df = _read_dac1()
 
-    return df[["iso_code", "year", "deflator"]].rename(
-        columns={"deflator": "value"}
-    )
+    return df[["iso_code", "year", "deflator"]].rename(columns={"deflator": "value"})
 
 
 def get_xe_deflator(currency_iso: str) -> pd.DataFrame:
@@ -207,14 +205,14 @@ def get_xe_deflator(currency_iso: str) -> pd.DataFrame:
 
     # get exchange rates
     xe = get_exchange_rate(currency_iso)
-    
+
     # If currency is not valid
     if int(xe.value.sum()) == 0:
         raise ValueError(f'No currency exchange data for {currency_iso}')
 
     # get deflators and base year
     defl = get_dac_deflator()
-    
+
     base = base_year(defl, "year")
 
     # get the exchange rate as an index based on the base year

@@ -7,14 +7,13 @@ Created on Sun Oct 10 16:15:51 2021
 """
 
 
-from pydeflate.config import paths
-from pydeflate import utils
+from typing import Union
 
 import pandas as pd
+from weo import WEO, all_releases, download
 
-
-from weo import all_releases, WEO, download
-from typing import Union
+from pydeflate import utils
+from pydeflate.config import paths
 
 
 def __check_weo_parameters(
@@ -44,6 +43,9 @@ def _update_weo(latest_y: int = None, latest_r: int = None) -> None:
         directory=paths.data,
         filename=f"weo{latest_y}_{latest_r}.csv",
     )
+
+    # write latest update date to json
+    utils.update_update_date('imf')
 
 
 def _load_weo(
