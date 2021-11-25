@@ -15,7 +15,7 @@ weo==0.7.0
 pandas
 numpy
 BeautifulSoup4
-requests_cache
+requests_cache=0.8.1
 requests
 pandas_datareader
 pyarrow

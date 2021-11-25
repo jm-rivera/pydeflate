@@ -11,7 +11,7 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
 requirements = ['pandas','weo==0.7.0', 'numpy','BeautifulSoup4', 'pandas_datareader',
-                'requests','requests_cache','pyarrow']
+                'requests','requests_cache==0.8.1','pyarrow']
 
 setup_requirements = ['pytest-runner', ]
 
@@ -42,6 +42,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/jm-rivera/pydeflate',
-    version='0.1.6',
+    version='0.1.7',
     zip_safe=False,
 )
