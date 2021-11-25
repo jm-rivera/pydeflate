@@ -118,3 +118,4 @@ dmypy.json
 .DS_Store
 pydeflate/.DS_Store
 pydeflate/.DS_Store
+*.icloud
