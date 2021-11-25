@@ -49,6 +49,9 @@ clean-test: ## remove test and coverage artifacts
 
 lint: ## check style with flake8
 	flake8 pydeflate tests
+	
+style: ## check style with Black
+	black pydeflate tests
 
 test: ## run tests quickly with the default Python
 	pytest
@@ -72,6 +75,9 @@ docs: ## generate Sphinx HTML documentation, including API docs
 
 servedocs: docs ## compile the docs watching for changes
 	watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
+
+release-dev: dist ## package and upload a release to testpypi
+	twine upload -r testpypi dist/*
 
 release: dist ## package and upload a release
 	twine upload dist/*
