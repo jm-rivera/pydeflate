@@ -1,25 +1,25 @@
 site_name: pydeflate
-# site_url: http://www.jieyu.ai
+site_url: https://jm-rivera.github.io/pydeflate
 repo_url: https://github.com/jm-rivera/pydeflate
-repo_name: pydeflate
+repo_name: jm-rivera/pydeflate
 #strict: true
 nav:
-  - home: index.md
-  - installation: installation.md
-  - usage: usage.md
-  - modules: api.md
-  - contributing: contributing.md
-  - authors: authors.md
-  - history: history.md
+  - Home: index.md
+  - Installation: installation.md
+  - Usage: usage.md
+  - Modules: api.md
+  - Contributing: contributing.md
+  - Changelog: changelog.md
 theme:
   name: material
   language: en
   #logo: assets/logo.png
   palette:
-    primary: light blue
+    scheme: preference
+    primary: indigo
+    accent: indigo
   features:
     - navigation.indexes
-    - navigation.tabs
     - navigation.instant
     - navigation.tabs.sticky
 markdown_extensions:
@@ -35,8 +35,9 @@ markdown_extensions:
   - pymdownx.arithmatex:
       generic: true
   - pymdownx.highlight:
-      linenums: true
+      linenums: false
   - pymdownx.superfences
+  - pymdownx.inlinehilite
   - pymdownx.details
   - admonition
   - toc:
@@ -55,17 +56,11 @@ extra:
   social:
     - icon: fontawesome/brands/twitter
       # replace with your own tweet link below
-      link: http://www.jieyu.ai
+      link: https://github.com/jm-rivera/pydeflate
       name: Tweet
-    - icon: fontawesome/brands/facebook
-      # replace with your own facebook link below
-      link: http://www.jieyu.ai
-      name: Facebook
     - icon: fontawesome/brands/github
       link: https://github.com/jm-rivera/pydeflate
       name: Github
-    - icon: material/email
-      link: "mailto:jorge.rivera@one.org"
   # to enable disqus, uncomment the following and put your disqus id below
   # disqus: disqus_id
 # uncomment the following and put your google tracking id below to enable GA

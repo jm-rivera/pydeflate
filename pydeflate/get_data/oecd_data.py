@@ -81,7 +81,7 @@ def _update_dac_deflators() -> None:
             df = df.dropna(how="all")
             df.to_csv(paths.data + r"/dac_deflators.csv", index=False)
             print(f"Updated OECD DAC deflators {year}")
-            update_update_date("oecd_dac_deflator")
+            update_update_date('oecd_dac_deflator')
             t = False
 
         except:
@@ -100,7 +100,7 @@ def _update_dac_exchange() -> None:
         df = pd.read_excel(exchange, header=2)
         df.to_csv(paths.data + r"/dac_exchange_rates.csv", index=False)
         print("Updated OECD DAC exchange rates")
-        update_update_date("oecd_dac_exchange")
+        update_update_date('oecd_dac_exchange')
 
     except:
         print("Error downloading new exchange rates")
@@ -149,7 +149,7 @@ def _update_dac1() -> None:
         df.to_feather(paths.data + r"/dac1.feather")
         print("Sucessfully downloaded DAC1 data")
         # write latest update date to json
-        update_update_date("oecd_dac_data")
+        update_update_date('oecd_dac_data')
     except:
         raise ConnectionError("Could not download data")
 
@@ -208,7 +208,7 @@ def get_xe_deflator(currency_iso: str) -> pd.DataFrame:
 
     # If currency is not valid
     if int(xe.value.sum()) == 0:
-        raise ValueError(f"No currency exchange data for {currency_iso}")
+        raise ValueError(f'No currency exchange data for {currency_iso}')
 
     # get deflators and base year
     defl = get_dac_deflator()

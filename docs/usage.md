@@ -3,5 +3,5 @@
 To use pydeflate in a project
 
 ```
-    import pydeflate
+import pydeflate
 ```

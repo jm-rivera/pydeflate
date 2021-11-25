@@ -98,9 +98,9 @@ def exchange(
     df, year_as_number = check_year_as_number(df, date_column)
 
     # check whether target currency is LCU
-    if target_currency == "LCU":
+    if target_currency == 'LCU':
         target_currency = source_currency
-        source_currency = "LCU"
+        source_currency = 'LCU'
         target_changed = True
     else:
         target_changed = False
@@ -110,11 +110,11 @@ def exchange(
     xe = xe.rename(columns={"year": date_column})
 
     # Check source and target currencies
-    if (source_currency not in set(xe.iso_code)) and (source_currency != "LCU"):
-        raise KeyError(f"{source_currency} not a valid currency code")
+    if (source_currency not in set(xe.iso_code)) and (source_currency != 'LCU'):
+        raise KeyError(f'{source_currency} not a valid currency code')
 
-    if (target_currency not in set(xe.iso_code)) and (target_currency != "LCU"):
-        raise KeyError(f"{target_currency} not a valid target currency")
+    if (target_currency not in set(xe.iso_code)) and (target_currency != 'LCU'):
+        raise KeyError(f'{target_currency} not a valid target currency')
 
     if source_currency == "LCU":
         df = df.merge(
@@ -134,7 +134,7 @@ def exchange(
     # revert change to target_currency if target_changed
     if target_changed:
         source_currency = target_currency
-        target_currency = "LCU"
+        target_currency = 'LCU'
 
     if target_currency == "LCU":
         df[target_column] = df[value_column] * df[f"{value_column}_xe"]

@@ -51,39 +51,39 @@ Ready to contribute? Here's how to set up `pydeflate` for local development.
 1. Fork the `pydeflate` repo on GitHub.
 2. Clone your fork locally
 
-```
+    ```
     $ git clone git@github.com:your_name_here/pydeflate.git
-```
+    ```
 
 3. Ensure [poetry](https://python-poetry.org/docs/) is installed.
 4. Install dependencies and start your virtualenv:
 
-```
+    ```
     $ poetry install -E test -E doc -E dev
-```
+    ```
 
 5. Create a branch for local development:
 
-```
+    ```
     $ git checkout -b name-of-your-bugfix-or-feature
-```
+    ```
 
-   Now you can make your changes locally.
+    Now you can make your changes locally.
 
 6. When you're done making changes, check that your changes pass the
    tests, including testing other Python versions, with tox:
 
-```
-    $ tox
-```
+    ```
+    $ poetry run tox
+    ```
 
 7. Commit your changes and push your branch to GitHub:
 
-```
+    ```
     $ git add .
     $ git commit -m "Your detailed description of your changes."
     $ git push origin name-of-your-bugfix-or-feature
-```
+    ```
 
 8. Submit a pull request through the GitHub website.
 
@@ -95,25 +95,29 @@ Before you submit a pull request, check that it meets these guidelines:
 2. If the pull request adds functionality, the docs should be updated. Put
    your new functionality into a function with a docstring, and add the
    feature to the list in README.md.
-3. The pull request should work for Python 3.6, 3.7, 3.8, 3.9 and for PyPy. Check
+3. The pull request should work for Python 3.6, 3.7, 3.8 and 3.9. Check
    https://github.com/jm-rivera/pydeflate/actions
    and make sure that the tests pass for all supported Python versions.
 
-## Tips```
-    $ pytest tests.test_pydeflate
-```To run a subset of tests.
+## Tips
+
+```
+$ poetry run pytest tests/test_pydeflate.py
+```
+
+To run a subset of tests.
 
 
 ## Deploying
 
 A reminder for the maintainers on how to deploy.
-Make sure all your changes are committed (including an entry in HISTORY.md).
+Make sure all your changes are committed (including an entry in CHANGELOG.md).
 Then run:
 
 ```
-$ poetry patch # possible: major / minor / patch
+$ poetry run bump2version patch # possible: major / minor / patch
 $ git push
 $ git push --tags
 ```
 
-Travis will then deploy to PyPI if tests pass.
+GitHub Actions will then deploy to PyPI if tests pass.

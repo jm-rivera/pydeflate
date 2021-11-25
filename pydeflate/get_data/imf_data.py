@@ -45,7 +45,7 @@ def _update_weo(latest_y: int = None, latest_r: int = None) -> None:
     )
 
     # write latest update date to json
-    utils.update_update_date("imf")
+    utils.update_update_date('imf')
 
 
 def _load_weo(

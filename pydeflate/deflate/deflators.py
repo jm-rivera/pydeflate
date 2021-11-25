@@ -69,7 +69,7 @@ def __align_currencies(
 
     # Check if data is valid
     if int(deflator.value_xe.sum()) == 0:
-        raise ValueError(f"Data for {source_currency} is not valid")
+        raise ValueError(f'Data for {source_currency} is not valid')
 
     return deflator.drop("value_xe", axis=1)
 
