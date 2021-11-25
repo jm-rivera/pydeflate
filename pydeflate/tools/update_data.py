@@ -14,6 +14,7 @@ from pydeflate.get_data.oecd_data import (
 )
 from pydeflate.get_data.wb_data import update_indicators
 
+
 data = {
     "WEO data": _update_weo,
     "DAC1 data": _update_dac1,

@@ -7,11 +7,10 @@ Created on Sun Oct 10 16:15:09 2021
 """
 
 
-import datetime
-
 import requests_cache
-
+import datetime
 from pydeflate import config
+
 
 # Create session
 expire_after = datetime.timedelta(days=3)
@@ -23,10 +22,11 @@ wb_session = requests_cache.CachedSession(
 )
 
 
-import pandas as pd
+from pydeflate.utils import value_index, emu
+
 from pandas_datareader import wb
 
-from pydeflate.utils import emu, update_update_date, value_index
+import pandas as pd
 
 
 def get_iso3c():
@@ -52,13 +52,14 @@ def _download_wb_indicator(indicator: str, start: int, end: int) -> None:
 
     df.to_feather(config.paths.data + rf"/{indicator}_{start}_{end}.feather")
     print(f"Successfully updated {indicator} for {start}-{end}")
-    update_update_date('wb')
 
 
 def _read_wb_indicator(indicator: str, start: int, end: int) -> pd.DataFrame:
 
     """Read an indicator from WB"""
-    return pd.read_feather(config.paths.data + rf"/{indicator}_{start}_{end}.feather")
+    return pd.read_feather(
+        config.paths.data + rf"/{indicator}_{start}_{end}.feather"
+    )
 
 
 def _clean_wb_indicator(
@@ -81,7 +82,9 @@ def _clean_wb_indicator(
     )
 
 
-def wb_indicator(indicator: str, start: int = 1950, end: int = 2025) -> pd.DataFrame:
+def wb_indicator(
+    indicator: str, start: int = 1950, end: int = 2025
+) -> pd.DataFrame:
 
     """Download and clean an indicator from the WB.
     - indicator: string like 'PA.NUS.FCRF'
@@ -167,7 +170,12 @@ def get_usd_exchange() -> pd.DataFrame:
     # get exchange rates
     df = wb_indicator(indicator="PA.NUS.FCRF")
 
-    eur = df.loc[df.iso_code == "EMU"].dropna().set_index("year")["value"].to_dict()
+    eur = (
+        df.loc[df.iso_code == "EMU"]
+        .dropna()
+        .set_index("year")["value"]
+        .to_dict()
+    )
 
     # Euro area countries without exchange rates
     eur_mask = (df.iso_code.isin(emu)) & (df.value.isna())
@@ -210,7 +218,9 @@ def get_real_effective_exchange_index() -> pd.DataFrame:
     return wb_indicator(indicator="PX.REX.REER")
 
 
-def get_xe_deflator(currency_iso: str = "USA", base_year: int = 2010) -> pd.DataFrame:
+def get_xe_deflator(
+    currency_iso: str = "USA", base_year: int = 2010
+) -> pd.DataFrame:
     """get exchange rate deflator based on OECD base year and exchange rates"""
 
     from datetime import datetime
@@ -237,3 +247,4 @@ def available_methods() -> dict:
 
 if __name__ == "__main__":
     pass
+  

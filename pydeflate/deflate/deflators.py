@@ -6,12 +6,11 @@ Created on Sun Oct 17 11:07:42 2021
 @author: jorge
 """
 
-from typing import Callable
-
-import numpy as np
-import pandas as pd
-
 from pydeflate import utils
+import pandas as pd
+import numpy as np
+
+from typing import Callable
 from pydeflate.get_data import imf_data, oecd_data, wb_data
 
 
@@ -57,7 +56,9 @@ def __align_currencies(
         xe = oecd_data.get_exchange_rate(target_currency)
 
     if source_currency == "LCU":
-        deflator = deflator.merge(xe, on=["iso_code", "year"], suffixes=("", "_xe"))
+        deflator = deflator.merge(
+            xe, on=["iso_code", "year"], suffixes=("", "_xe")
+        )
         deflator.value = deflator.value * deflator.value_xe
 
     else:
@@ -66,9 +67,9 @@ def __align_currencies(
             xe.drop("iso_code", axis=1), on=["year"], suffixes=("", "_xe")
         )
         deflator.value = deflator.value * deflator.value_xe
-
-    # Check if data is valid
-    if int(deflator.value_xe.sum()) == 0:
+        
+    #Check if data is valid
+    if int(deflator.value_xe.sum())==0:
         raise ValueError(f'Data for {source_currency} is not valid')
 
     return deflator.drop("value_xe", axis=1)
@@ -129,7 +130,10 @@ def _defl_pipeline(
     # get price deflators and rebase
     prd = _get_and_deflate(price_deflator, base_year)
 
-    df = prd.merge(xed, on=["iso_code", "year"], how="left", suffixes=("_def", "_xe"))
+    df = prd.merge(
+        xed, on=["iso_code", "year"], how="left", suffixes=("_def", "_xe")
+    )
+    
 
     df["value"] = round(100 * df.value_def / df.value_xe, 2)
 
