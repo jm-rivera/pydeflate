@@ -7,9 +7,8 @@ Created on Wed Apr 21 13:07:16 2021
 """
 
 
-import pandas as pd
 import numpy as np
-
+import pandas as pd
 
 oecd_codes = {
     1: "AUT",
@@ -138,9 +137,7 @@ def rebase(df_: pd.DataFrame, base_year: int) -> pd.Series:
     """Rebase values to a given base year"""
 
     base_values = (
-        df_.loc[df_.year.dt.year == base_year]
-        .set_index("iso_code")["value"]
-        .to_dict()
+        df_.loc[df_.year.dt.year == base_year].set_index("iso_code")["value"].to_dict()
     )
 
     return round(100 * df_.value / df_.iso_code.map(base_values), 3)
@@ -150,18 +147,17 @@ def check_method(method: str, methods: dict):
     """Check whether a given method is in a methods dictionary"""
 
     if method not in methods.keys():
-        raise ValueError(
-            f'Method "{method}" not valid. Please see documentation.'
-        )
+        raise ValueError(f'Method "{method}" not valid. Please see documentation.')
 
-def check_year_as_number(df:pd.DataFrame, date_column:str) ->(pd.DataFrame,bool):
+
+def check_year_as_number(df: pd.DataFrame, date_column: str) -> (pd.DataFrame, bool):
     """Check whether the date column contains an int instead of datetime.
     This changes the column to datetime and returns a flag"""
-    
+
     if pd.api.types.is_numeric_dtype(df[date_column]):
         df[date_column] = pd.to_datetime(df[date_column], format="%Y")
         year_as_number = True
     else:
         year_as_number = False
-        
+
     return df, year_as_number

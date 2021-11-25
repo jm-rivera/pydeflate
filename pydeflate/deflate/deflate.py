@@ -6,16 +6,12 @@ Created on Fri Oct 22 23:51:47 2021
 @author: jorge
 """
 
-from pydeflate.deflate.deflators import (
-    oecd_dac_deflators,
-    wb_deflators,
-    imf_deflators,
-)
-
-from pydeflate.utils import check_year_as_number
+from typing import Optional
 
 import pandas as pd
-from typing import Optional
+
+from pydeflate.deflate.deflators import imf_deflators, oecd_dac_deflators, wb_deflators
+from pydeflate.utils import check_year_as_number
 
 
 def deflate(
@@ -156,4 +152,4 @@ def deflate(
 
 
 if __name__ == "__main__":
-   pass
+    pass

@@ -10,7 +10,8 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = ['pandas','weo', 'numpy','BeautifulSoup4']
+requirements = ['pandas','weo==0.7.0', 'numpy','BeautifulSoup4', 'pandas_datareader',
+                'requests','requests_cache','pyarrow']
 
 setup_requirements = ['pytest-runner', ]
 
