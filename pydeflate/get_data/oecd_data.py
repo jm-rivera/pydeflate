@@ -12,7 +12,7 @@ import pandas as pd
 import requests
 
 from pydeflate.config import paths
-from pydeflate.utils import base_year, oecd_codes, value_index
+from pydeflate.utils import base_year, oecd_codes, value_index, update_update_date
 
 import warnings
 warnings.simplefilter('ignore',Warning,lineno=1013)
@@ -87,10 +87,15 @@ def _update_dac_deflators() -> None:
         )
 
         try:
-            df = pd.read_excel(url, header=2)
+            try:
+                df = pd.read_excel(url, header=2)
+            except ImportError:
+                raise Exception('Could not download data')
+            
             df = df.dropna(how="all")
             df.to_csv(paths.data + r"/dac_deflators.csv", index=False)
             print(f"Updated OECD DAC deflators {year}")
+            update_update_date('oecd_dac_deflator')
             t = False
 
         except:
@@ -109,6 +114,7 @@ def _update_dac_exchange() -> None:
         df = pd.read_excel(exchange, header=2)
         df.to_csv(paths.data + r"/dac_exchange_rates.csv", index=False)
         print("Updated OECD DAC exchange rates")
+        update_update_date('oecd_dac_exchange')
 
     except:
         print("Error downloading new exchange rates")
@@ -156,6 +162,7 @@ def _update_dac1() -> None:
         df = _oecd_bulk_download(url, file_name).pipe(_clean_dac1)
         df.to_feather(paths.data + r"/dac1.feather")
         print("Sucessfully downloaded DAC1 data")
+        update_update_date('oecd_dac_data')
     except:
         raise ConnectionError("Could not download data")
 

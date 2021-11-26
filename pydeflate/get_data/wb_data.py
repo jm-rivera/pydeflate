@@ -26,7 +26,7 @@ wb_session = requests_cache.CachedSession(
 import pandas as pd
 from pandas_datareader import wb
 
-from pydeflate.utils import emu, value_index
+from pydeflate.utils import emu, value_index, update_update_date
 
 
 def get_iso3c():
@@ -52,6 +52,7 @@ def _download_wb_indicator(indicator: str, start: int, end: int) -> None:
 
     df.to_feather(config.paths.data + rf"/{indicator}_{start}_{end}.feather")
     print(f"Successfully updated {indicator} for {start}-{end}")
+    update_update_date('wb')
 
 
 def _read_wb_indicator(indicator: str, start: int, end: int) -> pd.DataFrame:

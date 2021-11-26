@@ -17,7 +17,8 @@ requirements = ['pandas>=1.2.1',
                 'pandas_datareader>=0.10.0',
                 'requests>=2.25.1',
                 'requests_cache==0.8.1',
-                'pyarrow>=1.19.2']
+                'pyarrow>=1.19.2'
+                'xlrd>=2.0']
 
 setup_requirements = ['pytest-runner', ]
 

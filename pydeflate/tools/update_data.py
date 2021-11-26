@@ -30,7 +30,7 @@ def update_all_data(data: dict = data) -> None:
     for source, func in data.items():
         try:
             func()
-            print(f"****Successfully udpated {source}****\n")
+            print(f"****Successfully updated {source}****\n")
         except:
             print(f"Could not download {source}")
 
