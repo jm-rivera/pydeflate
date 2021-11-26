@@ -14,6 +14,8 @@ import requests
 from pydeflate.config import paths
 from pydeflate.utils import base_year, oecd_codes, value_index
 
+import warnings
+warnings.simplefilter('ignore',Warning,lineno=1013)
 
 def _get_zip(url: str) -> requests.models.Response:
     """Download Zip File"""
@@ -22,8 +24,13 @@ def _get_zip(url: str) -> requests.models.Response:
         response.raise_for_status()
 
         return response
-    except:
-        raise ConnectionError("Could not download ZIP")
+    except Exception:
+        try:
+            response = requests.get(url, verify=False)
+            return response
+    
+        except:
+            raise ConnectionError("Could not download ZIP")
 
 
 def _oecd_bulk_download(url: str, file_name: str) -> pd.DataFrame:
@@ -35,7 +42,11 @@ def _oecd_bulk_download(url: str, file_name: str) -> pd.DataFrame:
     import requests
     from bs4 import BeautifulSoup as bs
 
-    response = requests.get(url)
+    try:    
+        response = requests.get(url)
+    except Exception:
+        response = requests.get(url, verify=False)
+    
     soup = bs(response.text, "html.parser")
     link = list(soup.find_all("a"))[0].attrs["onclick"][15:-3].replace("_", "-")
     link = "https://stats.oecd.org/FileView2.aspx?IDFile=" + link
