@@ -176,7 +176,7 @@ In terms of price or GDP deflators, pydeflate provides the following `methods`:
 - OECD Development Assistance Committee ("oecd_dac"): 
 
     - None: for consistency with how the DAC calculates deflators, only their methodology
-    is accepted/used with this data.
+      is accepted/used with this data.
 
 The source of the exchange rate data depends on the source selected. Both "imf"
 and "wb" use data from the International Monetary Fund (`LCU per US$, yearly average`).
