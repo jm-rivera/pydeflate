@@ -1,10 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Sun Oct 10 16:15:09 2021
 
-@author: jorge
-"""
 
 import datetime
 

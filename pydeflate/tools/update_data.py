@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Sat Nov 13 14:15:58 2021
-
-@author: jorge
-"""
 
 from pydeflate.get_data.imf_data import _update_weo
 from pydeflate.get_data.oecd_data import (

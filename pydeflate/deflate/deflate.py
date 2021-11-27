@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Fri Oct 22 23:51:47 2021
-
-@author: jorge
-"""
 
 from typing import Optional
 

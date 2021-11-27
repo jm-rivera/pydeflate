@@ -12,7 +12,7 @@ To install pydeflate, run this command in your terminal:
 
 .. code-block:: console
 
-    $ pip install pydeflate
+    $ pip install pydeflate --upgrade
 
 This is the preferred method to install pydeflate, as it will always install the most recent stable release.
 
