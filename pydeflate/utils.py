@@ -20,16 +20,16 @@ def _diff_from_today(date: datetime.datetime):
 
 
 def warn_updates():
-    with open(config.paths.data + r'/data_updates.json') as file:
+    with open(config.paths.data + r"/data_updates.json") as file:
         updates = json.load(file)
 
     for source, date in updates.items():
-        d = datetime.datetime.strptime(date, '%Y-%m-%d')
+        d = datetime.datetime.strptime(date, "%Y-%m-%d")
         if _diff_from_today(d) > 50:
             message = (
                 f'\n\nThe underlying data for "{source}" has not been updated'
-                f' in over {_diff_from_today(d)} days. \nIn order to use'
-                ' pydeflate with the most recent data, please run:\n'
+                f" in over {_diff_from_today(d)} days. \nIn order to use"
+                " pydeflate with the most recent data, please run:\n"
                 '"pydeflate.update_all_data()"\n\n'
             )
             warnings.warn(message)
@@ -38,14 +38,14 @@ def warn_updates():
 def update_update_date(source: str):
     """Update the most recent update date for data to today"""
 
-    today = datetime.datetime.today().strftime('%Y-%m-%d')
+    today = datetime.datetime.today().strftime("%Y-%m-%d")
 
-    with open(config.paths.data + r'/data_updates.json') as file:
+    with open(config.paths.data + r"/data_updates.json") as file:
         updates = json.load(file)
 
     updates[source] = today
 
-    with open(config.paths.data + r'/data_updates.json', "w") as outfile:
+    with open(config.paths.data + r"/data_updates.json", "w") as outfile:
         json.dump(updates, outfile)
 
 
@@ -200,5 +200,3 @@ def check_year_as_number(df: pd.DataFrame, date_column: str) -> (pd.DataFrame, b
         year_as_number = False
 
     return df, year_as_number
-
-

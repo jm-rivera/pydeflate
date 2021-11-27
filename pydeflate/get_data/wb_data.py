@@ -47,7 +47,7 @@ def _download_wb_indicator(indicator: str, start: int, end: int) -> None:
 
     df.to_feather(config.paths.data + rf"/{indicator}_{start}_{end}.feather")
     print(f"Successfully updated {indicator} for {start}-{end}")
-    update_update_date('wb')
+    update_update_date("wb")
 
 
 def _read_wb_indicator(indicator: str, start: int, end: int) -> pd.DataFrame:

@@ -11,7 +11,9 @@ from pydeflate.config import paths
 from pydeflate.utils import base_year, oecd_codes, value_index, update_update_date
 
 import warnings
-warnings.simplefilter('ignore',Warning,lineno=1013)
+
+warnings.simplefilter("ignore", Warning, lineno=1013)
+
 
 def _get_zip(url: str) -> requests.models.Response:
     """Download Zip File"""
@@ -24,7 +26,7 @@ def _get_zip(url: str) -> requests.models.Response:
         try:
             response = requests.get(url, verify=False)
             return response
-    
+
         except:
             raise ConnectionError("Could not download ZIP")
 
@@ -38,11 +40,11 @@ def _oecd_bulk_download(url: str, file_name: str) -> pd.DataFrame:
     import requests
     from bs4 import BeautifulSoup as bs
 
-    try:    
+    try:
         response = requests.get(url)
     except Exception:
         response = requests.get(url, verify=False)
-    
+
     soup = bs(response.text, "html.parser")
     link = list(soup.find_all("a"))[0].attrs["onclick"][15:-3].replace("_", "-")
     link = "https://stats.oecd.org/FileView2.aspx?IDFile=" + link
@@ -86,12 +88,12 @@ def _update_dac_deflators() -> None:
             try:
                 df = pd.read_excel(url, header=2)
             except ImportError:
-                raise Exception('Could not download data')
-            
+                raise Exception("Could not download data")
+
             df = df.dropna(how="all")
             df.to_csv(paths.data + r"/dac_deflators.csv", index=False)
             print(f"Updated OECD DAC deflators {year}")
-            update_update_date('oecd_dac_deflator')
+            update_update_date("oecd_dac_deflator")
             t = False
 
         except:
@@ -110,7 +112,7 @@ def _update_dac_exchange() -> None:
         df = pd.read_excel(exchange, header=2)
         df.to_csv(paths.data + r"/dac_exchange_rates.csv", index=False)
         print("Updated OECD DAC exchange rates")
-        update_update_date('oecd_dac_exchange')
+        update_update_date("oecd_dac_exchange")
 
     except:
         print("Error downloading new exchange rates")
@@ -158,7 +160,7 @@ def _update_dac1() -> None:
         df = _oecd_bulk_download(url, file_name).pipe(_clean_dac1)
         df.to_feather(paths.data + r"/dac1.feather")
         print("Sucessfully downloaded DAC1 data")
-        update_update_date('oecd_dac_data')
+        update_update_date("oecd_dac_data")
     except:
         raise ConnectionError("Could not download data")
 

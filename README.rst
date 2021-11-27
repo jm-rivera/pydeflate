@@ -6,9 +6,6 @@ The pydeflate Package
 .. image:: https://img.shields.io/pypi/v/pydeflate.svg
         :target: https://pypi.python.org/pypi/pydeflate
 
-.. image:: https://img.shields.io/travis/jm-rivera/pydeflate.svg
-        :target: https://travis-ci.com/jm-rivera/pydeflate
-
 .. image:: https://readthedocs.org/projects/pydeflate/badge/?version=latest
         :target: https://pydeflate.readthedocs.io/en/latest/?version=latest
         :alt: Documentation Status

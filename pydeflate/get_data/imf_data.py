@@ -38,7 +38,7 @@ def _update_weo(latest_y: int = None, latest_r: int = None) -> None:
         directory=paths.data,
         filename=f"weo{latest_y}_{latest_r}.csv",
     )
-    utils.update_update_date('imf')
+    utils.update_update_date("imf")
 
 
 def _load_weo(
