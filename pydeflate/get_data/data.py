@@ -23,7 +23,13 @@ class Data(ABC):
     def available_methods(self) -> dict:
         pass
 
-    def set_method(self, method:str) -> None:
+    def _check_method(self) -> None:
+        if self.method is None:
+            raise AttributeError(
+                f"`method` must be defined: " f"{list(self.available_methods().keys())}"
+            )
+
+    def set_method(self, method: str) -> None:
         self.method = method
 
     @abstractmethod
