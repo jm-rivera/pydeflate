@@ -117,13 +117,10 @@ class IMF(Data):
     def get_deflator(self) -> pd.DataFrame:
         """Get the deflator DataFrame for the specified method"""
 
+        self._check_method()
+
         if self.data is None:
             self.load_data()
-
-        if self.method is None:
-            raise AttributeError(
-                f"`method` must be defined: " f"{list(self.available_methods().keys())}"
-            )
 
         return self.available_methods()[self.method]()
 
