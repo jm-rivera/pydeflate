@@ -7,14 +7,14 @@ from pydeflate.get_data.oecd_data import (
     _update_dac_deflators,
     _update_dac_exchange,
 )
-from pydeflate.get_data.wb_data import update_indicators
+from pydeflate.get_data.wb_data import WB
 
 data = {
     "WEO data": _update_weo,
     "DAC1 data": _update_dac1,
     "DAC Deflators": _update_dac_deflators,
     "DAC exchange": _update_dac_exchange,
-    "WB data": update_indicators,
+    "WB data": WB().update,
 }
 
 
