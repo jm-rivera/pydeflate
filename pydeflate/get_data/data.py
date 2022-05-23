@@ -1,3 +1,4 @@
+from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Union
@@ -29,8 +30,9 @@ class Data(ABC):
                 f"`method` must be defined: " f"{list(self.available_methods().keys())}"
             )
 
-    def set_method(self, method: str) -> None:
+    def set_method(self, method: str) -> Data:
         self.method = method
+        return self
 
     @abstractmethod
     def get_deflator(self) -> pd.DataFrame:
