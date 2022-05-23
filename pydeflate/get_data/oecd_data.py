@@ -3,75 +3,64 @@
 
 
 import datetime
+import io
+import warnings
+import zipfile as zf
+from dataclasses import dataclass
+from typing import Union
+from urllib.error import HTTPError
 
 import pandas as pd
 import requests
+from bs4 import BeautifulSoup as Bs
 
 from pydeflate.config import paths
+from pydeflate.get_data.data import Data
 from pydeflate.utils import base_year, oecd_codes, value_index, update_update_date
-
-import warnings
 
 warnings.simplefilter("ignore", Warning, lineno=1013)
 
-
-def _get_zip(url: str) -> requests.models.Response:
-    """Download Zip File"""
-    try:
-        response = requests.get(url)
-        response.raise_for_status()
-
-        return response
-    except Exception:
-        try:
-            response = requests.get(url, verify=False)
-            return response
-
-        except:
-            raise ConnectionError("Could not download ZIP")
+_BASE_URL: str = "https://stats.oecd.org/DownloadFiles.aspx?DatasetCode="
+_TABLE1_URL: str = f"{_BASE_URL}TABLE1"
 
 
-def _oecd_bulk_download(url: str, file_name: str) -> pd.DataFrame:
-    """Download zip file from bulk download website"""
-
-    import io
-    import zipfile as z
-
-    import requests
-    from bs4 import BeautifulSoup as bs
+def _get_zip(url):
+    """Get Zip File."""
 
     try:
-        response = requests.get(url)
-    except Exception:
-        response = requests.get(url, verify=False)
+        return requests.get(url)
 
-    soup = bs(response.text, "html.parser")
+    except ConnectionError:
+        raise ConnectionError("Could not download file")
+
+
+def _read_zip_content(request_content, file_name: str) -> pd.DataFrame:
+    # Read zip as content
+    _ = io.BytesIO(request_content)
+    zip_file = zf.ZipFile(_).open(file_name)
+
+    try:
+        return pd.read_csv(zip_file, sep=",", encoding="ISO-8859-1", low_memory=False)
+
+    except UnicodeDecodeError:
+        return pd.read_csv(zip_file, sep="|", encoding="ISO-8859-1", low_memory=False)
+
+
+def _download_bulk_file(url: str, file_name: str) -> pd.DataFrame:
+    # get URL
+    response = requests.get(url)
+
+    # parse html
+    soup = Bs(response.text, "html.parser")
     link = list(soup.find_all("a"))[0].attrs["onclick"][15:-3].replace("_", "-")
-    link = "https://stats.oecd.org/FileView2.aspx?IDFile=" + link
+    link = f"https://stats.oecd.org/FileView2.aspx?IDFile={link}"
 
-    file = z.ZipFile(io.BytesIO(_get_zip(link).content))
+    file_content = _get_zip(link).content
 
-    try:
-        df = pd.read_csv(
-            file.open(file_name),
-            sep=",",
-            encoding="ISO-8859-1",
-            low_memory=False,
-        )
-
-    except:
-        df = pd.read_csv(
-            file.open(file_name),
-            sep="|",
-            encoding="ISO-8859-1",
-            low_memory=False,
-        )
-
-    return df
+    return _read_zip_content(request_content=file_content, file_name=file_name)
 
 
 def _update_dac_deflators() -> None:
-
     """Update DAC deflators data to latest base year"""
 
     year = datetime.datetime.now().year
@@ -85,19 +74,15 @@ def _update_dac_deflators() -> None:
         )
 
         try:
-            try:
-                df = pd.read_excel(url, header=2)
-            except ImportError:
-                raise Exception("Could not download data")
-
+            df = pd.read_excel(url, header=2)
             df = df.dropna(how="all")
             df.to_csv(paths.data + r"/dac_deflators.csv", index=False)
             print(f"Updated OECD DAC deflators {year}")
             update_update_date("oecd_dac_deflator")
             t = False
 
-        except:
-            year = year - 1
+        except HTTPError:
+            year -= 1
 
 
 def _update_dac_exchange() -> None:
@@ -152,100 +137,112 @@ def _clean_dac1(df: pd.DataFrame) -> pd.DataFrame:
 def _update_dac1() -> None:
     """Update dac1 data from OECD site and save as feather"""
 
-    url = "https://stats.oecd.org/DownloadFiles.aspx?DatasetCode=TABLE1"
     file_name = "Table1_Data.csv"
 
-    try:
-        print("Downloading DAC1 data, which may take a bit")
-        df = _oecd_bulk_download(url, file_name).pipe(_clean_dac1)
-        df.to_feather(paths.data + r"/dac1.feather")
-        print("Sucessfully downloaded DAC1 data")
-        update_update_date("oecd_dac_data")
-    except:
-        raise ConnectionError("Could not download data")
+    print("Downloading DAC1 data, which may take a bit")
+    df = _download_bulk_file(url=_TABLE1_URL, file_name=file_name).pipe(_clean_dac1)
+    df.to_feather(paths.data + r"/dac1.feather")
+    print("Sucessfully downloaded DAC1 data")
+    update_update_date("oecd_dac_data")
 
 
-def _read_dac1() -> pd.DataFrame:
-    """Read the dac1 file with exchange rates and deflators"""
-    return pd.read_feather(paths.data + r"/dac1.feather")
+@dataclass
+class OECD(Data):
+    method: Union[str, None] = None
+    data: pd.DataFrame = None
+
+    def update(self, **kwargs) -> None:
+        _update_dac1()
+        _update_dac_deflators()
+        _update_dac_exchange()
+
+    def load_data(self, **kwargs) -> None:
+        self.data = pd.read_feather(paths.data + r"/dac1.feather")
+
+    def get_usd_exchange(self) -> pd.DataFrame:
+        if self.data is None:
+            self.load_data()
+
+        return self.data[["iso_code", "year", "exchange"]].rename(
+            columns={"exchange": "value"}
+        )
+
+    def get_exchange2usd_dict(self, currency_iso: str) -> dict:
+        """Dictionary of currency_iso to USD"""
+
+        df = self.get_usd_exchange()
+
+        return (
+            df.loc[df.iso_code == currency_iso]
+            .dropna()
+            .set_index("year")["value"]
+            .to_dict()
+        )
+
+    def get_exchange_rate(self, currency_iso: str) -> pd.DataFrame:
+        """Get an exchange rate for a given ISO"""
+
+        df = self.get_usd_exchange()
+
+        target_xe = self.get_exchange2usd_dict(currency_iso=currency_iso)
+
+        df.value = df.value / df.year.map(target_xe)
+
+        return df
+
+    def get_gdp_deflator(self) -> pd.DataFrame:
+        """Deduce prices deflator based on exchange rate deflators and DAC
+        deflators data"""
+
+        dac_deflator = self.get_deflator()
+        xe_deflator = self.get_xe_deflator(currency_iso="USA")
+
+        df = dac_deflator.merge(
+            xe_deflator, on=["iso_code", "year"], how="left", suffixes=("_def", "_xe"),
+        )
+
+        df["value"] = round(df.value_def * (df.value_xe / 100), 3)
+
+        return df[["iso_code", "year", "value"]]
+
+    def get_xe_deflator(self, currency_iso: str) -> pd.DataFrame:
+        """get exchange rate deflator based on OECD base year and exchange rates"""
+
+        # get exchange rates
+        xe = self.get_exchange_rate(currency_iso=currency_iso)
+
+        # If currency is not valid
+        if int(xe.value.sum()) == 0:
+            raise ValueError(f"No currency exchange data for {currency_iso}")
+
+        # get deflators and base year
+        defl = self.get_deflator()
+
+        base = base_year(defl, "year")
+
+        # get the exchange rate as an index based on the base year
+        xe.value = value_index(xe, base)
+
+        return xe
+
+    def available_methods(self) -> dict:
+        print("Only the DAC Deflators method is available")
+        return {"oecd": "OECD DAC Deflator method"}
+
+    def get_deflator(self) -> pd.DataFrame:
+        if self.data is None:
+            self.load_data()
+
+        if self.method is not None:
+            print(
+                "Only the DAC Deflators method is available.\n"
+                f"'Method {self.method}' ignored"
+            )
+
+        return self.data[["iso_code", "year", "deflator"]].rename(
+            columns={"deflator": "value"}
+        )
 
 
-def get_usd_exchange() -> pd.DataFrame:
-    """Get the USD exchange rates used by the OECD"""
-
-    df = _read_dac1()
-
-    return df[["iso_code", "year", "exchange"]].rename(columns={"exchange": "value"})
-
-
-def get_exchange2usd_dict(currency_iso: str) -> dict:
-    """Dictionary of currency_iso to USD"""
-
-    df = get_usd_exchange()
-
-    return (
-        df.loc[df.iso_code == currency_iso]
-        .dropna()
-        .set_index("year")["value"]
-        .to_dict()
-    )
-
-
-def get_exchange_rate(currency_iso: str) -> dict:
-    """Get an exchange rate for a given ISO"""
-
-    df = get_usd_exchange()
-
-    target_xe = get_exchange2usd_dict(currency_iso)
-
-    df.value = df.value / df.year.map(target_xe)
-
-    return df
-
-
-def get_dac_deflator() -> pd.DataFrame:
-    """Get the deflator used by the OECD"""
-
-    df = _read_dac1()
-
-    return df[["iso_code", "year", "deflator"]].rename(columns={"deflator": "value"})
-
-
-def get_xe_deflator(currency_iso: str) -> pd.DataFrame:
-    """get exchange rate deflator based on OECD base year and exchange rates"""
-
-    # get exchange rates
-    xe = get_exchange_rate(currency_iso)
-
-    # If currency is not valid
-    if int(xe.value.sum()) == 0:
-        raise ValueError(f"No currency exchange data for {currency_iso}")
-
-    # get deflators and base year
-    defl = get_dac_deflator()
-
-    base = base_year(defl, "year")
-
-    # get the exchange rate as an index based on the base year
-    xe.value = value_index(xe, base)
-
-    return xe
-
-
-def get_gdp_deflator() -> pd.DataFrame:
-    """Deduce prices deflator based on exchange rate deflators and DAC
-    deflators data"""
-
-    dac_deflator = get_dac_deflator()
-    xe_deflator = get_xe_deflator(currency_iso="USA")
-
-    df = dac_deflator.merge(
-        xe_deflator,
-        on=["iso_code", "year"],
-        how="left",
-        suffixes=("_def", "_xe"),
-    )
-
-    df["value"] = round(df.value_def * (df.value_xe / 100), 3)
-
-    return df[["iso_code", "year", "value"]]
+if __name__ == "__main__":
+    oecd_deflator = OECD().get_deflator()
