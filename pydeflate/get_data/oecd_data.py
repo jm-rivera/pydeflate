@@ -99,7 +99,7 @@ def _update_dac_exchange() -> None:
         print("Updated OECD DAC exchange rates")
         update_update_date("oecd_dac_exchange")
 
-    except:
+    except HTTPError:
         print("Error downloading new exchange rates")
 
 
@@ -142,7 +142,7 @@ def _update_dac1() -> None:
     print("Downloading DAC1 data, which may take a bit")
     df = _download_bulk_file(url=_TABLE1_URL, file_name=file_name).pipe(_clean_dac1)
     df.to_feather(paths.data + r"/dac1.feather")
-    print("Sucessfully downloaded DAC1 data")
+    print("Successfully downloaded DAC1 data")
     update_update_date("oecd_dac_data")
 
 
