@@ -5,12 +5,12 @@
 import pandas as pd
 
 
-from pydeflate.get_data.wb_data import WB
+from pydeflate.get_data.wb_data import WB_XE
 from pydeflate.get_data.oecd_data import OECD_XE
 from pydeflate.utils import check_year_as_number
 
 __exchange_source = {
-    "wb": WB().get_currency_exchange,
+    "wb": WB_XE().get_currency_exchange,
     "oecd_dac": OECD_XE().get_exchange_rate,
 }
 
