@@ -35,5 +35,5 @@ class Data(ABC):
         return self
 
     @abstractmethod
-    def get_deflator(self) -> pd.DataFrame:
+    def get_deflator(self, **kwargs) -> pd.DataFrame:
         pass

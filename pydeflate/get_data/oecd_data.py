@@ -146,20 +146,34 @@ def _update_dac1() -> None:
     update_update_date("oecd_dac_data")
 
 
+def get_gdp_deflator(dac_deflator, usd_xe_deflator) -> pd.DataFrame:
+    """Deduce prices deflator based on exchange rate deflators and DAC
+    deflators data"""
+
+    df = dac_deflator.merge(
+        usd_xe_deflator, on=["iso_code", "year"], how="left", suffixes=("_def", "_xe"),
+    )
+
+    df["value"] = round(df.value_def * (df.value_xe / 100), 3)
+
+    return df[["iso_code", "year", "value"]]
+
+
 @dataclass
-class OECD(Data):
-    method: Union[str, None] = None
+class OECD_XE(Data):
+    method: Union[str, None] = "implied"
     data: pd.DataFrame = None
 
     def update(self, **kwargs) -> None:
-        _update_dac1()
-        _update_dac_deflators()
         _update_dac_exchange()
 
     def load_data(self, **kwargs) -> None:
-        self.data = pd.read_feather(paths.data + r"/dac1.feather")
+        self._check_method()
+        self.data = pd.read_feather(
+            rf"{paths.data}{self.available_methods()[self.method]}"
+        )
 
-    def get_usd_exchange(self) -> pd.DataFrame:
+    def _get_usd_exchange(self) -> pd.DataFrame:
         if self.data is None:
             self.load_data()
 
@@ -167,10 +181,10 @@ class OECD(Data):
             columns={"exchange": "value"}
         )
 
-    def get_exchange2usd_dict(self, currency_iso: str) -> dict:
+    def _get_exchange2usd_dict(self, currency_iso: str) -> dict:
         """Dictionary of currency_iso to USD"""
 
-        df = self.get_usd_exchange()
+        df = self._get_usd_exchange()
 
         return (
             df.loc[df.iso_code == currency_iso]
@@ -179,33 +193,21 @@ class OECD(Data):
             .to_dict()
         )
 
+    def available_methods(self) -> dict:
+        return {"implied": r"/dac1.feather", "official": r"/dac_exchange_rates.csv"}
+
     def get_exchange_rate(self, currency_iso: str) -> pd.DataFrame:
         """Get an exchange rate for a given ISO"""
 
-        df = self.get_usd_exchange()
+        df = self._get_usd_exchange()
 
-        target_xe = self.get_exchange2usd_dict(currency_iso=currency_iso)
+        target_xe = self._get_exchange2usd_dict(currency_iso=currency_iso)
 
         df.value = df.value / df.year.map(target_xe)
 
         return df
 
-    def get_gdp_deflator(self) -> pd.DataFrame:
-        """Deduce prices deflator based on exchange rate deflators and DAC
-        deflators data"""
-
-        dac_deflator = self.get_deflator()
-        xe_deflator = self.get_xe_deflator(currency_iso="USA")
-
-        df = dac_deflator.merge(
-            xe_deflator, on=["iso_code", "year"], how="left", suffixes=("_def", "_xe"),
-        )
-
-        df["value"] = round(df.value_def * (df.value_xe / 100), 3)
-
-        return df[["iso_code", "year", "value"]]
-
-    def get_xe_deflator(self, currency_iso: str) -> pd.DataFrame:
+    def get_deflator(self, currency_iso: str) -> pd.DataFrame:
         """get exchange rate deflator based on OECD base year and exchange rates"""
 
         # get exchange rates
@@ -216,7 +218,9 @@ class OECD(Data):
             raise ValueError(f"No currency exchange data for {currency_iso}")
 
         # get deflators and base year
-        defl = self.get_deflator()
+        defl = self.data[["iso_code", "year", "deflator"]].rename(
+            columns={"deflator": "value"}
+        )
 
         base = base_year(defl, "year")
 
@@ -224,6 +228,19 @@ class OECD(Data):
         xe.value = value_index(xe, base)
 
         return xe
+
+
+@dataclass
+class OECD(Data):
+    method: Union[str, None] = None
+    data: pd.DataFrame = None
+
+    def update(self, **kwargs) -> None:
+        _update_dac1()
+        _update_dac_deflators()
+
+    def load_data(self, **kwargs) -> None:
+        self.data = pd.read_feather(paths.data + r"/dac1.feather")
 
     def available_methods(self) -> dict:
         print("Only the DAC Deflators method is available")
@@ -246,3 +263,4 @@ class OECD(Data):
 
 if __name__ == "__main__":
     oecd_deflator = OECD().get_deflator()
+    oecd_xe = OECD_XE().get_exchange_rate('FRA')
