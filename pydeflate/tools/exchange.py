@@ -10,8 +10,8 @@ from pydeflate.get_data.oecd_data import OECD_XE
 from pydeflate.utils import check_year_as_number
 
 __exchange_source = {
-    "wb": WB_XE().get_currency_exchange,
-    "oecd_dac": OECD_XE().get_exchange_rate,
+    "wb": WB_XE().get_data,
+    "oecd_dac": OECD_XE().get_data,
 }
 
 

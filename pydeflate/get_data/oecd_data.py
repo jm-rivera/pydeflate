@@ -196,7 +196,7 @@ class OECD_XE(Data):
     def available_methods(self) -> dict:
         return {"implied": r"/dac1.feather", "official": r"/dac_exchange_rates.csv"}
 
-    def get_exchange_rate(self, currency_iso: str) -> pd.DataFrame:
+    def get_data(self, currency_iso: str) -> pd.DataFrame:
         """Get an exchange rate for a given ISO"""
 
         df = self._get_usd_exchange()
@@ -211,7 +211,7 @@ class OECD_XE(Data):
         """get exchange rate deflator based on OECD base year and exchange rates"""
 
         # get exchange rates
-        xe = self.get_exchange_rate(currency_iso=currency_iso)
+        xe = self.get_data(currency_iso=currency_iso)
 
         # If currency is not valid
         if int(xe.value.sum()) == 0:
@@ -246,6 +246,9 @@ class OECD(Data):
         print("Only the DAC Deflators method is available")
         return {"oecd": "OECD DAC Deflator method"}
 
+    def get_data(self) -> pd.DataFrame:
+        raise NotImplementedError
+
     def get_deflator(self) -> pd.DataFrame:
         if self.data is None:
             self.load_data()
@@ -263,4 +266,4 @@ class OECD(Data):
 
 if __name__ == "__main__":
     oecd_deflator = OECD().get_deflator()
-    oecd_xe = OECD_XE().get_exchange_rate('FRA')
+    oecd_xe = OECD_XE().get_data('FRA')

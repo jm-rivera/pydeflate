@@ -152,7 +152,7 @@ class WB_XE(Data):
 
         return self._get_exchange2usd_dict(currency_iso="GBR")
 
-    def get_currency_exchange(self, currency_iso: str) -> pd.DataFrame:
+    def get_data(self, currency_iso: str) -> pd.DataFrame:
         """Get exchange rates based on a given currency/country (from LCU)"""
         # Get WB exchange rates
         df = self._get_usd_exchange()
@@ -168,7 +168,7 @@ class WB_XE(Data):
         from datetime import datetime
 
         # get exchange rates
-        xe = self.get_currency_exchange(currency_iso=currency_iso)
+        xe = self.get_data(currency_iso=currency_iso)
 
         # get deflators and base year
         base = {iso: datetime(base_year, 1, 1) for iso in xe.iso_code.unique()}
