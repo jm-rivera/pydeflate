@@ -212,7 +212,10 @@ class WB(Data):
 
         return self.data
 
-    def get_deflator(self) -> pd.DataFrame:
+    def get_data(self):
+        raise NotImplementedError
+
+    def get_deflator(self, **kwargs) -> pd.DataFrame:
 
         return self._get_indicator()
 

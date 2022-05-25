@@ -249,7 +249,7 @@ class OECD(Data):
     def get_data(self) -> pd.DataFrame:
         raise NotImplementedError
 
-    def get_deflator(self) -> pd.DataFrame:
+    def get_deflator(self, **kwargs) -> pd.DataFrame:
         if self.data is None:
             self.load_data()
 

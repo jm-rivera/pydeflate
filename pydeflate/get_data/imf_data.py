@@ -114,7 +114,10 @@ class IMF(Data):
             "pcpie": self.inflation_epcp,
         }
 
-    def get_deflator(self) -> pd.DataFrame:
+    def get_data(self, **kwargs):
+        raise NotImplementedError
+
+    def get_deflator(self, **kwargs) -> pd.DataFrame:
         """Get the deflator DataFrame for the specified method"""
 
         self._check_method()

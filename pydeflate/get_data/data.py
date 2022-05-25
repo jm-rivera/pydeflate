@@ -35,10 +35,6 @@ class Data(ABC):
         return self
 
     @abstractmethod
-    def get_exchange_rate(self, **kwargs) -> pd.DataFrame:
-        pass
-
-    @abstractmethod
     def get_data(self, **kwargs) -> pd.DataFrame:
         pass
 
