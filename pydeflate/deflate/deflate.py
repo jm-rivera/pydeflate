@@ -1,12 +1,26 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from typing import Optional
+from typing import Optional, Callable
 
 import pandas as pd
 
-from pydeflate.deflate.deflators import imf_deflators, oecd_dac_deflators, wb_deflators
+from pydeflate.get_data.data import Data
 from pydeflate.utils import check_year_as_number
+
+from pydeflate.deflate.deflator import Deflator
+from pydeflate.get_data.imf_data import IMF
+from pydeflate.get_data.oecd_data import OECD, OECD_XE
+from pydeflate.get_data.wb_data import WB, WB_XE
+
+
+DEFLATORS = {
+    "oecd_dac": OECD,
+    "wb": WB,
+    "imf": IMF,
+}
+
+EXCHANGE = {"oecd_dac": OECD_XE, "wb": WB_XE, "imf": WB_XE}
 
 
 def deflate(
@@ -96,34 +110,37 @@ def deflate(
 
     """
 
-    # Valid deflators
-    deflators = {
-        "oecd_dac": oecd_dac_deflators,
-        "wb": wb_deflators,
-        "imf": imf_deflators,
-    }
-
     # keep track of original columns
     if target_col not in df.columns:
         cols = [*df.columns, target_col]
     else:
         cols = df.columns
 
-    if source not in deflators.keys():
+    if source not in DEFLATORS.keys():
         raise ValueError(f'source "{source}" not valid')
-
-    if source == "oecd_dac" and method is not None:
-        print(f'The oecd does not require a method, "{method}" ignored')
 
     # check if date format matches
     df, year_as_number = check_year_as_number(df, date_column)
 
-    deflator = deflators[source](
+    # Define exchange and price data objects
+    xe: Data = EXCHANGE[source]()
+    price: Data = DEFLATORS[source](method=method)
+
+    # Get deflator functions
+    price_dfl: Callable = price.get_deflator
+    x_dfl: Callable = xe.get_deflator
+
+    # Get currency exchange data frame
+    x_rate: pd.DataFrame = xe.get_data(currency_iso=target_currency)
+
+    deflator = Deflator(
         base_year=base_year,
-        method=method,
+        xe_deflator=x_dfl,
+        price_deflator=price_dfl,
+        xe=x_rate,
         source_currency=source_currency,
         target_currency=target_currency,
-    )
+    ).deflator()
 
     df = df.merge(
         deflator,
