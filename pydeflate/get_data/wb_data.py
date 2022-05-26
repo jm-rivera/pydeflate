@@ -50,13 +50,18 @@ def _download_wb_indicator(indicator: str, start: int, end: int) -> None:
         .reset_index(drop=False)
     )
 
+    countries = wb.get_countries(session=__wb_session)
+    countries[["name", "iso3c"]].to_csv(
+        config.paths.data + rf"/wb_class.csv", index=False
+    )
+
     df.to_feather(config.paths.data + rf"/{indicator}_{start}_{end}.feather")
     print(f"Successfully updated {indicator} for {start}-{end}")
     update_update_date("wb")
 
 
 def _get_iso3c():
-    countries = wb.get_countries(session=__wb_session)
+    countries = pd.read_csv(config.paths.data + rf"/wb_class.csv")
     return countries[["name", "iso3c"]].set_index("name")["iso3c"].to_dict()
 
 
@@ -78,7 +83,7 @@ def _clean_wb_indicator(data: pd.DataFrame, indicator: str,) -> pd.DataFrame:
 
 @dataclass
 class WB_XE(Data):
-    method: Union[str, None] = 'exchange'
+    method: Union[str, None] = "exchange"
     data: pd.DataFrame = None
 
     def update(self, **kwargs) -> None:

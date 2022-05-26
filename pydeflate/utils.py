@@ -4,11 +4,16 @@
 import datetime
 import json
 import warnings
+from typing import Union
 
 import numpy as np
 import pandas as pd
 
 from pydeflate import config
+
+import country_converter as coco
+
+CC = coco.CountryConverter()
 
 
 def _diff_from_today(date: datetime.datetime):
@@ -105,6 +110,10 @@ oecd_codes = {
     732: "TWN",
     764: "THA",
     765: "TLS",
+    20001: "DAC",
+    20002: "MUL",
+    20003: "G7C",
+    20006: "NDA",
 }
 
 
@@ -200,3 +209,17 @@ def check_year_as_number(df: pd.DataFrame, date_column: str) -> (pd.DataFrame, b
         year_as_number = False
 
     return df, year_as_number
+
+
+def to_iso3(
+    df: pd.DataFrame,
+    codes_col: str,
+    target_col: str,
+    src_classification: Union[str, None] = None,
+    not_found: Union[str, None] = None,
+) -> pd.DataFrame:
+
+    df[target_col] = CC.convert(
+        df[codes_col], src=src_classification, to="ISO3", not_found=not_found
+    )
+    return df

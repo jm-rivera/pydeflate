@@ -192,17 +192,8 @@ deflate_errors = (
 def test_deflate():
     """Unit test for main deflate function"""
 
-    df = deflate(
-        df=test_df_lcu,
-        base_year=2020,
-        source="oecd_dac",
-        source_currency="LCU",
-        target_currency="USA",
-        iso_column="iso_code",
-        date_column="date",
-        source_col="value",
-        target_col="value_deflated",
-    )
+    df = deflate(df=test_df_lcu, base_year=2020, source="oecd_dac", source_currency="LCU", target_currency="USA",
+                 id_column="iso_code", date_column="date", source_col="value", target_col="value_deflated")
 
     results = df.set_index("iso_code")["value_deflated"].to_dict()
 
@@ -214,33 +205,15 @@ def test_deflate():
 
 def test_deflate_reversed():
     """Unit test for main deflate function, with reversed option"""
-    df = deflate(
-        df=test_df_usd,
-        base_year=2020,
-        source="oecd_dac",
-        method="test_print",
-        source_currency="USA",
-        target_currency="FRA",
-        iso_column="iso_code",
-        date_column="date",
-        source_col="value",
-        target_col="value_deflated",
-    )
+    df = deflate(df=test_df_usd, base_year=2020, source="oecd_dac", method="test_print", source_currency="USA",
+                 target_currency="FRA", id_column="iso_code", date_column="date", source_col="value",
+                 target_col="value_deflated")
 
     results = df.set_index("iso_code")["value"].to_dict()
 
-    rev = deflate(
-        df=df,
-        base_year=2020,
-        source="oecd_dac",
-        source_currency="USA",
-        target_currency="FRA",
-        iso_column="iso_code",
-        date_column="date",
-        source_col="value_deflated",
-        target_col="value_deflated",
-        reverse=True,
-    )
+    rev = deflate(df=df, base_year=2020, source="oecd_dac", source_currency="USA", target_currency="FRA",
+                  id_column="iso_code", date_column="date", source_col="value_deflated", target_col="value_deflated",
+                  reverse=True)
 
     rev_results = rev.set_index("iso_code")["value_deflated"].to_dict()
 
@@ -265,15 +238,5 @@ def test_deflate_errors(
 ):
 
     with pytest.raises(Exception):
-        deflate(
-            df,
-            base_year,
-            source,
-            method,
-            source_currency,
-            target_currency,
-            iso_column,
-            date_column,
-            source_col,
-            target_col,
-        )
+        deflate(df, base_year, source, method, source_currency, target_currency, iso_column, date_column, source_col,
+                target_col)

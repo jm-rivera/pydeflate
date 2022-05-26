@@ -129,6 +129,7 @@ def _clean_dac1(df: pd.DataFrame) -> pd.DataFrame:
             iso_code=lambda d: d.donor_code.map(oecd_codes),
             year=lambda d: pd.to_datetime(d.year, format="%Y"),
         )
+        .assign(exchange=lambda d: d.exchange.fillna(1))
         .dropna(subset=["iso_code"])
         .filter(["iso_code", "year", "exchange", "deflator"], axis=1)
     )
@@ -150,13 +151,7 @@ def get_gdp_deflator(dac_deflator, usd_xe_deflator) -> pd.DataFrame:
     """Deduce prices deflator based on exchange rate deflators and DAC
     deflators data"""
 
-    df = dac_deflator.merge(
-        usd_xe_deflator, on=["iso_code", "year"], how="left", suffixes=("_def", "_xe"),
-    )
 
-    df["value"] = round(df.value_def * (df.value_xe / 100), 3)
-
-    return df[["iso_code", "year", "value"]]
 
 
 @dataclass
@@ -247,9 +242,6 @@ class OECD(Data):
         return {"oecd": "OECD DAC Deflator method"}
 
     def get_data(self) -> pd.DataFrame:
-        raise NotImplementedError
-
-    def get_deflator(self, **kwargs) -> pd.DataFrame:
         if self.data is None:
             self.load_data()
 
@@ -263,7 +255,19 @@ class OECD(Data):
             columns={"deflator": "value"}
         )
 
+    def get_deflator(self, **kwargs) -> pd.DataFrame:
+        xe_usd = OECD_XE().get_deflator('USA')
+
+        df = self.get_data().merge(
+            xe_usd, on=["iso_code", "year"], how="left", suffixes=("_def", "_xe"),
+        )
+
+        df["value"] = round(df.value_def * (df.value_xe / 100), 3)
+
+        return df[["iso_code", "year", "value"]]
+
+
 
 if __name__ == "__main__":
-    oecd_deflator = OECD().get_deflator()
+    oecd_xe_def = OECD_XE().get_deflator('USA')
     oecd_xe = OECD_XE().get_data('FRA')

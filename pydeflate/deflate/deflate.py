@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from typing import Optional, Callable
+from typing import Optional, Callable, Union
 
 import pandas as pd
 
@@ -12,6 +12,7 @@ from pydeflate.deflate.deflator import Deflator
 from pydeflate.get_data.imf_data import IMF
 from pydeflate.get_data.oecd_data import OECD, OECD_XE
 from pydeflate.get_data.wb_data import WB, WB_XE
+from pydeflate.utils import to_iso3, oecd_codes
 
 
 DEFLATORS = {
@@ -30,11 +31,13 @@ def deflate(
     method: Optional[str] = None,
     source_currency: str = "USA",
     target_currency: str = "USA",
-    iso_column: str = "iso_code",
+    id_column: str = "iso_code",
+    id_type: str = "ISO3",
     date_column: str = "date",
     source_col: str = "value",
     target_col: str = "value",
     reverse: bool = False,
+    iso_column: Union[str, None] = None,
 ) -> pd.DataFrame:
     """
     Takes a DataFrame containing flows data and returns a DataFrame containing
@@ -44,17 +47,17 @@ def deflate(
     Parameters
     ----------
     df : pd.DataFrame
-        A pandas DataFrame containing data formated vertically (one row, one
+        A pandas DataFrame containing data formatted vertically (one row, one
         value to be deflated). The source country must be specified through a
         column with ISO-3 codes. Users can specify the name of the source
         country column, the value column and the column where the deflated
         amounts.
     base_year : int
         If converting from current to constant, the target base year for the
-        constantfigures. If converting from constant, the base year of the data.
+        constant figures. If converting from constant, the base year of the data.
     source : {‘oecd_dac’, 'wb', 'imf'}
         The source of the data used to build the deflators. The value (and
-        completness) of the price deflators may change based on the source.
+        completeness) of the price deflators may change based on the source.
         Additionally, the OECD DAC data is only available for DAC donors. Both
         the IMF and WB sources use exchange rates downloaded from the World Bank.
     method : {'gdp','gdp_linked','cpi','pcpi','pcpie', None}, optional
@@ -72,7 +75,7 @@ def deflate(
         For IMF (source == 'imf'):
             •'pcpi': Consumer Price Index data
 
-            •'pcpie': end-period Consumer Price Index (e.g for December each year).
+            •'pcpie': end-period Consumer Price Index (e.g. for December each year).
 
         For OECD DAC (source == 'oecd_dac'):
             •None
@@ -86,9 +89,12 @@ def deflate(
         The iso3 code of the deflated amounts. It can be the same as the source
         currency. In cases where they are different, the exchange rate will be
         applied. To produce deflators only in euros, use 'emu'. The default is 'USA'.
-    iso_column : str, optional
-        The column containing the iso3 codes of the data's currency.
-        The default is 'USA'.
+    id_column : str, optional
+        The column containing the id codes (iso3 codes, for example) of the data's currency.
+        The default is 'iso_code'.
+    id_type : str, optional
+        The classification type for the id_column. By default, ISO3 but others are possible.
+         For the OECD DAC classification, use 'DAC'
     date_column : str, optional
         The column containing the date values. The column can contain years (int)
         or datetime objects. The default is 'date'.
@@ -98,8 +104,10 @@ def deflate(
         Column where the deflated data will be stored. It can be the same as the
         source column if a copy of the original isn't needed.The default is 'value'.
     reverse : bool, optional
-        If True, amounts will be treated as in constant prices and convered to
+        If True, amounts will be treated as in constant prices and converted to
         current prices. The default is False.
+    iso_column : str, optional
+        Provided for backwards compatibility. It is essentially an alias for id_column
 
 
     Returns
@@ -109,6 +117,15 @@ def deflate(
         are no deflators will be returned as null values.
 
     """
+    # Backwards compatibility
+    if iso_column is not None:
+        id_column = iso_column
+
+    # Reverse check
+    if reverse:
+        sc = source_currency
+        source_currency = target_currency
+        target_currency = sc
 
     # keep track of original columns
     if target_col not in df.columns:
@@ -122,6 +139,14 @@ def deflate(
     # check if date format matches
     df, year_as_number = check_year_as_number(df, date_column)
 
+    # Create ID col
+    if id_type == "DAC":
+        df["id_"] = df[id_column].map(oecd_codes).fillna('DAC')
+    else:
+        df = df.pipe(
+            to_iso3, codes_col=id_column, target_col="id_", src_classification=id_type
+        )
+
     # Define exchange and price data objects
     xe: Data = EXCHANGE[source]()
     price: Data = DEFLATORS[source](method=method)
@@ -131,7 +156,7 @@ def deflate(
     x_dfl: Callable = xe.get_deflator
 
     # Get currency exchange data frame
-    x_rate: pd.DataFrame = xe.get_data(currency_iso=target_currency)
+    x_rate: pd.DataFrame = xe.get_data(currency_iso=target_currency).copy()
 
     deflator = Deflator(
         base_year=base_year,
@@ -144,9 +169,10 @@ def deflate(
 
     df = df.merge(
         deflator,
-        left_on=[iso_column, date_column],
+        left_on=["id_", date_column],
         right_on=["iso_code", "year"],
         how="left",
+        suffixes=("", "_"),
     )
 
     if reverse:
