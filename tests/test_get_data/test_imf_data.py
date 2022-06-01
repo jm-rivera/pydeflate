@@ -54,14 +54,3 @@ def test__update_weo():
 
     if os.path.exists(file):
         os.remove(file)
-
-
-def test_get_implied_ppp_rate():
-
-    result = imf_data.get_implied_ppp_rate()
-
-    result = result.loc[
-        (result.iso_code == "GTM") & (result.year.dt.year == 1991), "value"
-    ]
-
-    assert round(result.sum(), 1) == 1.4
