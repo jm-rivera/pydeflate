@@ -7,21 +7,12 @@ from dataclasses import dataclass
 from typing import Union
 
 import pandas as pd
-import requests_cache
 from pandas_datareader import wb
 
 from pydeflate import config
 from pydeflate.get_data.data import Data
 from pydeflate.utils import emu, value_index, update_update_date
 
-# Create session
-__expire_after = datetime.timedelta(days=3)
-
-__wb_session = requests_cache.CachedSession(
-    cache_name=config.paths.data + r"/wb_cache",
-    backend="sqlite",
-    expire_after=__expire_after,
-)
 
 _INDICATORS: dict = {
     "gdp": "NY.GDP.DEFL.ZS",
@@ -44,13 +35,12 @@ def _download_wb_indicator(indicator: str, start: int, end: int) -> None:
             countries="all",
             start=start,
             end=end,
-            session=__wb_session,
         )
         .read()
         .reset_index(drop=False)
     )
 
-    countries = wb.get_countries(session=__wb_session)
+    countries = wb.get_countries()
     countries[["name", "iso3c"]].to_csv(
         config.paths.data + rf"/wb_class.csv", index=False
     )
@@ -226,5 +216,6 @@ class WB(Data):
 
 
 if __name__ == "__main__":
-    wb_deflator = WB().set_method("cpi").get_deflator()
-    wb_xe = WB_XE().get_deflator()
+    pass
+    #wb_deflator = WB().set_method("cpi").get_deflator()
+    #wb_xe = WB_XE().get_deflator()
