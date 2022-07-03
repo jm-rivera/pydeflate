@@ -1,21 +1,14 @@
 # The pydeflate Package
 
 
+[![pypi](https://img.shields.io/pypi/v/pydeflate.svg)](https://pypi.python.org/pypi/pydeflate)
 
-.. image:: https://img.shields.io/pypi/v/pydeflate.svg
-:target: https://pypi.python.org/pypi/pydeflate
+[![Documentation Status](https://readthedocs.org/projects/pydeflate/badge/?version=latest)](https://pydeflate.readthedocs.io/en/latest/?version=latest)
 
-.. image:: https://readthedocs.org/projects/pydeflate/badge/?version=latest
-:target: https://pydeflate.readthedocs.io/en/latest/?version=latest
-:alt: Documentation Status
+[![black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
-:target: https://github.com/psf/black
-:alt: Code style: black
+[![Downloads](https://pepy.tech/badge/pydeflate/month)](https://pepy.tech/project/pydeflate)
 
-.. image:: https://pepy.tech/badge/pydeflate/month
-:target: https://pepy.tech/project/pydeflate
-:alt: Downloads
 
 
 **Pydeflate** is a Python package to convert flows data to constant prices. This can be done
