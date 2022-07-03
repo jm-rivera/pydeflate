@@ -1,17 +1,13 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 import datetime
 import json
 import warnings
 from typing import Union
 
+import country_converter as coco
 import numpy as np
 import pandas as pd
 
 from pydeflate import config
-
-import country_converter as coco
 
 CC = coco.CountryConverter()
 
@@ -116,7 +112,6 @@ oecd_codes = {
     20006: "NDA",
 }
 
-
 emu = [
     "AUT",
     "BEL",
@@ -156,7 +151,6 @@ def clean_number(number):
 
 
 def base_year(df: pd.DataFrame, date_col: str = "date") -> dict:
-
     """Return dictionary of base years by iso_code"""
 
     return df.loc[df.value == 100].set_index("iso_code")[date_col].to_dict()
@@ -218,7 +212,6 @@ def to_iso3(
     src_classification: Union[str, None] = None,
     not_found: Union[str, None] = None,
 ) -> pd.DataFrame:
-
     df[target_col] = CC.convert(
         df[codes_col], src=src_classification, to="ISO3", not_found=not_found
     )

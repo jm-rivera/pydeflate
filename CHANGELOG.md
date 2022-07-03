@@ -1,6 +1,4 @@
-=======
-History
-=======
+# Changelog
 
 1.0.0 (2021-11-27)
 ------------------
@@ -13,7 +11,7 @@ This is the first major release of pydeflate.
   of pydeflate.
 - This version is a complete rewrite of the package. Please refer to the
   documentation for information on how pydeflate works
-- The basic functionality of pydeflate can now be considered to be settled. 
+- The basic functionality of pydeflate can now be considered to be settled.
   Further releases to pydeflate will extend what is possible, without altering
   the basic way in which pydeflate works.
 
