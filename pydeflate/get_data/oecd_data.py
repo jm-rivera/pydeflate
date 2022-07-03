@@ -1,7 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
-
 import datetime
 import io
 import warnings
@@ -24,21 +20,12 @@ _BASE_URL: str = "https://stats.oecd.org/DownloadFiles.aspx?DatasetCode="
 _TABLE1_URL: str = f"{_BASE_URL}TABLE1"
 
 
-def _get_zip(url):
-    """Get Zip File."""
-
-    try:
-        return requests.get(url)
-
-    except ConnectionError:
-        raise ConnectionError("Could not download file")
-
-
-def _read_zip_content(request_content, file_name: str) -> pd.DataFrame:
-    # Read zip as content
+def _read_zip_content(request_content: bytes, file_name: str) -> pd.DataFrame:
+    """Read the contents of a zip file"""
     _ = io.BytesIO(request_content)
     zip_file = zf.ZipFile(_).open(file_name)
 
+    # Try two alternative separators to read the CSV file
     try:
         return pd.read_csv(zip_file, sep=",", encoding="ISO-8859-1", low_memory=False)
 
@@ -46,18 +33,18 @@ def _read_zip_content(request_content, file_name: str) -> pd.DataFrame:
         return pd.read_csv(zip_file, sep="|", encoding="ISO-8859-1", low_memory=False)
 
 
-def _download_bulk_file(url: str, file_name: str) -> pd.DataFrame:
+def _download_bulk_file(url: str) -> bytes:
+    """Get zipfile bytes from the webpage"""
+
     # get URL
     response = requests.get(url)
 
     # parse html
-    soup = Bs(response.text, "html.parser")
-    link = list(soup.find_all("a"))[0].attrs["onclick"][15:-3].replace("_", "-")
+    page = Bs(response.text, "html.parser")
+    link = list(page.find_all("a"))[0].attrs["onclick"][15:-3].replace("_", "-")
     link = f"https://stats.oecd.org/FileView2.aspx?IDFile={link}"
 
-    file_content = _get_zip(link).content
-
-    return _read_zip_content(request_content=file_content, file_name=file_name)
+    return requests.get(link).content
 
 
 def _update_dac_deflators() -> None:
@@ -116,7 +103,7 @@ def _clean_dac1(df: pd.DataFrame) -> pd.DataFrame:
     }
 
     return (
-        df.filter(cols.keys(), axis=1)
+        df.filter(cols, axis=1)
         .rename(columns=cols)
         .loc[lambda d: d.aid == 1010]  # only Total ODA
         .loc[lambda d: d.flow == 1140]  # only net disbursements
@@ -125,7 +112,7 @@ def _clean_dac1(df: pd.DataFrame) -> pd.DataFrame:
         .reset_index()
         .assign(
             exchange=lambda d: d.N / d.A,
-            deflator=lambda d: (100 * d.A / d.D).round(2),
+            deflator=lambda d: (100 * d.A / d.D).round(2),  # implied deflator
             iso_code=lambda d: d.donor_code.map(oecd_codes),
             year=lambda d: pd.to_datetime(d.year, format="%Y"),
         )
@@ -141,23 +128,21 @@ def _update_dac1() -> None:
     file_name = "Table1_Data.csv"
 
     print("Downloading DAC1 data, which may take a bit")
-    df = _download_bulk_file(url=_TABLE1_URL, file_name=file_name).pipe(_clean_dac1)
+
+    zip_bytes = _download_bulk_file(url=_TABLE1_URL)
+    df = _read_zip_content(request_content=zip_bytes, file_name=file_name).pipe(
+        _clean_dac1
+    )
     df.to_feather(paths.data + r"/dac1.feather")
     print("Successfully downloaded DAC1 data")
     update_update_date("oecd_dac_data")
-
-
-def get_gdp_deflator(dac_deflator, usd_xe_deflator) -> pd.DataFrame:
-    """Deduce prices deflator based on exchange rate deflators and DAC
-    deflators data"""
-
-
 
 
 @dataclass
 class OECD_XE(Data):
     method: Union[str, None] = "implied"
     data: pd.DataFrame = None
+    """An object to download and return the latest OECD DAC exchange data"""
 
     def update(self, **kwargs) -> None:
         _update_dac_exchange()
@@ -229,6 +214,7 @@ class OECD_XE(Data):
 class OECD(Data):
     method: Union[str, None] = None
     data: pd.DataFrame = None
+    """An object to download and return the latest OECD DAC deflators data"""
 
     def update(self, **kwargs) -> None:
         _update_dac1()
@@ -256,10 +242,13 @@ class OECD(Data):
         )
 
     def get_deflator(self, **kwargs) -> pd.DataFrame:
-        xe_usd = OECD_XE().get_deflator('USA')
+        xe_usd = OECD_XE().get_deflator("USA")
 
         df = self.get_data().merge(
-            xe_usd, on=["iso_code", "year"], how="left", suffixes=("_def", "_xe"),
+            xe_usd,
+            on=["iso_code", "year"],
+            how="left",
+            suffixes=("_def", "_xe"),
         )
 
         df["value"] = round(df.value_def * (df.value_xe / 100), 3)
@@ -267,7 +256,6 @@ class OECD(Data):
         return df[["iso_code", "year", "value"]]
 
 
-
 if __name__ == "__main__":
-    oecd_xe_def = OECD_XE().get_deflator('USA')
-    oecd_xe = OECD_XE().get_data('FRA')
+    oecd_xe_def = OECD_XE().get_deflator("USA")
+    oecd_xe = OECD_XE().get_data("FRA")

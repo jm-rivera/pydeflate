@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 from pydeflate.get_data.imf_data import IMF
 from pydeflate.get_data.oecd_data import OECD, OECD_XE
 from pydeflate.get_data.wb_data import WB
