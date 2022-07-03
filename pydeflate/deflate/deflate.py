@@ -33,7 +33,7 @@ def deflate(
     date_column: str = "date",
     source_col: str = "value",
     target_col: str = "value",
-    reverse: bool = False,
+    to_current: bool = False,
     iso_column: Union[str, None] = None,
 ) -> pd.DataFrame:
     """
@@ -100,7 +100,7 @@ def deflate(
     target_col : str, optional
         Column where the deflated data will be stored. It can be the same as the
         source column if a copy of the original isn't needed.The default is 'value'.
-    reverse : bool, optional
+    to_current : bool, optional
         If True, amounts will be treated as in constant prices and converted to
         current prices. The default is False.
     iso_column : str, optional
@@ -118,13 +118,6 @@ def deflate(
     # the ID column
     if iso_column is not None:
         id_column = iso_column
-
-    # Check if the reverse option (i.e. from constant to current is used). If so,
-    # then also switch the target and source currencies.
-    if reverse:
-        sc = source_currency
-        source_currency = target_currency
-        target_currency = sc
 
     # keep track of original columns. This is so that the same order and columns can be
     # preserved.
@@ -160,29 +153,34 @@ def deflate(
     x_dfl: Callable = xe.get_deflator
 
     # Get currency exchange DataFrame. This is based on the target currency
-    x_rate: pd.DataFrame = xe.get_data(currency_iso=target_currency).copy()
+    x_rate: pd.DataFrame = xe.get_data(
+        currency_iso=target_currency if not to_current else source_currency
+    ).copy(deep=True)
 
     # Create a Deflator object and get the deflator DataFrame.
-    deflator = Deflator(
-        base_year=base_year,
-        xe_deflator=x_dfl,
-        price_deflator=price_dfl,
-        xe=x_rate,
-        source_currency=source_currency,
-        target_currency=target_currency,
-    ).deflator()
+    deflator = (
+        Deflator(
+            base_year=base_year,
+            xe_deflator=x_dfl,
+            price_deflator=price_dfl,
+            xe=x_rate,
+            source_currency=source_currency if not to_current else target_currency,
+            target_currency=target_currency if not to_current else source_currency,
+        )
+        .deflator()
+        .rename(columns={"iso_code": "id_", "year": date_column})
+    )
 
     # Merge the original data with the deflator DataFrame
     df = df.merge(
         deflator,
-        left_on=["id_", date_column],
-        right_on=["iso_code", "year"],
+        on=["id_", date_column],
         how="left",
         suffixes=("", "_"),
     )
 
     # If the reverse option is used, multiply the data. Else divide.
-    if reverse:
+    if to_current:
         df[target_col] = df[source_col] * (df.deflator / 100)
 
     else:
