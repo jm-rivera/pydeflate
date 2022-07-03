@@ -42,17 +42,32 @@ def _update_weo(latest_y: int = None, latest_r: int = None) -> None:
 class IMF(Data):
     method: Union[str, None] = None
     data: pd.DataFrame = None
+    """An object to download and return the latest IMF WEO data for several indicators"""
 
-    def update(self, **kwargs) -> None:
+    def update(
+        self, latest_y: Union[int, None] = None, latest_r: Union[int, None] = None
+    ) -> None:
         """Update the stored WEO data, using WEO package.
-        Optionally provide a WEO release year `latest_y` and release `latest_r`"""
 
-        _update_weo(**kwargs)
+        Args:
+            latest_y: passed only optional to override the behaviour to get the latest
+            release year for the WEO.
+            latest_r: passed only optionally to override the behaviour to get the latest
+            released value (1 or 2).
+        """
+        _update_weo(latest_y=latest_y, latest_r=latest_r)
 
     def load_data(
         self, latest_y: Union[int, None] = None, latest_r: Union[int, None] = None
     ) -> None:
-        """loading WEO as a clean dataframe"""
+        """loading WEO as a clean dataframe
+
+        Args:
+            latest_y: passed only optional to override the behaviour to get the latest
+            release year for the WEO.
+            latest_r: passed only optionally to override the behaviour to get the latest
+            released value (1 or 2).
+        """
 
         latest_y, latest_r = _check_weo_parameters(latest_y, latest_r)
 
@@ -71,7 +86,7 @@ class IMF(Data):
             "Estimates Start After",
         ]
 
-        df = WEO(paths.data + fr"/weo{latest_y}_{latest_r}.csv").df
+        df = WEO(paths.data + rf"/weo{latest_y}_{latest_r}.csv").df
 
         self.data = (
             df.drop(to_drop, axis=1)
