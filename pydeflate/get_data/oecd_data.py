@@ -4,15 +4,21 @@ import warnings
 import zipfile as zf
 from dataclasses import dataclass
 from typing import Union
-from urllib.error import HTTPError
+
 
 import pandas as pd
+
 import requests
 from bs4 import BeautifulSoup as Bs
 
 from pydeflate.config import PATHS
 from pydeflate.get_data.data import Data
-from pydeflate.utils import base_year, oecd_codes, value_index, update_update_date
+from pydeflate.utils import (
+    base_year,
+    oecd_codes,
+    value_index,
+    update_update_date,
+)
 
 warnings.simplefilter("ignore", Warning, lineno=1013)
 
@@ -45,49 +51,6 @@ def _download_bulk_file(url: str) -> bytes:
     link = f"https://stats.oecd.org/FileView2.aspx?IDFile={link}"
 
     return requests.get(link).content
-
-
-def _update_dac_deflators() -> None:
-    """Update DAC deflators data to latest base year"""
-
-    year = datetime.datetime.now().year
-
-    t = True
-
-    while t:
-        url = (
-            f"https://www.oecd.org/dac/financing-sustainable-development/"
-            f"development-finance-data/Deflators-base-{year}.xls"
-        )
-
-        try:
-            df = pd.read_excel(url, header=2)
-            df = df.dropna(how="all")
-            df.to_csv(PATHS.data + r"/dac_deflators.csv", index=False)
-            print(f"Updated OECD DAC deflators {year}")
-            update_update_date("oecd_dac_deflator")
-            t = False
-
-        except HTTPError:
-            year -= 1
-
-
-def _update_dac_exchange() -> None:
-    """Update DAC Exchange rates to latest available"""
-
-    try:
-        exchange = (
-            "https://www.oecd.org/dac/financing-sustainable-development/"
-            "development-finance-data/Exchange-rates.xls"
-        )
-
-        df = pd.read_excel(exchange, header=2)
-        df.to_csv(PATHS.data + r"/dac_exchange_rates.csv", index=False)
-        print("Updated OECD DAC exchange rates")
-        update_update_date("oecd_dac_exchange")
-
-    except HTTPError:
-        print("Error downloading new exchange rates")
 
 
 def _clean_dac1(df: pd.DataFrame) -> pd.DataFrame:
@@ -145,10 +108,11 @@ class OECD_XE(Data):
     """An object to download and return the latest OECD DAC exchange data"""
 
     def update(self, **kwargs) -> None:
-        _update_dac_exchange()
+        _update_dac1()
 
     def load_data(self, **kwargs) -> None:
         self._check_method()
+
         self.data = pd.read_feather(
             rf"{PATHS.data}{self.available_methods()[self.method]}"
         )
@@ -174,7 +138,9 @@ class OECD_XE(Data):
         )
 
     def available_methods(self) -> dict:
-        return {"implied": r"/dac1.feather", "official": r"/dac_exchange_rates.csv"}
+        """The most complete dataset is obtained by deriving the exchange rate
+        from the total ODA data found in Table 1"""
+        return {"implied": r"/dac1.feather"}
 
     def get_data(self, currency_iso: str) -> pd.DataFrame:
         """Get an exchange rate for a given ISO"""
@@ -218,7 +184,6 @@ class OECD(Data):
 
     def update(self, **kwargs) -> None:
         _update_dac1()
-        _update_dac_deflators()
 
     def load_data(self, **kwargs) -> None:
         self.data = pd.read_feather(PATHS.data + r"/dac1.feather")
