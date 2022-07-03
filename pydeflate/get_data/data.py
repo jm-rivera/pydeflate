@@ -1,7 +1,9 @@
 from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Union
+
 import pandas as pd
 
 
@@ -9,6 +11,8 @@ import pandas as pd
 class Data(ABC):
     method: Union[str, None]
     data: pd.DataFrame
+    """Abstract class defining the basic structure and functionality of Data classes.
+    Data classes store the price or exchange data from different sources."""
 
     @abstractmethod
     def update(self, **kwargs) -> None:
@@ -22,6 +26,7 @@ class Data(ABC):
 
     @abstractmethod
     def available_methods(self) -> dict:
+        """Return a dictionary of available methods with their functions"""
         pass
 
     def _check_method(self) -> None:
