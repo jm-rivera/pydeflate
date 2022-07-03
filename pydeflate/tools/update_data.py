@@ -11,8 +11,7 @@ DATA = {
 
 
 def update_all_data() -> None:
-    """Run to update all underlying data. It accepts a dictionary of type
-    '{source': update_func}. Users should not need to specify it"""
+    """Run to update all underlying data."""
 
     for source, func in DATA.items():
         func()
