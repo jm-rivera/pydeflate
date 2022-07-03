@@ -1,8 +1,7 @@
-"""Define the deflator class"""
+"""Defines the deflator class"""
 
 from dataclasses import dataclass
 from typing import Union, Callable
-
 
 import pandas as pd
 
@@ -19,10 +18,28 @@ class Deflator:
     target_currency: str = "USA"
     deflator_df: Union[None, pd.DataFrame] = None
 
-    def __align_currencies(
-        self, deflator: pd.DataFrame, xe: pd.DataFrame,
-    ) -> pd.DataFrame:
+    """A class to produce deflators based on the given parameters.
+    
+    Deflators take into account changes in prices and the evolution of currency exchange
+    values. They compensate for both factors in order to produce a standard unit of 
+    measurement, regardless of the year of the flow.
+    
+    Args:
+        base_year: the year in which the delfator equals 100 (if the source and target
+        currency are equal).
+        xe_deflator: the exchange rate deflator function to be used.
+        price_deflator: the price deflator function to be used.
+        xe: exchange rate information used in producing the deflators
+        source_currency: the ISO3 code of the country which uses the source currency
+        target_currency: the ISO3 code of the country which used the target currency
+        deflator_df: the resulting DataFrame containing the deflators data.
+    """
 
+    def __align_currencies(
+        self,
+        deflator: pd.DataFrame,
+        xe: pd.DataFrame,
+    ) -> pd.DataFrame:
         """Check whether an exchange rate needs to be applied to a deflator set
         in order to properly convert data from source to target currency"""
 
@@ -33,7 +50,6 @@ class Deflator:
         if self.source_currency == "LCU":
             deflator = deflator.merge(xe, on=["iso_code", "year"], suffixes=("", "_xe"))
             deflator.value = deflator.value * deflator.value_xe
-
         else:
             xe = xe.loc[xe.iso_code == self.source_currency]
             deflator = deflator.merge(
@@ -60,13 +76,10 @@ class Deflator:
 
         return df
 
-    def _defl_pipeline(self,) -> pd.DataFrame:
-
-        """Returns a dataframe with price-currency deflators.
-        -exchange_deflator takes in a Callable to get exchange rate deflators.
-        -price_deflator takes in a Callable to get gdp/price deflators.
-        -base_year takes an integer as the base year for the deflators.
-        """
+    def _defl_pipeline(
+        self,
+    ) -> pd.DataFrame:
+        """Returns a dataframe with price-currency deflators."""
 
         # get exchange rate and rebase
         xed = self._get_and_deflate(func=self.xe_deflator)
@@ -78,7 +91,7 @@ class Deflator:
             xed, on=["iso_code", "year"], how="left", suffixes=("_def", "_xe")
         )
 
-        df["value"] = round(100*df.value_def / df.value_xe, 2)
+        df["value"] = round(100 * df.value_def / df.value_xe, 2)
 
         return (
             df.filter(["iso_code", "year", "value"], axis=1)
@@ -93,6 +106,8 @@ class Deflator:
         self.deflator_df = df
 
     def deflator(self) -> pd.DataFrame:
+        """Execute the pipeline to create the deflators. It uses the information
+        passed when creating the Deflator object"""
         self._defl_pipeline().pipe(self._set_deflator_df)
 
         return self.deflator_df
