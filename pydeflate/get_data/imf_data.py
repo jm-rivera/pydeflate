@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Union
+from typing import Union, Callable
 
 import pandas as pd
 from weo import WEO, all_releases, download
@@ -122,7 +122,7 @@ class IMF(Data):
     def inflation_gdp(self) -> pd.DataFrame:
         return self._get_indicator("NGDP_D")
 
-    def available_methods(self) -> dict:
+    def available_methods(self) -> dict[str, Callable]:
         return {
             "gdp": self.inflation_gdp,
             "pcpi": self.inflation_acp,

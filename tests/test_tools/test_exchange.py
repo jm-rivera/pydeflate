@@ -1,14 +1,7 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Sat Nov 20 13:44:34 2021
-
-@author: jorge
-"""
-
-from pydeflate.tools import exchange
 import pandas as pd
 import pytest
+
+from pydeflate.tools import exchange
 
 empty_df = pd.DataFrame([{}])
 
@@ -37,7 +30,6 @@ errors = (
 
 
 def test_exchange_to_LCU():
-
     result = exchange.exchange(
         df=test_df.copy(),
         source_currency="GTM",
@@ -55,7 +47,6 @@ def test_exchange_to_LCU():
 
 
 def test_exchange_to_nonUS():
-
     result = exchange.exchange(
         df=test_df.copy(),
         source_currency="LCU",
@@ -73,7 +64,6 @@ def test_exchange_to_nonUS():
 
 
 def test_exchange_nonUS_to_nonUS():
-
     result = exchange.exchange(
         df=test_df.copy(),
         source_currency="FRA",
@@ -91,7 +81,6 @@ def test_exchange_nonUS_to_nonUS():
 
 
 def test_exchange_target_to_source():
-
     result = exchange.exchange(
         df=test_df.copy(),
         source_currency="FRA",
@@ -118,7 +107,6 @@ def test_exchange_errors(
     target_column,
     date_column,
 ) -> None:
-
     with pytest.raises(Exception):
         exchange.exchange(
             df=df,
