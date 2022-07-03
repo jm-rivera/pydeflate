@@ -1,8 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
-
-import datetime
 from dataclasses import dataclass
 from typing import Union
 
@@ -55,7 +50,10 @@ def _get_iso3c():
     return countries[["name", "iso3c"]].set_index("name")["iso3c"].to_dict()
 
 
-def _clean_wb_indicator(data: pd.DataFrame, indicator: str,) -> pd.DataFrame:
+def _clean_wb_indicator(
+    data: pd.DataFrame,
+    indicator: str,
+) -> pd.DataFrame:
     """Add iso_code, change value name to value and sort"""
 
     return (
@@ -184,7 +182,10 @@ class WB(Data):
 
         _ = [_download_wb_indicator(i, START, END) for i in _INDICATORS.values()]
 
-    def load_data(self, indicator: str,) -> None:
+    def load_data(
+        self,
+        indicator: str,
+    ) -> None:
 
         self.data = pd.read_feather(
             config.paths.data + rf"/{indicator}_{START}_{END}.feather"
@@ -217,5 +218,5 @@ class WB(Data):
 
 if __name__ == "__main__":
     pass
-    #wb_deflator = WB().set_method("cpi").get_deflator()
-    #wb_xe = WB_XE().get_deflator()
+    # wb_deflator = WB().set_method("cpi").get_deflator()
+    # wb_xe = WB_XE().get_deflator()
