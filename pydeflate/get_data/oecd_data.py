@@ -10,7 +10,7 @@ import pandas as pd
 import requests
 from bs4 import BeautifulSoup as Bs
 
-from pydeflate.config import paths
+from pydeflate.config import PATHS
 from pydeflate.get_data.data import Data
 from pydeflate.utils import base_year, oecd_codes, value_index, update_update_date
 
@@ -63,7 +63,7 @@ def _update_dac_deflators() -> None:
         try:
             df = pd.read_excel(url, header=2)
             df = df.dropna(how="all")
-            df.to_csv(paths.data + r"/dac_deflators.csv", index=False)
+            df.to_csv(PATHS.data + r"/dac_deflators.csv", index=False)
             print(f"Updated OECD DAC deflators {year}")
             update_update_date("oecd_dac_deflator")
             t = False
@@ -82,7 +82,7 @@ def _update_dac_exchange() -> None:
         )
 
         df = pd.read_excel(exchange, header=2)
-        df.to_csv(paths.data + r"/dac_exchange_rates.csv", index=False)
+        df.to_csv(PATHS.data + r"/dac_exchange_rates.csv", index=False)
         print("Updated OECD DAC exchange rates")
         update_update_date("oecd_dac_exchange")
 
@@ -133,7 +133,7 @@ def _update_dac1() -> None:
     df = _read_zip_content(request_content=zip_bytes, file_name=file_name).pipe(
         _clean_dac1
     )
-    df.to_feather(paths.data + r"/dac1.feather")
+    df.to_feather(PATHS.data + r"/dac1.feather")
     print("Successfully downloaded DAC1 data")
     update_update_date("oecd_dac_data")
 
@@ -150,7 +150,7 @@ class OECD_XE(Data):
     def load_data(self, **kwargs) -> None:
         self._check_method()
         self.data = pd.read_feather(
-            rf"{paths.data}{self.available_methods()[self.method]}"
+            rf"{PATHS.data}{self.available_methods()[self.method]}"
         )
 
     def _get_usd_exchange(self) -> pd.DataFrame:
@@ -221,7 +221,7 @@ class OECD(Data):
         _update_dac_deflators()
 
     def load_data(self, **kwargs) -> None:
-        self.data = pd.read_feather(paths.data + r"/dac1.feather")
+        self.data = pd.read_feather(PATHS.data + r"/dac1.feather")
 
     def available_methods(self) -> dict:
         print("Only the DAC Deflators method is available")

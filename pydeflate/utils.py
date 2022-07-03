@@ -21,7 +21,7 @@ def _diff_from_today(date: datetime.datetime):
 
 
 def warn_updates():
-    with open(config.paths.data + r"/data_updates.json") as file:
+    with open(config.PATHS.data + r"/data_updates.json") as file:
         updates = json.load(file)
 
     for source, date in updates.items():
@@ -41,12 +41,12 @@ def update_update_date(source: str):
 
     today = datetime.datetime.today().strftime("%Y-%m-%d")
 
-    with open(config.paths.data + r"/data_updates.json") as file:
+    with open(config.PATHS.data + r"/data_updates.json") as file:
         updates = json.load(file)
 
     updates[source] = today
 
-    with open(config.paths.data + r"/data_updates.json", "w") as outfile:
+    with open(config.PATHS.data + r"/data_updates.json", "w") as outfile:
         json.dump(updates, outfile)
 
 
