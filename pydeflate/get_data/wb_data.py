@@ -8,7 +8,6 @@ from pydeflate import config
 from pydeflate.get_data.data import Data
 from pydeflate.utils import emu, value_index, update_update_date
 
-
 _INDICATORS: dict = {
     "gdp": "NY.GDP.DEFL.ZS",
     "gdp_linked": "NY.GDP.DEFL.ZS.AD",
@@ -81,7 +80,6 @@ class WB_XE(Data):
         ]
 
     def load_data(self, **kwargs) -> None:
-
         self._check_method()
         indicator = _INDICATORS[self.method]
 
@@ -176,6 +174,7 @@ class WB_XE(Data):
 class WB(Data):
     method: Union[str, None] = None
     data: pd.DataFrame = None
+    """An object to download and return the latest WB exchange and price data"""
 
     def update(self, **kwargs) -> None:
         """Update data for all WB indicators"""
@@ -186,7 +185,6 @@ class WB(Data):
         self,
         indicator: str,
     ) -> None:
-
         self.data = pd.read_feather(
             config.paths.data + rf"/{indicator}_{START}_{END}.feather"
         ).pipe(_clean_wb_indicator, indicator)
@@ -199,7 +197,6 @@ class WB(Data):
         }
 
     def _get_indicator(self) -> pd.DataFrame:
-
         self._check_method()
         indicator = _INDICATORS[self.method]
 
@@ -212,7 +209,6 @@ class WB(Data):
         raise NotImplementedError
 
     def get_deflator(self, **kwargs) -> pd.DataFrame:
-
         return self._get_indicator()
 
 
