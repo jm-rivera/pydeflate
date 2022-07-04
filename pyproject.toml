@@ -45,6 +45,10 @@ bump2version = "^1.0.1"
 virtualenv = "^20.15.1"
 pre-commit = "^2.19.0"
 toml = "^0.10.2"
+Sphinx = "^5.0.2"
+myst-parser = "^0.18.0"
+sphinx-rtd-theme = "^1.0.0"
+sphinxcontrib-napoleon = "^0.7"
 
 
 [tool.black]
@@ -83,17 +87,7 @@ dev = ["tox", "pre-commit", "virtualenv", "pip", "twine", "toml", "bump2version"
     "numpy", "country-converter", 'pytest','pytest-cov'
 ]
 
-doc = [
-    "mkdocs",
-    "mkdocs-include-markdown-plugin",
-    "mkdocs-material",
-    "mkdocstrings",
-    "mkdocs-material-extension",
-    "mkdocs-autorefs",
-    "pandas",
-    "numpy",
-    "country-converter",
-]
+docs = ["Sphinx", "sphinx-rtd-theme", "sphinxcontrib-napoleon", "myst-parser"]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
