@@ -1,0 +1,37 @@
+[tool.poetry]
+name = "pydeflate"
+version = "1.0.1"
+description = "Python package to convert current prices figures to constant prices and vice versa"
+authors = ["Jorge Rivera <jorge.rivera@one.org>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+pandas = "^1.4.3"
+weo = "^0.7.3"
+BeautifulSoup4 = "^4.11.1"
+numpy = "^1.23.0"
+pandas-datareader = "^0.10.0"
+requests = "^2.28.1"
+pyarrow = "^8.0.0"
+xlrd = "^2.0.1"
+country-converter = "^0.7.4"
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.1.2"
+pytest-cov = "^3.0.0"
+BeautifulSoup4 = "^4.11.1"
+pandas = "^1.4.3"
+black = "^22.6.0"
+weo = "^0.7.3"
+numpy = "^1.23.0"
+pandas-datareader = "^0.10.0"
+requests = "^2.28.1"
+pyarrow = "^8.0.0"
+xlrd = "^2.0.1"
+country-converter = "^0.7.4"
+tox = "^3.25.1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

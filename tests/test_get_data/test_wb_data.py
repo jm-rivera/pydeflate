@@ -32,7 +32,3 @@ def test_available_methods():
 
 def test_get_data():
     assert False
-
-
-def test_xe_get_deflator():
-    assert False
