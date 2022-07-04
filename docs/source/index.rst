@@ -1,5 +1,5 @@
 .. pydeflate documentation master file, created by
-   sphinx-quickstart on Mon Jul  4 18:38:02 2022.
+   sphinx-quickstart on Mon Jul  4 18:39:52 2022.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
