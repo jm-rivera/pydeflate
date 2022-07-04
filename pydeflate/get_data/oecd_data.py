@@ -219,8 +219,3 @@ class OECD(Data):
         df["value"] = round(df.value_def * (df.value_xe / 100), 3)
 
         return df[["iso_code", "year", "value"]]
-
-
-if __name__ == "__main__":
-    oecd_xe_def = OECD_XE().get_deflator("USA")
-    oecd_xe = OECD_XE().get_data("FRA")

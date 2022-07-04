@@ -141,7 +141,3 @@ class IMF(Data):
             self.load_data()
 
         return self.available_methods()[self.method]()
-
-
-if __name__ == "__main__":
-    imf_deflator = IMF("gdp").get_deflator()

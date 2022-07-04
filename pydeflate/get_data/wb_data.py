@@ -210,9 +210,3 @@ class WB(Data):
 
     def get_deflator(self, **kwargs) -> pd.DataFrame:
         return self._get_indicator()
-
-
-if __name__ == "__main__":
-    pass
-    # wb_deflator = WB().set_method("cpi").get_deflator()
-    # wb_xe = WB_XE().get_deflator()
