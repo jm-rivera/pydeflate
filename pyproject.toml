@@ -6,6 +6,11 @@ description = "Python package to convert current prices figures to constant pric
 authors = ["Jorge Rivera <jorge.rivera@one.org>"]
 license = "MIT"
 
+packages = [
+    { include = "pydeflate" },
+    { include = "tests", format = "sdist" },
+]
+
 [tool.poetry.dependencies]
 python = "^3.9"
 pandas = "^1.4.3"
@@ -17,6 +22,7 @@ requests = "^2.28.1"
 pyarrow = "^8.0.0"
 xlrd = "^2.0.1"
 country-converter = "^0.7.4"
+tox = "^3.25.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.1.2"
@@ -32,6 +38,62 @@ pyarrow = "^8.0.0"
 xlrd = "^2.0.1"
 country-converter = "^0.7.4"
 tox = "^3.25.1"
+twine = "^4.0.1"
+wheel = "^0.37.1"
+pip = "^22.1.2"
+bump2version = "^1.0.1"
+virtualenv = "^20.15.1"
+pre-commit = "^2.19.0"
+toml = "^0.10.2"
+
+
+[tool.black]
+line-length = 120
+skip-string-normalization = true
+target-version = ['py310']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+
+[tool.poetry.extras]
+test = [
+    "pytest",
+    "coverage",
+    "black",
+    "mypy",
+    "flake8",
+    "flake8-docstrings",
+    "pytest-cov",
+    "pandas"
+]
+
+dev = ["tox", "pre-commit", "virtualenv", "pip", "twine", "toml", "bump2version", "pandas",
+    "numpy", "country-converter", 'pytest','pytest-cov'
+]
+
+doc = [
+    "mkdocs",
+    "mkdocs-include-markdown-plugin",
+    "mkdocs-material",
+    "mkdocstrings",
+    "mkdocs-material-extension",
+    "mkdocs-autorefs",
+    "pandas",
+    "numpy",
+    "country-converter",
+]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
