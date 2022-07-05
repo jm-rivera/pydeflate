@@ -1,22 +1,23 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
+from typing import Union
 
 import pandas as pd
 
-from pydeflate.get_data import oecd_data, wb_data
-from pydeflate.utils import check_year_as_number
+from pydeflate.get_data.oecd_data import OECD_XE
+from pydeflate.get_data.wb_data import WB_XE
+from pydeflate.utils import check_year_as_number, to_iso3, oecd_codes
 
 __exchange_source = {
-    "wb": wb_data.get_currency_exchange,
-    "oecd_dac": oecd_data.get_exchange_rate,
+    "wb": WB_XE().get_data,
+    "oecd_dac": OECD_XE().get_data,
 }
 
 
 def _check_key_errors(
-    rates_source: str, columns: list, value_column: str, date_column: str
+    rates_source: str,
+    columns: Union[list, pd.Index],
+    value_column: str,
+    date_column: str,
 ) -> None:
-
     """Check whether provided parameters are valid"""
 
     if rates_source not in __exchange_source.keys():
@@ -39,6 +40,8 @@ def exchange(
     source_currency: str,
     target_currency: str,
     rates_source: str = "wb",
+    id_column: str = "iso_code",
+    id_type: str = "ISO3",
     value_column: str = "value",
     target_column: str = "value_xe",
     date_column: str = "date",
@@ -50,7 +53,7 @@ def exchange(
     ----------
     df : pd.DataFrame
         A Pandas DataFrame, in long format, containing at least a date column,
-        an column with iso-3 codes to identify the source currency, and a
+        a column with iso-3 codes to identify the source currency, and a
         value column where the values to be converted are stored.
     source_currency : str
         The ISO-3 code of the country which owns the currency in which the data
@@ -64,6 +67,12 @@ def exchange(
         The source of the exchange rate data. Current options include "wb" for
         the World Bank and "oecd_dac" for the exchange rates used for ODA
         statistics. The default is "wb".
+    id_column : str, optional
+        The name of the column containing the codes or names used to identify countries.
+        The default is "iso_code".
+    id_type : str, optional
+        The types of codes used to identify countries. Should match options in
+        Country Converter or the DAC codes.The default is "ISO3".
     value_column : str, optional
         The name of the column containing the values to be converted.
         The default is "value".
@@ -103,26 +112,39 @@ def exchange(
 
     # get the selected rates function
     xe = __exchange_source[rates_source](target_currency)
-    xe = xe.rename(columns={"year": date_column})
+
+    # rename the column names in Xe to match the provided DataFrame
+    xe = xe.rename(
+        columns={"year": date_column, "value": value_column, "iso_code": "id_"}
+    )
+
+    # Create ID col.  By default, if a country does not have a DAC deflator, the
+    # DAC,Total deflator is used.
+    if id_type == "DAC":
+        df["id_"] = df[id_column].map(oecd_codes).fillna("DAC")
+    else:
+        df = df.pipe(
+            to_iso3, codes_col=id_column, target_col="id_", src_classification=id_type
+        )
 
     # Check source and target currencies
-    if (source_currency not in set(xe.iso_code)) and (source_currency != "LCU"):
+    if (source_currency not in set(xe.id_)) and (source_currency != "LCU"):
         raise KeyError(f"{source_currency} not a valid currency code")
 
-    if (target_currency not in set(xe.iso_code)) and (target_currency != "LCU"):
+    if (target_currency not in set(xe.id_)) and (target_currency != "LCU"):
         raise KeyError(f"{target_currency} not a valid target currency")
 
     if source_currency == "LCU":
         df = df.merge(
             xe,
-            on=["iso_code", date_column],
+            on=["id_", date_column],
             suffixes=("", "_xe"),
         )
 
     else:
-        xe = xe.loc[xe.iso_code == source_currency]
+        xe = xe.loc[xe.id_ == source_currency]
         df = df.merge(
-            xe.drop("iso_code", axis=1),
+            xe.drop("id_", axis=1),
             on=[date_column],
             suffixes=("", "_xe"),
         )

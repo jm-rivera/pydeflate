@@ -1,14 +1,15 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 import datetime
 import json
 import warnings
+from typing import Union
 
+import country_converter as coco
 import numpy as np
 import pandas as pd
 
 from pydeflate import config
+
+CC = coco.CountryConverter()
 
 
 def _diff_from_today(date: datetime.datetime):
@@ -20,7 +21,7 @@ def _diff_from_today(date: datetime.datetime):
 
 
 def warn_updates():
-    with open(config.paths.data + r"/data_updates.json") as file:
+    with open(config.PATHS.data + r"/data_updates.json") as file:
         updates = json.load(file)
 
     for source, date in updates.items():
@@ -40,12 +41,12 @@ def update_update_date(source: str):
 
     today = datetime.datetime.today().strftime("%Y-%m-%d")
 
-    with open(config.paths.data + r"/data_updates.json") as file:
+    with open(config.PATHS.data + r"/data_updates.json") as file:
         updates = json.load(file)
 
     updates[source] = today
 
-    with open(config.paths.data + r"/data_updates.json", "w") as outfile:
+    with open(config.PATHS.data + r"/data_updates.json", "w") as outfile:
         json.dump(updates, outfile)
 
 
@@ -105,8 +106,11 @@ oecd_codes = {
     732: "TWN",
     764: "THA",
     765: "TLS",
+    20001: "DAC",
+    20002: "MUL",
+    20003: "G7C",
+    20006: "NDA",
 }
-
 
 emu = [
     "AUT",
@@ -147,7 +151,6 @@ def clean_number(number):
 
 
 def base_year(df: pd.DataFrame, date_col: str = "date") -> dict:
-
     """Return dictionary of base years by iso_code"""
 
     return df.loc[df.value == 100].set_index("iso_code")[date_col].to_dict()
@@ -200,3 +203,16 @@ def check_year_as_number(df: pd.DataFrame, date_column: str) -> (pd.DataFrame, b
         year_as_number = False
 
     return df, year_as_number
+
+
+def to_iso3(
+    df: pd.DataFrame,
+    codes_col: str,
+    target_col: str,
+    src_classification: Union[str, None] = None,
+    not_found: Union[str, None] = None,
+) -> pd.DataFrame:
+    df[target_col] = CC.convert(
+        df[codes_col], src=src_classification, to="ISO3", not_found=not_found
+    )
+    return df

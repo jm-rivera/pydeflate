@@ -1,7 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
-
 import os
 
 
@@ -14,4 +10,4 @@ class Paths:
         return os.path.join(self.project_dir, "pydeflate", "data")
 
 
-paths = Paths(os.path.dirname(os.path.dirname(__file__)))
+PATHS = Paths(os.path.dirname(os.path.dirname(__file__)))
