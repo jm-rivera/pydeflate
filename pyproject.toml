@@ -2,14 +2,16 @@
 name = "pydeflate"
 version = "1.0.1"
 homepage = "https://github.com/jm-rivera/pydeflate"
-description = "Python package to convert current prices figures to constant prices and vice versa"
+description = "Package to convert current prices figures to constant prices and vice versa"
 authors = ["Jorge Rivera <jorge.rivera@one.org>"]
 license = "MIT"
 classifiers=[
     'Development Status :: 5 - Production/Stable',
-    'Intended Audience :: Developers',
+    'Intended Audience :: End Users/Desktop',
+    'Intended Audience :: Science/Research',
     'License :: OSI Approved :: MIT License',
     'Natural Language :: English',
+    'Programming Language :: Python :: 3',
     'Programming Language :: Python :: 3.9',
     'Programming Language :: Python :: 3.10',
 ]
@@ -17,7 +19,6 @@ classifiers=[
 
 packages = [
     { include = "pydeflate" },
-    { include = "tests", format = "sdist" },
 ]
 
 [tool.poetry.dependencies]
