@@ -11,7 +11,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Build and Commit
-        uses: sphinx-notes/pages@v2.1
+        uses: sphinx-notes/pages@v2
         with:
           documentation_path: "./docs"
           requirements_path: "./requirements_dev.txt"
