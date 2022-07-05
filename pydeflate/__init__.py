@@ -8,7 +8,7 @@ from pydeflate.tools.exchange import exchange
 from pydeflate.tools.update_data import update_all_data
 from pydeflate.utils import warn_updates
 
-#check that data is fresh enough
+# check that data is fresh enough
 warn_updates()
 
 
