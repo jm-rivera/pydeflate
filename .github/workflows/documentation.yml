@@ -11,10 +11,10 @@ jobs:
         with:
           fetch-depth: 0
       - name: Build and Commit
-        uses: sphinx-notes/pages@v2
+        uses: sphinx-notes/pages@v2.1
         with:
-          documentation_path: "../docs"
-          requirements_path: ./requirements_dev.txt
+          documentation_path: "./docs"
+          requirements_path: "./requirements_dev.txt"
 
       - name: Push changes
         uses: ad-m/github-push-action@master
