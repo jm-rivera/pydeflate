@@ -16,8 +16,6 @@ This is the first major release of pydeflate.
    settled. Further releases to pydeflate will extend what is possible,
    without altering the basic way in which pydeflate works.
 
-.. _section-1:
-
 0.1.4 (2021-04-21)
 ------------------
 
@@ -26,7 +24,6 @@ This is the first major release of pydeflate.
 This is a minor update to fix a couple of small errors in doc strings.
 It also adds unit testing for updating the underlying data.
 
-.. _section-2:
 
 0.1.3 (2021-04-21)
 ------------------
@@ -36,7 +33,7 @@ It also adds unit testing for updating the underlying data.
 This version achieves the basic task at hand. It does not yet have full
 testing.
 
-.. _section-3:
+
 
 0.1.2 (2021-04-21)
 ------------------
@@ -46,7 +43,6 @@ testing.
 This version achieves the basic task at hand. It does not yet have full
 testing.
 
-.. _section-4:
 
 0.1.1 (2021-04-21)
 ------------------
@@ -55,7 +51,6 @@ testing.
 
 This version has been yanked.
 
-.. _section-5:
 
 0.1.0 (2021-04-21)
 ------------------
