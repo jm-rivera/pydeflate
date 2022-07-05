@@ -1,0 +1,9 @@
+pandas
+weo
+numpy>
+BeautifulSoup4
+pandas_datareader
+requests
+pyarrow
+xlrd
+country_converter

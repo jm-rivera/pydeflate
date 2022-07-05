@@ -1,11 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Sun Nov 14 19:59:01 2021
-
-@author: jorge
-"""
-
 import pandas as pd
 
 # =============================================================================
@@ -122,7 +114,6 @@ imf_error_params = (
         (2018, "gdp", "GBR", "XXX", ValueError),
     ],
 )
-
 
 # =============================================================================
 # Deflate testing parameters

@@ -1,67 +1,89 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Sat Nov 20 12:18:13 2021
-
-@author: jorge
-"""
-
+from typing import Callable
 
 import pytest
 
 from pydeflate.get_data import imf_data
-from pydeflate import config
-import sys
-import io
-
 import os
+from pydeflate.config import PATHS
 
 
-def test__update_weo():
+def test_update():
+    test_obj = imf_data.IMF()
 
-    """Capture print statements which are only printed if download successful"""
+    # Download an older version
+    test_obj.update(latest_r=1, latest_y=2021)
 
-    old_stdout = sys.stdout
-    new_stdout = io.StringIO()
-    sys.stdout = new_stdout
+    # Fail test if the file doesn't exist
+    if not os.path.exists(f"{PATHS.data}/weo2021_2.csv"):
+        assert False
 
-    imf_data._update_weo(2020, 1)
-
-    output = new_stdout.getvalue()
-
-    sys.stdout = old_stdout
-
-    print(output)
-
-    assert output[-21:] == "2020-Apr WEO dataset\n"
-
-    old_stdout = sys.stdout
-    new_stdout = io.StringIO()
-    sys.stdout = new_stdout
-
-    imf_data._update_weo(2020, 1)
-
-    output = new_stdout.getvalue()
-
-    sys.stdout = old_stdout
-
-    print(output)
-
-    assert output[0:7] == "Already"
-
-    # cleaning
-    file = config.paths.data + r"/weo2020_1.csv"
-
-    if os.path.exists(file):
-        os.remove(file)
+    os.remove(f"{PATHS.data}/weo2021_2.csv")
 
 
-def test_get_implied_ppp_rate():
+def test_load_data():
+    test_obj = imf_data.IMF()
 
-    result = imf_data.get_implied_ppp_rate()
+    # Load most recent saved data
+    test_obj.load_data()
 
-    result = result.loc[
-        (result.iso_code == "GTM") & (result.year.dt.year == 1991), "value"
-    ]
+    assert len(test_obj.data) > 0
 
-    assert round(result.sum(), 1) == 1.4
+
+def test_inflation_acp():
+    test_obj = imf_data.IMF()
+    test_obj.load_data()
+
+    d = test_obj.inflation_acp()
+
+    assert len(d) > 0
+    assert d.iso_code.nunique() > 20
+
+
+def test_inflation_epcp():
+    test_obj = imf_data.IMF()
+    test_obj.load_data()
+
+    d = test_obj.inflation_epcp()
+
+    assert len(d) > 0
+    assert d.iso_code.nunique() > 20
+
+
+def test_inflation_gdp():
+    test_obj = imf_data.IMF()
+    test_obj.load_data()
+
+    d = test_obj.inflation_gdp()
+
+    assert len(d) > 0
+    assert d.iso_code.nunique() > 20
+
+
+def test_available_methods():
+    test_obj = imf_data.IMF()
+
+    # Test that the dictionary contains more than one method
+    assert len(test_obj.available_methods()) > 1
+
+    # Test that the keys and values match their respective types
+    for k, v in test_obj.available_methods().items():
+        assert isinstance(k, str)
+        assert isinstance(v, Callable)
+
+
+def test_get_data():
+    with pytest.raises(NotImplementedError) as error:
+        test_obj = imf_data.IMF()
+        test_obj.get_data()
+
+    assert error.typename == "NotImplementedError"
+
+
+def test_get_deflator():
+    test_obj = imf_data.IMF(method="gdp")
+    test_obj.load_data()
+
+    # get gdp deflator
+    gdp_def = test_obj.inflation_gdp()
+
+    assert all(gdp_def == test_obj.get_deflator())

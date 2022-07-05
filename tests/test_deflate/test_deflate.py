@@ -1,13 +1,9 @@
-#!/usr/bin/env python
-
 """Tests for `pydeflate` package."""
 
+import pandas as pd
 import pytest
 
-
 from pydeflate import deflate
-import pandas as pd
-
 
 # =============================================================================
 # Deflate testing parameters
@@ -15,7 +11,7 @@ import pandas as pd
 
 # LCU dataframe
 data_lcu = {
-    "iso_code": ["FRA", "GBR", "USA", "CAN"],
+    "country_id": ["FRA", "GBR", "USA", "CAN"],
     "date": [2016, 2016, 2018, 2019],
     "value": [8701, 13377, 33787, 6017],
 }
@@ -26,7 +22,7 @@ test_df_lcu = pd.DataFrame.from_records(data_lcu)
 data_usd = {
     "iso_code": ["FRA", "GBR", "USA", "CAN"],
     "date": [2016, 2016, 2018, 2019],
-    "value": [9622, 18053, 33787, 4535],
+    "flow": [9622, 18053, 33787, 4535],
 }
 
 test_df_usd = pd.DataFrame.from_records(data_usd)
@@ -198,16 +194,16 @@ def test_deflate():
         source="oecd_dac",
         source_currency="LCU",
         target_currency="USA",
-        iso_column="iso_code",
+        id_column="country_id",
         date_column="date",
         source_col="value",
         target_col="value_deflated",
     )
 
-    results = df.set_index("iso_code")["value_deflated"].to_dict()
+    results = df.set_index("country_id")["value_deflated"].to_dict()
 
-    assert round(results["FRA"] / 1000, 1) == 10.4
-    assert round(results["GBR"] / 1000, 1) == 19.3
+    assert round(results["FRA"] / 1000, 1) == 10.5
+    assert round(results["GBR"] / 1000, 1) == 19.2
     assert round(results["USA"] / 1000, 1) == 34.8
     assert round(results["CAN"] / 1000, 1) == 4.5
 
@@ -221,28 +217,28 @@ def test_deflate_reversed():
         method="test_print",
         source_currency="USA",
         target_currency="FRA",
-        iso_column="iso_code",
+        id_column="iso_code",
         date_column="date",
-        source_col="value",
-        target_col="value_deflated",
+        source_col="flow",
+        target_col="flow_deflated",
     )
 
-    results = df.set_index("iso_code")["value"].to_dict()
+    results = df.set_index("iso_code")["flow"].to_dict()
 
     rev = deflate(
-        df=df,
+        df=df.copy(),
         base_year=2020,
         source="oecd_dac",
-        source_currency="USA",
-        target_currency="FRA",
-        iso_column="iso_code",
+        source_currency="FRA",
+        target_currency="USA",
+        id_column="iso_code",
         date_column="date",
-        source_col="value_deflated",
-        target_col="value_deflated",
-        reverse=True,
+        source_col="flow_deflated",
+        target_col="flow",
+        to_current=True,
     )
 
-    rev_results = rev.set_index("iso_code")["value_deflated"].to_dict()
+    rev_results = rev.set_index("iso_code")["flow"].to_dict()
 
     assert round(results["FRA"] / 100, 1) == round(rev_results["FRA"] / 100, 1)
     assert round(results["GBR"] / 100, 1) == round(rev_results["GBR"] / 100, 1)
@@ -263,7 +259,6 @@ def test_deflate_errors(
     source_col,
     target_col,
 ):
-
     with pytest.raises(Exception):
         deflate(
             df,

@@ -1,46 +1,83 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Sat Nov 20 12:17:49 2021
+import os
 
-@author: jorge
-"""
-
-import pytest
-
-from pydeflate.get_data import oecd_data
+from pydeflate.config import PATHS
+from pydeflate.get_data.oecd_data import OECD_XE, OECD
 
 
-def test__update_dac1():
+def test_update():
+    test_obj = OECD_XE()
+    test_obj2 = OECD()
 
-    """Capture print statements which are only printed if download successful"""
+    last_update_dac1 = os.path.getmtime(PATHS.data + r"/dac1.feather")
 
-    oecd_data._update_dac1()
+    test_obj.update()
 
-    assert True
+    assert os.path.getmtime(PATHS.data + r"/dac1.feather") > last_update_dac1
 
+    last_update_dac1_2 = os.path.getmtime(PATHS.data + r"/dac1.feather")
+    test_obj2.update()
 
-def test__update_dac_deflators():
-    """Capture print statements which are only printed if successful"""
-
-    oecd_data._update_dac_deflators()
-
-    assert True
-
-
-def test__update_dac_exchange():
-    """Capture print statements which are only printed if successful"""
-
-    oecd_data._update_dac_exchange()
-
-    assert True
+    assert os.path.getmtime(PATHS.data + r"/dac1.feather") > last_update_dac1_2
 
 
-def test__get_zip_error():
-    with pytest.raises(ConnectionError):
-        oecd_data._get_zip("fake_url")
+def test_load_data():
+    test_obj_xe = OECD_XE()
+    test_obj_xe.load_data()
+
+    test_obj = OECD()
+    test_obj.load_data()
+
+    xe_obj = test_obj_xe.data
+    defl_obj = test_obj.data
+
+    assert len(xe_obj) > 1
+    assert len(defl_obj) > 1
+    assert xe_obj.shape[0] > xe_obj.shape[1]
+    assert defl_obj.shape[0] > defl_obj.shape[1]
 
 
-def test_get_xe_deflator_error():
-    with pytest.raises(ValueError):
-        oecd_data.get_xe_deflator("fake_currency")
+def test_available_methods():
+    test_obj_xe = OECD_XE()
+    test_obj = OECD()
+
+    assert len(test_obj_xe.available_methods()) > 0
+    assert len(test_obj.available_methods()) > 0
+    assert all(
+        [
+            [isinstance(k, str), isinstance(v, str)]
+            for k, v in test_obj.available_methods().items()
+        ]
+    )
+
+
+def test_get_data():
+    test_obj_xe = OECD_XE()
+    test_obj = OECD()
+
+    # test not loaded
+    df = test_obj_xe.get_data("USA")
+    assert len(df) > 0
+    assert "USA" in df.iso_code.unique()
+
+    # test loaded
+    test_obj_xe2 = OECD_XE()
+    test_obj_xe2.load_data()
+    df2 = test_obj_xe2.get_data("FRA")
+    assert len(df2) > 0
+    assert "FRA" in df.iso_code.unique()
+
+    # test not loaded
+    df3 = test_obj.get_data()
+    assert len(df3) > 0
+
+    # test loaded
+    test_obj2 = OECD()
+    test_obj2.load_data()
+    df4 = test_obj2.get_data()
+    assert len(df4) > 0
+
+
+
+def test_get_deflator():
+    test_obj = OECD()
+    assert False
