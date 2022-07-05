@@ -7,10 +7,12 @@ tox
 coverage
 Sphinx
 twine
+poetry
 
 pytest
 pytest-runner
 
+sphinx-rtd-theme
 
 pandas>=1.2.1
 weo==0.7.0 
