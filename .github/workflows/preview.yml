@@ -15,7 +15,7 @@ jobs:
 
     strategy:
       matrix:
-        python-versions: [ "3.10" ]
+        python-versions: [ "3.9" ]
 
     steps:
       - uses: actions/checkout@v2
@@ -29,6 +29,7 @@ jobs:
           pip install poetry tox tox-gh-actions
           pip install -r requirements.txt
           pip install -r requirements_dev.txt
+
       - name: test with tox
         run:
           tox
