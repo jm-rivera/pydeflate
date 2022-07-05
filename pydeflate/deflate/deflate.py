@@ -41,43 +41,52 @@ def deflate(
 
     Args:
         df: the DataFrame containing the flows column to be deflated. If multiple
-        columns need to be deflated, the function needs to be called multiple times.
-        base_year: If converting from current to constant, the target base year for the
-        constant figures. If converting from constant, the base year of the data.
+            columns need to be deflated, the function needs to be called multiple times.
+            base_year: If converting from current to constant, the target base year for the
+            constant figures. If converting from constant, the base year of the data.
         source:{‘oecd_dac’, 'wb', 'imf'}
-        The source of the data used to build the deflators. The value (and
-        completeness) of the price deflators may change based on the source.
-        Additionally, the OECD DAC data is only available for DAC donors. Both
-        the IMF and WB sources use exchange rates downloaded from the World Bank.
-        method:{'gdp','gdp_linked','cpi','pcpi','pcpie', None}, optional
-        The method used to calculate the price deflator:
-        For World Bank (source == 'wb'):
-        •'gdp': using GDP deflators.
-        •'gdp_linked': a GDP deflator series which has been linked to
-        produce a consistent time series to counteract breaks in series
-        over time due to changes in base years, sources or methodologies.
-        •'cpi': using Consumer Price Index data
-        For IMF (source == 'imf'):
-        •'pcpi': Consumer Price Index data
-        •'pcpie': end-period Consumer Price Index (e.g. for December each year).
-        For OECD DAC (source == 'oecd_dac'):
-        •None
+            The source of the data used to build the deflators. The value (and
+            completeness) of the price deflators may change based on the source.
+            Additionally, the OECD DAC data is only available for DAC donors. Both
+            the IMF and WB sources use exchange rates downloaded from the World Bank.
+        method:{'gdp', 'gdp_linked', 'cpi', 'pcpi', 'pcpie', None}
+
+            The method used to calculate the price deflator:
+
+            For World Bank (source == 'wb'):
+
+            •'gdp': using GDP deflators.
+
+            •'gdp_linked': a GDP deflator series which has been linked to
+            produce a consistent time series to counteract breaks in series
+            over time due to changes in base years, sources or methodologies.
+
+            •'cpi': using Consumer Price Index data
+
+            For IMF (source == 'imf'):
+
+            •'pcpi': Consumer Price Index data
+
+            •'pcpie': end-period Consumer Price Index (e.g. for December each year).
+
+            For OECD DAC (source == 'oecd_dac'):
+            •None
         source_currency:The iso3 code of the source currency. Note that deflators for EU countries
-        are only in Euros from the year in which the Euro was adopted. To produce
-        deflators only in euros, use 'emu'.
+            are only in Euros from the year in which the Euro was adopted. To produce
+            deflators only in euros, use 'emu'.
         target_currency:The iso3 code of the deflated amounts. It can be the same as the source
-        currency. In cases where they are different, the exchange rate will be
-        applied. To produce deflators only in euros, use 'emu'.
+            currency. In cases where they are different, the exchange rate will be
+            applied. To produce deflators only in euros, use 'emu'.
         id_column:The column containing the id codes (iso3 codes, for example) of the data's currency.
         id_type:The classification type for the id_column. By default, ISO3 but others are possible.
-        Any options used in the Country Converter package are valid. For the OECD DAC classification, use 'DAC'
+            Any options used in the Country Converter package are valid. For the OECD DAC classification, use 'DAC'
         date_column:The column containing the date values. The column can contain years (int)
-        or datetime objects.
+            or datetime objects.
         source_col:The column containing the data to be deflated.
         target_col:Column where the deflated data will be stored. It can be the same as the
         source column if a copy of the original isn't needed.
         to_current: If True, amounts will be treated as in constant prices and converted to
-        current prices.
+            current prices.
         iso_column:Provided for backwards compatibility. It is essentially an alias for id_column
 
     Returns:

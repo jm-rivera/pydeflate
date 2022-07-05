@@ -4,6 +4,14 @@ pydeflate.get\_data package
 Submodules
 ----------
 
+pydeflate.get\_data.data module
+-------------------------------
+
+.. automodule:: pydeflate.get_data.data
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 pydeflate.get\_data.imf\_data module
 ------------------------------------
 

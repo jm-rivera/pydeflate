@@ -1151,7 +1151,7 @@ test = ["pandas"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "556e7a2f8d36ab4d931eb5ea3a39738375b549df808504eb6959f59d5e55f210"
+content-hash = "8f35a15c969e2e5cefbba161d934b3ad7ecfc66d7b57cefd276e1047d882c770"
 
 [metadata.files]
 alabaster = [
