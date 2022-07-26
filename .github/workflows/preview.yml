@@ -46,5 +46,5 @@ jobs:
           password: ${{ secrets.TEST_PYPI_API_TOKEN}}
           repository_url: https://test.pypi.org/legacy/
           skip_existing: true
-          verify_metadata: false
+          verify_metadata: true
           verbose: true
