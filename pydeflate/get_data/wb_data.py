@@ -20,7 +20,7 @@ START: int = 1950
 END: int = 2025
 
 
-def _download_wb_indicator(indicator: str, start: int, end: int) -> None:
+def _download_wb_indicator(indicator: str, start: int, end: int, dev: bool = False) -> None:
     """Download an indicator from WB (caching if applicable)"""
     path = check_create_data_dir()
 
@@ -36,13 +36,11 @@ def _download_wb_indicator(indicator: str, start: int, end: int) -> None:
     )
 
     countries = wb.get_countries()
-    countries[["name", "iso3c"]].to_csv(
-        path + rf"/wb_class.csv", index=False
-    )
+    countries[["name", "iso3c"]].to_csv(path + rf"/wb_class.csv", index=False)
 
     df.to_feather(config.PATHS.data + rf"/{indicator}_{start}_{end}.feather")
     print(f"Successfully updated {indicator} for {start}-{end}")
-    update_update_date("wb")
+    update_update_date("wb", dev=dev)
 
 
 def _get_iso3c():
@@ -75,25 +73,18 @@ class WB_XE(Data):
     data: pd.DataFrame = None
 
     def update(self, **kwargs) -> None:
-        _ = [
-            _download_wb_indicator(i, START, END)
-            for i in self.available_methods().values()
-        ]
+        _ = [_download_wb_indicator(i, START, END) for i in self.available_methods().values()]
 
     def load_data(self, **kwargs) -> None:
         self._check_method()
         indicator = _INDICATORS[self.method]
 
-        self.data = pd.read_feather(
-            config.PATHS.data + rf"/{indicator}_{START}_{END}.feather"
-        ).pipe(_clean_wb_indicator, indicator)
+        self.data = pd.read_feather(config.PATHS.data + rf"/{indicator}_{START}_{END}.feather").pipe(
+            _clean_wb_indicator, indicator
+        )
 
     def available_methods(self) -> dict:
-        return {
-            k: v
-            for k, v in _INDICATORS.items()
-            if k in ["exchange", "effective_exchange"]
-        }
+        return {k: v for k, v in _INDICATORS.items() if k in ["exchange", "effective_exchange"]}
 
     def _get_usd_exchange(self) -> pd.DataFrame:
         """Official exchange rate refers to the exchange rate determined by
@@ -122,12 +113,7 @@ class WB_XE(Data):
 
         df = self._get_usd_exchange()
 
-        return (
-            df.loc[df.iso_code == currency_iso]
-            .dropna()
-            .set_index("year")["value"]
-            .to_dict()
-        )
+        return df.loc[df.iso_code == currency_iso].dropna().set_index("year")["value"].to_dict()
 
     def _get_euro2usd(self) -> dict:
         """Dictionary of EUR to USD exchange rates"""
@@ -154,9 +140,7 @@ class WB_XE(Data):
 
         return df
 
-    def get_deflator(
-        self, currency_iso: str = "USA", base_year: int = 2010
-    ) -> pd.DataFrame:
+    def get_deflator(self, currency_iso: str = "USA", base_year: int = 2010) -> pd.DataFrame:
         from datetime import datetime
 
         # get exchange rates
@@ -180,22 +164,18 @@ class WB(Data):
     def update(self, **kwargs) -> None:
         """Update data for all WB indicators"""
 
-        _ = [_download_wb_indicator(i, START, END) for i in _INDICATORS.values()]
+        _ = [_download_wb_indicator(i, START, END, **kwargs) for i in _INDICATORS.values()]
 
     def load_data(
         self,
         indicator: str,
     ) -> None:
-        self.data = pd.read_feather(
-            config.PATHS.data + rf"/{indicator}_{START}_{END}.feather"
-        ).pipe(_clean_wb_indicator, indicator)
+        self.data = pd.read_feather(config.PATHS.data + rf"/{indicator}_{START}_{END}.feather").pipe(
+            _clean_wb_indicator, indicator
+        )
 
     def available_methods(self) -> dict:
-        return {
-            k: v
-            for k, v in _INDICATORS.items()
-            if k not in ["exchange", "effective_exchange"]
-        }
+        return {k: v for k, v in _INDICATORS.items() if k not in ["exchange", "effective_exchange"]}
 
     def _get_indicator(self) -> pd.DataFrame:
         self._check_method()

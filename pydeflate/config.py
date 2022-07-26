@@ -7,7 +7,7 @@ class Paths:
 
     @property
     def data(self):
-        return os.path.join(self.project_dir, "pydeflate", "data")
+        return os.path.join(self.project_dir, "./data")
 
 
 PATHS = Paths(os.path.dirname(os.path.dirname(__file__)))

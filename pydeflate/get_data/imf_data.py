@@ -10,9 +10,7 @@ from pydeflate.get_data.data import Data
 from pydeflate.utils import check_create_data_dir
 
 
-def _check_weo_parameters(
-    latest_y: Union[int, None] = None, latest_r: Union[int, None] = None
-) -> (int, int):
+def _check_weo_parameters(latest_y: Union[int, None] = None, latest_r: Union[int, None] = None) -> (int, int):
     """Check parameters and return max values or provided input"""
     if latest_y is None:
         latest_y = max(*all_releases())[0]
@@ -24,7 +22,7 @@ def _check_weo_parameters(
     return latest_y, latest_r
 
 
-def _update_weo(latest_y: int = None, latest_r: int = None) -> None:
+def _update_weo(latest_y: int = None, latest_r: int = None, dev: bool = False) -> None:
     """Update data from the World Economic Outlook, using WEO package"""
 
     path = check_create_data_dir()
@@ -38,7 +36,7 @@ def _update_weo(latest_y: int = None, latest_r: int = None) -> None:
         directory=path,
         filename=f"weo{latest_y}_{latest_r}.csv",
     )
-    utils.update_update_date("imf")
+    utils.update_update_date("imf", dev=dev)
 
 
 @dataclass
@@ -47,9 +45,7 @@ class IMF(Data):
     data: pd.DataFrame = None
     """An object to download and return the latest IMF WEO data for several indicators"""
 
-    def update(
-        self, latest_y: Union[int, None] = None, latest_r: Union[int, None] = None
-    ) -> None:
+    def update(self, latest_y: Union[int, None] = None, latest_r: Union[int, None] = None, dev: bool = False) -> None:
         """Update the stored WEO data, using WEO package.
 
         Args:
@@ -58,11 +54,9 @@ class IMF(Data):
             latest_r: passed only optionally to override the behaviour to get the latest
             released value (1 or 2).
         """
-        _update_weo(latest_y=latest_y, latest_r=latest_r)
+        _update_weo(latest_y=latest_y, latest_r=latest_r, dev=dev)
 
-    def load_data(
-        self, latest_y: Union[int, None] = None, latest_r: Union[int, None] = None
-    ) -> None:
+    def load_data(self, latest_y: Union[int, None] = None, latest_r: Union[int, None] = None) -> None:
         """loading WEO as a clean dataframe
 
         Args:

@@ -22,6 +22,8 @@ def _diff_from_today(date: datetime.datetime):
 
 
 def warn_updates():
+    import shutil
+
     with open(config.PATHS.data + r"/data_updates.json") as file:
         updates = json.load(file)
 
@@ -36,19 +38,37 @@ def warn_updates():
             )
             warnings.warn(message)
 
+            path = check_create_data_dir()
+            shutil.copyfile(f"{config.PATHS.data}/data_updates.json", f"{path}/data_updates.json")
 
-def update_update_date(source: str):
+
+def update_update_date(source: str, dev: bool = False):
     """Update the most recent update date for data to today"""
+    import shutil
 
     today = datetime.datetime.today().strftime("%Y-%m-%d")
 
-    with open(config.PATHS.data + r"/data_updates.json") as file:
-        updates = json.load(file)
+    if not dev:
 
-    updates[source] = today
+        path = check_create_data_dir()
+        if not os.path.isfile(f"{path}/data_updates.json"):
+            shutil.copyfile(f"{config.PATHS.data}/data_updates.json", f"{path}/data_updates.json")
 
-    with open(config.PATHS.data + r"/data_updates.json", "w") as outfile:
-        json.dump(updates, outfile)
+        with open(path + r"/data_updates.json") as file:
+            updates = json.load(file)
+
+        updates[source] = today
+
+        with open(path + r"/data_updates.json", "w") as outfile:
+            json.dump(updates, outfile)
+    else:
+        with open(config.PATHS.data + r"/data_updates.json") as file:
+            updates = json.load(file)
+
+        updates[source] = today
+
+        with open(config.PATHS.data + r"/data_updates.json", "w") as outfile:
+            json.dump(updates, outfile)
 
 
 oecd_codes = {
