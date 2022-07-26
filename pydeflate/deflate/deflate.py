@@ -89,11 +89,10 @@ def deflate(
 
         source_col:The column containing the data to be deflated.
 
-        target_col:Column where the deflated data will be stored. It can be the same as the
+        target_col: Column where the deflated data will be stored. It can be the same as the
             source column if a copy of the original isn't needed.
 
-        to_current: If True, amounts will be treated as in constant prices and converted to
-            current prices.
+        to_current: If True, amounts will be treated as in constant prices and converted to current prices.
 
         iso_column:Provided for backwards compatibility. It is essentially an alias for id_column
 
