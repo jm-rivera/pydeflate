@@ -163,4 +163,4 @@ def exchange(
     if year_as_number:
         df[date_column] = df[date_column].dt.year
 
-    return df.drop(["value_xe"], axis=1)
+    return df.drop([f"{value_column}_xe"], axis=1)
