@@ -7,7 +7,7 @@ import sys
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
-__version__ = "1.1.6"
+__version__ = '1.1.6'
 
 project = 'pydeflate'
 copyright = '2022, Jorge Rivera'
