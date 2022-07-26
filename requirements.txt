@@ -1,6 +1,6 @@
 pandas
 weo
-numpy>
+numpy
 BeautifulSoup4
 pandas_datareader
 requests

@@ -3,6 +3,7 @@ name = "pydeflate"
 version = "1.1.7"
 homepage = "https://github.com/jm-rivera/pydeflate"
 description = "Package to convert current prices figures to constant prices and vice versa"
+readme = "README.rst"
 authors = ["Jorge Rivera <jorge.rivera@one.org>"]
 license = "MIT"
 classifiers=[
