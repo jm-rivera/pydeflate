@@ -14,10 +14,10 @@ def test_update():
     test_obj.update(latest_r=1, latest_y=2021)
 
     # Fail test if the file doesn't exist
-    if not os.path.exists(f"{PATHS.data}/weo2021_2.csv"):
+    if not os.path.exists(f"{PATHS.data}/weo2021_1.csv"):
         assert False
 
-    os.remove(f"{PATHS.data}/weo2021_2.csv")
+    os.remove(f"{PATHS.data}/weo2021_1.csv")
 
 
 def test_load_data():

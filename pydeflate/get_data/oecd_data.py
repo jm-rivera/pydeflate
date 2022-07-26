@@ -17,7 +17,7 @@ from pydeflate.utils import (
     base_year,
     oecd_codes,
     value_index,
-    update_update_date,
+    update_update_date, check_create_data_dir,
 )
 
 warnings.simplefilter("ignore", Warning, lineno=1013)
@@ -88,6 +88,8 @@ def _clean_dac1(df: pd.DataFrame) -> pd.DataFrame:
 def _update_dac1() -> None:
     """Update dac1 data from OECD site and save as feather"""
 
+    path = check_create_data_dir()
+
     file_name = "Table1_Data.csv"
 
     print("Downloading DAC1 data, which may take a bit")
@@ -96,7 +98,7 @@ def _update_dac1() -> None:
     df = _read_zip_content(request_content=zip_bytes, file_name=file_name).pipe(
         _clean_dac1
     )
-    df.to_feather(PATHS.data + r"/dac1.feather")
+    df.to_feather(path + r"/dac1.feather")
     print("Successfully downloaded DAC1 data")
     update_update_date("oecd_dac_data")
 

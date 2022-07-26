@@ -1,5 +1,6 @@
 import datetime
 import json
+import os
 import warnings
 from typing import Union
 
@@ -165,12 +166,7 @@ def value_index(df: pd.DataFrame, base_dict: dict) -> pd.Series:
     df_["base"] = df_.iso_code.map(base_dict)
     df_ = df_.loc[df_.year == df_.base]
 
-    base_values = (
-        df_.loc[lambda d: d.value.notna()]
-        .round(5)
-        .set_index("iso_code")["value"]
-        .to_dict()
-    )
+    base_values = df_.loc[lambda d: d.value.notna()].round(5).set_index("iso_code")["value"].to_dict()
 
     return round(100 * data.value / data.iso_code.map(base_values), 3)
 
@@ -178,9 +174,7 @@ def value_index(df: pd.DataFrame, base_dict: dict) -> pd.Series:
 def rebase(df_: pd.DataFrame, base_year: int) -> pd.Series:
     """Rebase values to a given base year"""
 
-    base_values = (
-        df_.loc[df_.year.dt.year == base_year].set_index("iso_code")["value"].to_dict()
-    )
+    base_values = df_.loc[df_.year.dt.year == base_year].set_index("iso_code")["value"].to_dict()
 
     return round(100 * df_.value / df_.iso_code.map(base_values), 3)
 
@@ -212,7 +206,12 @@ def to_iso3(
     src_classification: Union[str, None] = None,
     not_found: Union[str, None] = None,
 ) -> pd.DataFrame:
-    df[target_col] = CC.convert(
-        df[codes_col], src=src_classification, to="ISO3", not_found=not_found
-    )
+    df[target_col] = CC.convert(df[codes_col], src=src_classification, to="ISO3", not_found=not_found)
     return df
+
+
+def check_create_data_dir() -> str:
+    # Check if data is already updated
+    path = os.path.dirname(os.getcwd())
+    os.makedirs(f"{path}/.pydefate_data", exist_ok=True)
+    return f"{path}/.pydefate_data"

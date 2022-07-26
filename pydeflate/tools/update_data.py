@@ -1,11 +1,10 @@
 from pydeflate.get_data.imf_data import IMF
-from pydeflate.get_data.oecd_data import OECD, OECD_XE
+from pydeflate.get_data.oecd_data import OECD
 from pydeflate.get_data.wb_data import WB
 
 DATA = {
     "WEO data": IMF().update,
     "DAC1 data": OECD().update,
-    "DAC exchange and deflators": OECD_XE().update,
     "WB data": WB().update,
 }
 

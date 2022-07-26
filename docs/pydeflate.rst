@@ -8,8 +8,6 @@ Subpackages
    :maxdepth: 4
 
    pydeflate.deflate
-   pydeflate.get_data
-   pydeflate.tools
 
 Submodules
 ----------
@@ -18,6 +16,14 @@ pydeflate.config module
 -----------------------
 
 .. automodule:: pydeflate.config
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pydeflate.tools module
+-----------------------
+
+.. automodule:: pydeflate.tools
    :members:
    :undoc-members:
    :show-inheritance:

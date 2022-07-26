@@ -76,8 +76,3 @@ def test_get_data():
     df4 = test_obj2.get_data()
     assert len(df4) > 0
 
-
-
-def test_get_deflator():
-    test_obj = OECD()
-    assert False

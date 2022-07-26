@@ -7,6 +7,7 @@ from weo import WEO, all_releases, download
 from pydeflate import utils
 from pydeflate.config import PATHS
 from pydeflate.get_data.data import Data
+from pydeflate.utils import check_create_data_dir
 
 
 def _check_weo_parameters(
@@ -26,13 +27,15 @@ def _check_weo_parameters(
 def _update_weo(latest_y: int = None, latest_r: int = None) -> None:
     """Update data from the World Economic Outlook, using WEO package"""
 
+    path = check_create_data_dir()
+
     latest_y, latest_r = _check_weo_parameters(latest_y, latest_r)
 
     # Download the file from the IMF website and store in directory
     download(
         latest_y,
         latest_r,
-        directory=PATHS.data,
+        directory=path,
         filename=f"weo{latest_y}_{latest_r}.csv",
     )
     utils.update_update_date("imf")
