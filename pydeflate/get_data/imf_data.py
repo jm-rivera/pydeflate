@@ -22,7 +22,7 @@ def _check_weo_parameters(latest_y: Union[int, None] = None, latest_r: Union[int
     return latest_y, latest_r
 
 
-def _update_weo(latest_y: int = None, latest_r: int = None, dev: bool = False) -> None:
+def _update_weo(latest_y: int = None, latest_r: int = None) -> None:
     """Update data from the World Economic Outlook, using WEO package"""
 
     path = check_create_data_dir()
@@ -36,7 +36,7 @@ def _update_weo(latest_y: int = None, latest_r: int = None, dev: bool = False) -
         directory=path,
         filename=f"weo{latest_y}_{latest_r}.csv",
     )
-    utils.update_update_date("imf", dev=dev)
+    utils.update_update_date("imf")
 
 
 @dataclass
@@ -45,7 +45,7 @@ class IMF(Data):
     data: pd.DataFrame = None
     """An object to download and return the latest IMF WEO data for several indicators"""
 
-    def update(self, latest_y: Union[int, None] = None, latest_r: Union[int, None] = None, dev: bool = False) -> None:
+    def update(self, latest_y: Union[int, None] = None, latest_r: Union[int, None] = None) -> None:
         """Update the stored WEO data, using WEO package.
 
         Args:
@@ -54,7 +54,7 @@ class IMF(Data):
             latest_r: passed only optionally to override the behaviour to get the latest
             released value (1 or 2).
         """
-        _update_weo(latest_y=latest_y, latest_r=latest_r, dev=dev)
+        _update_weo(latest_y=latest_y, latest_r=latest_r)
 
     def load_data(self, latest_y: Union[int, None] = None, latest_r: Union[int, None] = None) -> None:
         """loading WEO as a clean dataframe

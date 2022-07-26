@@ -86,7 +86,7 @@ def _clean_dac1(df: pd.DataFrame) -> pd.DataFrame:
     )
 
 
-def _update_dac1(dev:bool=False) -> None:
+def _update_dac1() -> None:
     """Update dac1 data from OECD site and save as feather"""
 
     path = check_create_data_dir()
@@ -99,7 +99,7 @@ def _update_dac1(dev:bool=False) -> None:
     df = _read_zip_content(request_content=zip_bytes, file_name=file_name).pipe(_clean_dac1)
     df.to_feather(path + r"/dac1.feather")
     print("Successfully downloaded DAC1 data")
-    update_update_date("oecd_dac_data", dev=dev)
+    update_update_date("oecd_dac_data")
 
 
 @dataclass

@@ -9,13 +9,13 @@ DATA = {
 }
 
 
-def update_all_data(dev:bool = False) -> None:
+def update_all_data() -> None:
     """Run to update all underlying data."""
 
     for source, func in DATA.items():
-        func(dev)
+        func()
         print(f"****Successfully updated {source}****\n")
 
 
 if __name__ == "__main__":
-    update_all_data(dev=True)
+    update_all_data()

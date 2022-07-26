@@ -42,33 +42,24 @@ def warn_updates():
             shutil.copyfile(f"{config.PATHS.data}/data_updates.json", f"{path}/data_updates.json")
 
 
-def update_update_date(source: str, dev: bool = False):
+def update_update_date(source: str):
     """Update the most recent update date for data to today"""
     import shutil
 
     today = datetime.datetime.today().strftime("%Y-%m-%d")
 
-    if not dev:
+    path = check_create_data_dir()
 
-        path = check_create_data_dir()
-        if not os.path.isfile(f"{path}/data_updates.json"):
-            shutil.copyfile(f"{config.PATHS.data}/data_updates.json", f"{path}/data_updates.json")
+    if not os.path.isfile(f"{path}/data_updates.json"):
+        shutil.copyfile(f"{config.PATHS.data}/data_updates.json", f"{path}/data_updates.json")
 
-        with open(path + r"/data_updates.json") as file:
-            updates = json.load(file)
+    with open(path + r"/data_updates.json") as file:
+        updates = json.load(file)
 
-        updates[source] = today
+    updates[source] = today
 
-        with open(path + r"/data_updates.json", "w") as outfile:
-            json.dump(updates, outfile)
-    else:
-        with open(config.PATHS.data + r"/data_updates.json") as file:
-            updates = json.load(file)
-
-        updates[source] = today
-
-        with open(config.PATHS.data + r"/data_updates.json", "w") as outfile:
-            json.dump(updates, outfile)
+    with open(path + r"/data_updates.json", "w") as outfile:
+        json.dump(updates, outfile)
 
 
 oecd_codes = {
@@ -233,5 +224,5 @@ def to_iso3(
 def check_create_data_dir() -> str:
     # Check if data is already updated
     path = os.path.dirname(os.getcwd())
-    os.makedirs(f"{path}/.pydefate_data", exist_ok=True)
-    return f"{path}/.pydefate_data"
+    os.makedirs(f"{path}/.pydeflate_data", exist_ok=True)
+    return f"{path}/.pydeflate_data"

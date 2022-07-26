@@ -40,7 +40,7 @@ def _download_wb_indicator(indicator: str, start: int, end: int, dev: bool = Fal
 
     df.to_feather(config.PATHS.data + rf"/{indicator}_{start}_{end}.feather")
     print(f"Successfully updated {indicator} for {start}-{end}")
-    update_update_date("wb", dev=dev)
+    update_update_date("wb")
 
 
 def _get_iso3c():
@@ -164,7 +164,7 @@ class WB(Data):
     def update(self, **kwargs) -> None:
         """Update data for all WB indicators"""
 
-        _ = [_download_wb_indicator(i, START, END, **kwargs) for i in _INDICATORS.values()]
+        _ = [_download_wb_indicator(i, START, END) for i in _INDICATORS.values()]
 
     def load_data(
         self,
