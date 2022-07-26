@@ -38,7 +38,7 @@ def _download_wb_indicator(indicator: str, start: int, end: int, dev: bool = Fal
     countries = wb.get_countries()
     countries[["name", "iso3c"]].to_csv(path + rf"/wb_class.csv", index=False)
 
-    df.to_feather(config.PATHS.data + rf"/{indicator}_{start}_{end}.feather")
+    df.to_feather(path+ rf"/{indicator}_{start}_{end}.feather")
     print(f"Successfully updated {indicator} for {start}-{end}")
     update_update_date("wb")
 

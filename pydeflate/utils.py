@@ -23,6 +23,9 @@ def _diff_from_today(date: datetime.datetime):
 
 def warn_updates():
     import shutil
+    path = check_create_data_dir()
+    shutil.copyfile(f"{config.PATHS.data}/data_updates.json", f"{path}/data_updates.json")
+
 
     with open(config.PATHS.data + r"/data_updates.json") as file:
         updates = json.load(file)
@@ -223,6 +226,6 @@ def to_iso3(
 
 def check_create_data_dir() -> str:
     # Check if data is already updated
-    path = os.path.dirname(os.getcwd())
+    path = os.path.dirname(os.path.dirname(os.getcwd()))
     os.makedirs(f"{path}/.pydeflate_data", exist_ok=True)
     return f"{path}/.pydeflate_data"
