@@ -61,6 +61,7 @@ Sphinx = "^5.0.2"
 myst-parser = "^0.18.0"
 sphinx-rtd-theme = "^1.0.0"
 sphinxcontrib-napoleon = "^0.7"
+coverage = "^6.4.2"
 
 
 [tool.black]

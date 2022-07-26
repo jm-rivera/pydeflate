@@ -1,21 +1,18 @@
 # Configuration file for the Sphinx documentation builder.
 import os
 import sys
-import pydeflate
 
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
+__version__ = "1.1.6"
 
 project = 'pydeflate'
 copyright = '2022, Jorge Rivera'
 author = 'Jorge Rivera'
-# The short X.Y version.
-version = pydeflate.__version__
-# The full version, including alpha/beta/rc tags.
-release = pydeflate.__version__
+release = __version__
 
 # -- Path setup --------------------------------------------------------------
 
@@ -42,7 +39,7 @@ autodoc_default_options = {
     'member-order': 'bysource',
     'special-members': '__init__',
     'undoc-members': True,
-    'exclude-members': '__weakref__'
+    'exclude-members': '__weakref__',
 }
 autoclass_content = 'both'
 
@@ -64,19 +61,13 @@ html_static_path = ['_static']
 # (source start file, target name, title, author, documentclass
 # [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'pydeflate.tex',
-     'pydeflate Documentation',
-     'Jorge Rivera', 'manual'),
+    (master_doc, 'pydeflate.tex', 'pydeflate Documentation', 'Jorge Rivera', 'manual'),
 ]
 
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    (master_doc, 'pydeflate',
-     'pydeflate Documentation',
-     [author], 1)
-]
+man_pages = [(master_doc, 'pydeflate', 'pydeflate Documentation', [author], 1)]
 
 
 # -- Options for Texinfo output ----------------------------------------
@@ -85,11 +76,13 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'pydeflate',
-     'pydeflate Documentation',
-     author,
-     'pydeflate',
-     'One line description of project.',
-     'Miscellaneous'),
+    (
+        master_doc,
+        'pydeflate',
+        'pydeflate Documentation',
+        author,
+        'pydeflate',
+        'One line description of project.',
+        'Miscellaneous',
+    ),
 ]
-
