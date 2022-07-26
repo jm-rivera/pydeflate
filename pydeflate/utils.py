@@ -22,10 +22,6 @@ def _diff_from_today(date: datetime.datetime):
 
 
 def warn_updates():
-    import shutil
-    path = check_create_data_dir()
-    shutil.copyfile(f"{config.PATHS.data}/data_updates.json", f"{path}/data_updates.json")
-
 
     with open(config.PATHS.data + r"/data_updates.json") as file:
         updates = json.load(file)
@@ -36,13 +32,10 @@ def warn_updates():
             message = (
                 f'\n\nThe underlying data for "{source}" has not been updated'
                 f" in over {_diff_from_today(d)} days. \nIn order to use"
-                " pydeflate with the most recent data, please run:\n"
-                '"pydeflate.update_all_data()"\n\n'
+                " pydeflate with the most recent data, please update your"
+                "version of pydeflate:\n"
             )
             warnings.warn(message)
-
-            path = check_create_data_dir()
-            shutil.copyfile(f"{config.PATHS.data}/data_updates.json", f"{path}/data_updates.json")
 
 
 def update_update_date(source: str):
@@ -51,17 +44,12 @@ def update_update_date(source: str):
 
     today = datetime.datetime.today().strftime("%Y-%m-%d")
 
-    path = check_create_data_dir()
-
-    if not os.path.isfile(f"{path}/data_updates.json"):
-        shutil.copyfile(f"{config.PATHS.data}/data_updates.json", f"{path}/data_updates.json")
-
-    with open(path + r"/data_updates.json") as file:
+    with open(config.PATHS.data + r"/data_updates.json") as file:
         updates = json.load(file)
 
     updates[source] = today
 
-    with open(path + r"/data_updates.json", "w") as outfile:
+    with open(config.PATHS.data + r"/data_updates.json", "w") as outfile:
         json.dump(updates, outfile)
 
 
@@ -222,10 +210,3 @@ def to_iso3(
 ) -> pd.DataFrame:
     df[target_col] = CC.convert(df[codes_col], src=src_classification, to="ISO3", not_found=not_found)
     return df
-
-
-def check_create_data_dir() -> str:
-    # Check if data is already updated
-    path = os.path.dirname(os.path.dirname(os.getcwd()))
-    os.makedirs(f"{path}/.pydeflate_data", exist_ok=True)
-    return f"{path}/.pydeflate_data"
