@@ -42,7 +42,7 @@ def deflate(
     Args:
         df: the DataFrame containing the flows column to be deflated. If multiple
             columns need to be deflated, the function needs to be called multiple times.
-            base_year: If converting from current to constant, the target base year for the
+        base_year: If converting from current to constant, the target base year for the
             constant figures. If converting from constant, the base year of the data.
         source:{‘oecd_dac’, 'wb', 'imf'}
             The source of the data used to build the deflators. The value (and
@@ -102,6 +102,9 @@ def deflate(
 
 
     """
+    # copy the dataframe to avoid modifying the original
+    df = df.copy(deep=True)
+
     # Backwards compatibility: if the iso_column parameter is used, reassign it to
     # the ID column
     if iso_column is not None:
@@ -126,7 +129,9 @@ def deflate(
     if id_type == "DAC":
         df["id_"] = df[id_column].map(oecd_codes).fillna("DAC")
     else:
-        df = df.pipe(to_iso3, codes_col=id_column, target_col="id_", src_classification=id_type)
+        df = df.pipe(
+            to_iso3, codes_col=id_column, target_col="id_", src_classification=id_type
+        )
 
     # Create exchange and price data objects. The specific objects created depend on the
     # source and/or method specified
@@ -139,9 +144,9 @@ def deflate(
     x_dfl: Callable = xe.get_deflator
 
     # Get currency exchange DataFrame. This is based on the target currency
-    x_rate: pd.DataFrame = xe.get_data(currency_iso=target_currency if not to_current else source_currency).copy(
-        deep=True
-    )
+    x_rate: pd.DataFrame = xe.get_data(
+        currency_iso=target_currency if not to_current else source_currency
+    ).copy(deep=True)
 
     # Create a Deflator object and get the deflator DataFrame.
     deflator = (

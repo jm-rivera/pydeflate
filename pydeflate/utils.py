@@ -1,6 +1,5 @@
 import datetime
 import json
-import os
 import warnings
 from typing import Union
 
@@ -32,15 +31,14 @@ def warn_updates():
             message = (
                 f'\n\nThe underlying data for "{source}" has not been updated'
                 f" in over {_diff_from_today(d)} days. \nIn order to use"
-                " pydeflate with the most recent data, please update your"
-                "version of pydeflate:\n"
+                " pydeflate with the most recent data, please run:\n"
+                "`pydeflate.update_all_data()`"
             )
             warnings.warn(message)
 
 
 def update_update_date(source: str):
     """Update the most recent update date for data to today"""
-    import shutil
 
     today = datetime.datetime.today().strftime("%Y-%m-%d")
 
@@ -145,7 +143,7 @@ def clean_number(number):
     if not isinstance(number, str):
         number = str(number)
 
-    number = re.sub(r"[^0-9.]", "", number)
+    number = re.sub(r"[^\d.]", "", number)
 
     if number == "":
         return np.nan
@@ -153,7 +151,7 @@ def clean_number(number):
     return float(number)
 
 
-def base_year(df: pd.DataFrame, date_col: str = "date") -> dict:
+def base_year_dict(df: pd.DataFrame, date_col: str = "date") -> dict:
     """Return dictionary of base years by iso_code"""
 
     return df.loc[df.value == 100].set_index("iso_code")[date_col].to_dict()
@@ -168,7 +166,12 @@ def value_index(df: pd.DataFrame, base_dict: dict) -> pd.Series:
     df_["base"] = df_.iso_code.map(base_dict)
     df_ = df_.loc[df_.year == df_.base]
 
-    base_values = df_.loc[lambda d: d.value.notna()].round(5).set_index("iso_code")["value"].to_dict()
+    base_values = (
+        df_.loc[lambda d: d.value.notna()]
+        .round(5)
+        .set_index("iso_code")["value"]
+        .to_dict()
+    )
 
     return round(100 * data.value / data.iso_code.map(base_values), 3)
 
@@ -176,7 +179,9 @@ def value_index(df: pd.DataFrame, base_dict: dict) -> pd.Series:
 def rebase(df_: pd.DataFrame, base_year: int) -> pd.Series:
     """Rebase values to a given base year"""
 
-    base_values = df_.loc[df_.year.dt.year == base_year].set_index("iso_code")["value"].to_dict()
+    base_values = (
+        df_.loc[df_.year.dt.year == base_year].set_index("iso_code")["value"].to_dict()
+    )
 
     return round(100 * df_.value / df_.iso_code.map(base_values), 3)
 
@@ -208,5 +213,7 @@ def to_iso3(
     src_classification: Union[str, None] = None,
     not_found: Union[str, None] = None,
 ) -> pd.DataFrame:
-    df[target_col] = CC.convert(df[codes_col], src=src_classification, to="ISO3", not_found=not_found)
+    df[target_col] = CC.convert(
+        df[codes_col], src=src_classification, to="ISO3", not_found=not_found
+    )
     return df

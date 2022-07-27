@@ -91,6 +91,9 @@ def exchange(
 
     """
 
+    # create a copy of the dataframe to avoid modifying the original
+    df = df.copy(deep=True)
+
     # Check whether provided parameters are valid
     _check_key_errors(rates_source, df.columns, value_column, date_column)
 
@@ -98,6 +101,13 @@ def exchange(
     if source_currency == target_currency:
         df[target_column] = df[value_column]
         return df
+
+    # keep track of original columns. This is so that the same order and columns can be
+    # preserved.
+    if target_column not in df.columns:
+        cols = [*df.columns, target_column]
+    else:
+        cols = df.columns
 
     # check whether date is provided as integer
     df, year_as_number = check_year_as_number(df, date_column)
@@ -163,4 +173,4 @@ def exchange(
     if year_as_number:
         df[date_column] = df[date_column].dt.year
 
-    return df.drop([f"{value_column}_xe"], axis=1)
+    return df.filter(cols, axis=1)

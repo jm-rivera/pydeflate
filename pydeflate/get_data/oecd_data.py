@@ -14,7 +14,7 @@ from bs4 import BeautifulSoup as Bs
 from pydeflate.config import PATHS
 from pydeflate.get_data.data import Data
 from pydeflate.utils import (
-    base_year,
+    base_year_dict,
     oecd_codes,
     value_index,
     update_update_date,
@@ -157,7 +157,7 @@ class OECD_XE(Data):
         # get deflators and base year
         defl = self.data[["iso_code", "year", "deflator"]].rename(columns={"deflator": "value"})
 
-        base = base_year(defl, "year")
+        base = base_year_dict(defl, "year")
 
         # get the exchange rate as an index based on the base year
         xe.value = value_index(xe, base)
