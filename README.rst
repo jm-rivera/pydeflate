@@ -261,3 +261,5 @@ original sources
    :target: https://github.com/psf/black
 .. |Downloads| image:: https://pepy.tech/badge/pydeflate/month
    :target: https://pepy.tech/project/pydeflate
+
+Gbemisola Joel-Osoba provided extensive feedback and testing of version 1.
