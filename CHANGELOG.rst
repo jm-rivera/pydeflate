@@ -1,6 +1,62 @@
 Changelog
 =========
 
+1.1.9 (2022-07-27)
+------------------
+
+- Fixed bugs and added other minor improvements.
+- Calling `deflate()` or `exchange()` now creates a deep copy of the
+  passed data frame in order to avoid changing the original data/object.
+- Re-added a prompt to use `update_all_data()` to manually update the
+  underlying data.
+
+
+1.1.8 (2022-07-26)
+------------------
+
+- Fixed bugs and added other minor improvements.
+- Improved documentation.
+
+
+1.1.7 (2022-07-26)
+------------------
+
+- Fixed bugs and added other minor improvements.
+- Improved documentation.
+
+
+1.1.6 (2022-07-26)
+------------------
+
+- Fixed bugs and added other minor improvements.
+- Improved documentation.
+
+
+1.1.5 (2022-07-26)
+------------------
+
+- Fixed bugs and added other minor improvements.
+- Improved documentation.
+
+1.1.4 (2022-07-26)
+------------------
+
+- Fixed bugs and added other minor improvements.
+
+
+1.1.3 (2022-07-05)
+------------------
+
+- Made significant back-end improvements to how data is managed.
+- Improved the deflate API to be more clear about what is needed.
+- Fixed small bugs and added other minor improvements.
+
+
+1.0.1 (2021-11-27)
+------------------
+
+- Fixed small bugs and other minor improvements.
+
 1.0.0 (2021-11-27)
 ------------------
 
