@@ -12,6 +12,14 @@ pydeflate.deflate.deflate module
    :undoc-members:
    :show-inheritance:
 
+pydeflate.deflate.deflator module
+---------------------------------
+
+.. automodule:: pydeflate.deflate.deflator
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Module contents
 ---------------
 

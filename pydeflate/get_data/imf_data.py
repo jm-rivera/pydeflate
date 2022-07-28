@@ -124,7 +124,7 @@ class IMF(Data):
         }
 
     def get_data(self, **kwargs):
-        raise NotImplementedError
+        pass
 
     def get_deflator(self, **kwargs) -> pd.DataFrame:
         """Get the deflator DataFrame for the specified method"""
