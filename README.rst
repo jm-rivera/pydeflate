@@ -9,6 +9,9 @@ The pydeflate Package
 
 |Downloads|
 
+|Coverage|
+
+
 **Pydeflate** is a Python package to convert flows data to constant
 prices. This can be done from any source currency to any desired base
 year and currency. **Pydeflate** can also be used to convert constant
@@ -261,5 +264,9 @@ original sources
    :target: https://github.com/psf/black
 .. |Downloads| image:: https://pepy.tech/badge/pydeflate/month
    :target: https://pepy.tech/project/pydeflate
+
+.. |Coverage| image:: https://codecov.io/gh/jm-rivera/pydeflate/branch/main/graph/badge.svg?token=uwKI5DyO3w
+   :target: https://codecov.io/gh/jm-rivera/pydeflate
+
 
 Gbemisola Joel-Osoba provided extensive feedback and testing of version 1.
