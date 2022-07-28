@@ -2,13 +2,9 @@ The pydeflate Package
 =====================
 
 |pypi|
-
 |Documentation Status|
-
 |black|
-
 |Downloads|
-
 |Coverage|
 
 
