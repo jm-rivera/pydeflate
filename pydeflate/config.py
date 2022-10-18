@@ -1,13 +1,8 @@
-import os
+from pathlib import Path
 
 
-class Paths:
-    def __init__(self, project_dir):
-        self.project_dir = project_dir
+class PATHS:
+    """Class to store the paths to the data and output folders."""
 
-    @property
-    def data(self):
-        return os.path.join(self.project_dir, "pydeflate", ".pydeflate_data")
-
-
-PATHS = Paths(os.path.dirname(os.path.dirname(__file__)))
+    package = Path(__file__).resolve().parent.parent
+    data = package / "pydeflate" / ".pydeflate_data"

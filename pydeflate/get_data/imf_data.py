@@ -9,7 +9,9 @@ from pydeflate.config import PATHS
 from pydeflate.get_data.data import Data
 
 
-def _check_weo_parameters(latest_y: Union[int, None] = None, latest_r: Union[int, None] = None) -> (int, int):
+def _check_weo_parameters(
+    latest_y: Union[int, None] = None, latest_r: Union[int, None] = None
+) -> (int, int):
     """Check parameters and return max values or provided input"""
     if latest_y is None:
         latest_y = max(*all_releases())[0]
@@ -42,7 +44,9 @@ class IMF(Data):
     data: pd.DataFrame = None
     """An object to download and return the latest IMF WEO data for several indicators"""
 
-    def update(self, latest_y: Union[int, None] = None, latest_r: Union[int, None] = None) -> None:
+    def update(
+        self, latest_y: Union[int, None] = None, latest_r: Union[int, None] = None
+    ) -> None:
         """Update the stored WEO data, using WEO package.
 
         Args:
@@ -53,7 +57,9 @@ class IMF(Data):
         """
         _update_weo(latest_y=latest_y, latest_r=latest_r)
 
-    def load_data(self, latest_y: Union[int, None] = None, latest_r: Union[int, None] = None) -> None:
+    def load_data(
+        self, latest_y: Union[int, None] = None, latest_r: Union[int, None] = None
+    ) -> None:
         """loading WEO as a clean dataframe
 
         Args:
@@ -76,11 +82,11 @@ class IMF(Data):
             "WEO Country Code",
             "Country",
             "Subject Notes",
-            "Country/Series-specific Notes",
+            "Country/Series-specific Notes"
             "Estimates Start After",
         ]
 
-        df = WEO(PATHS.data + rf"/weo{latest_y}_{latest_r}.csv").df
+        df = WEO(PATHS.data / f"weo{latest_y}_{latest_r}.csv").df
 
         self.data = (
             df.drop(to_drop, axis=1)
