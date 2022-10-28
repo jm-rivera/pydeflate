@@ -86,7 +86,7 @@ class WB_XE(Data):
         indicator = _INDICATORS[self.method]
 
         self.data = pd.read_feather(
-            config.PYDEFLATE_PATHS.data / f"/{indicator}_{START}_{END}.feather"
+            config.PYDEFLATE_PATHS.data / f"{indicator}_{START}_{END}.feather"
         ).pipe(_clean_wb_indicator, indicator)
 
     def available_methods(self) -> dict:

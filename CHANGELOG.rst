@@ -1,6 +1,10 @@
 Changelog
 =========
 
+1.2.1 (2022-10-28)
+------------------
+- Fix issues with the change to pathlib.
+
 1.2.0 (2022-10-28)
 ------------------
 - Updated the underlying data

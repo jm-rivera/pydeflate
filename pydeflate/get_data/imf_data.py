@@ -82,7 +82,7 @@ class IMF(Data):
             "WEO Country Code",
             "Country",
             "Subject Notes",
-            "Country/Series-specific Notes"
+            "Country/Series-specific Notes",
             "Estimates Start After",
         ]
 

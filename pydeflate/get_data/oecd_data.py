@@ -1,13 +1,10 @@
-import datetime
 import io
 import warnings
 import zipfile as zf
 from dataclasses import dataclass
 from typing import Union
 
-
 import pandas as pd
-
 import requests
 from bs4 import BeautifulSoup as Bs
 
@@ -114,7 +111,7 @@ class OECD_XE(Data):
         self._check_method()
 
         self.data = pd.read_feather(
-            rf"{PYDEFLATE_PATHS.data}{self.available_methods()[self.method]}"
+            PYDEFLATE_PATHS.data / f"{self.available_methods()[self.method]}"
         )
 
     def _get_usd_exchange(self) -> pd.DataFrame:
@@ -140,7 +137,7 @@ class OECD_XE(Data):
     def available_methods(self) -> dict:
         """The most complete dataset is obtained by deriving the exchange rate
         from the total ODA data found in Table 1"""
-        return {"implied": r"/dac1.feather"}
+        return {"implied": "dac1.feather"}
 
     def get_data(self, currency_iso: str) -> pd.DataFrame:
         """Get an exchange rate for a given ISO"""
@@ -186,7 +183,7 @@ class OECD(Data):
         _update_dac1(**kwargs)
 
     def load_data(self, **kwargs) -> None:
-        self.data = pd.read_feather(PYDEFLATE_PATHS.data + r"/dac1.feather")
+        self.data = pd.read_feather(PYDEFLATE_PATHS.data / "dac1.feather")
 
     def available_methods(self) -> dict:
         print("Only the DAC Deflators method is available")

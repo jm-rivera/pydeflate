@@ -8,16 +8,16 @@ def test_update():
     test_obj = OECD_XE()
     test_obj2 = OECD()
 
-    last_update_dac1 = os.path.getmtime(PYDEFLATE_PATHS.data + r"/dac1.feather")
+    last_update_dac1 = os.path.getmtime(PYDEFLATE_PATHS.data / "dac1.feather")
 
     test_obj.update()
 
-    assert os.path.getmtime(PYDEFLATE_PATHS.data + r"/dac1.feather") > last_update_dac1
+    assert os.path.getmtime(PYDEFLATE_PATHS.data / "dac1.feather") > last_update_dac1
 
-    last_update_dac1_2 = os.path.getmtime(PYDEFLATE_PATHS.data + r"/dac1.feather")
+    last_update_dac1_2 = os.path.getmtime(PYDEFLATE_PATHS.data / "dac1.feather")
     test_obj2.update()
 
-    assert os.path.getmtime(PYDEFLATE_PATHS.data + r"/dac1.feather") > last_update_dac1_2
+    assert os.path.getmtime(PYDEFLATE_PATHS.data / "dac1.feather") > last_update_dac1_2
 
 
 def test_load_data():
@@ -75,4 +75,3 @@ def test_get_data():
     test_obj2.load_data()
     df4 = test_obj2.get_data()
     assert len(df4) > 0
-

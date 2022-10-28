@@ -11,13 +11,13 @@ def test_update():
     test_obj = imf_data.IMF()
 
     # Download an older version
-    test_obj.update(latest_r=1, latest_y=2021)
+    test_obj.update(latest_r=1, latest_y=2022)
 
     # Fail test if the file doesn't exist
-    if not os.path.exists(f"{PYDEFLATE_PATHS.data}/weo2021_1.csv"):
+    if not os.path.exists(PYDEFLATE_PATHS.data / "weo2022_1.csv"):
         assert False
 
-    os.remove(f"{PYDEFLATE_PATHS.data}/weo2021_1.csv")
+    os.remove(PYDEFLATE_PATHS.data / "weo2022_1.csv")
 
 
 def test_load_data():
@@ -69,14 +69,6 @@ def test_available_methods():
     for k, v in test_obj.available_methods().items():
         assert isinstance(k, str)
         assert isinstance(v, Callable)
-
-
-def test_get_data():
-    with pytest.raises(NotImplementedError) as error:
-        test_obj = imf_data.IMF()
-        test_obj.get_data()
-
-    assert error.typename == "NotImplementedError"
 
 
 def test_get_deflator():
