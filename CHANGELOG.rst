@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.2.0 (2022-10-28)
+------------------
+- Updated the underlying data
+- Added an optional way for users to specify the folder where the data
+  should be stored. Use by calling `pydeflate.set_pydeflate_path()'.
 
 1.1.10 (2022-07-28)
 ------------------
