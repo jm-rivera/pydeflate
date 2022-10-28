@@ -38,16 +38,16 @@ def _download_wb_indicator(
 
     countries = wb.get_countries()
     countries[["name", "iso3c"]].to_csv(
-        config.PATHS.data / f"wb_class.csv", index=False
+        config.PYDEFLATE_PATHS.data / f"wb_class.csv", index=False
     )
 
-    df.to_feather(config.PATHS.data / f"{indicator}_{start}_{end}.feather")
+    df.to_feather(config.PYDEFLATE_PATHS.data / f"{indicator}_{start}_{end}.feather")
     print(f"Successfully updated {indicator} for {start}-{end}")
     update_update_date("wb")
 
 
 def _get_iso3c():
-    countries = pd.read_csv(config.PATHS.data / f"wb_class.csv")
+    countries = pd.read_csv(config.PYDEFLATE_PATHS.data / f"wb_class.csv")
     return countries[["name", "iso3c"]].set_index("name")["iso3c"].to_dict()
 
 
@@ -86,7 +86,7 @@ class WB_XE(Data):
         indicator = _INDICATORS[self.method]
 
         self.data = pd.read_feather(
-            config.PATHS.data / f"/{indicator}_{START}_{END}.feather"
+            config.PYDEFLATE_PATHS.data / f"/{indicator}_{START}_{END}.feather"
         ).pipe(_clean_wb_indicator, indicator)
 
     def available_methods(self) -> dict:
@@ -188,7 +188,7 @@ class WB(Data):
         indicator: str,
     ) -> None:
         self.data = pd.read_feather(
-            config.PATHS.data / f"{indicator}_{START}_{END}.feather"
+            config.PYDEFLATE_PATHS.data / f"{indicator}_{START}_{END}.feather"
         ).pipe(_clean_wb_indicator, indicator)
 
     def available_methods(self) -> dict:

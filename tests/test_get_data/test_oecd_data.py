@@ -1,6 +1,6 @@
 import os
 
-from pydeflate.config import PATHS
+from pydeflate.config import PYDEFLATE_PATHS
 from pydeflate.get_data.oecd_data import OECD_XE, OECD
 
 
@@ -8,16 +8,16 @@ def test_update():
     test_obj = OECD_XE()
     test_obj2 = OECD()
 
-    last_update_dac1 = os.path.getmtime(PATHS.data + r"/dac1.feather")
+    last_update_dac1 = os.path.getmtime(PYDEFLATE_PATHS.data + r"/dac1.feather")
 
     test_obj.update()
 
-    assert os.path.getmtime(PATHS.data + r"/dac1.feather") > last_update_dac1
+    assert os.path.getmtime(PYDEFLATE_PATHS.data + r"/dac1.feather") > last_update_dac1
 
-    last_update_dac1_2 = os.path.getmtime(PATHS.data + r"/dac1.feather")
+    last_update_dac1_2 = os.path.getmtime(PYDEFLATE_PATHS.data + r"/dac1.feather")
     test_obj2.update()
 
-    assert os.path.getmtime(PATHS.data + r"/dac1.feather") > last_update_dac1_2
+    assert os.path.getmtime(PYDEFLATE_PATHS.data + r"/dac1.feather") > last_update_dac1_2
 
 
 def test_load_data():

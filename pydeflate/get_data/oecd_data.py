@@ -11,7 +11,7 @@ import pandas as pd
 import requests
 from bs4 import BeautifulSoup as Bs
 
-from pydeflate.config import PATHS
+from pydeflate.config import PYDEFLATE_PATHS
 from pydeflate.get_data.data import Data
 from pydeflate.utils import (
     base_year_dict,
@@ -88,15 +88,15 @@ def _clean_dac1(df: pd.DataFrame) -> pd.DataFrame:
 def _update_dac1() -> None:
     """Update dac1 data from OECD site and save as feather"""
 
-
-
     file_name = "Table1_Data.csv"
 
     print("Downloading DAC1 data, which may take a bit")
 
     zip_bytes = _download_bulk_file(url=_TABLE1_URL)
-    df = _read_zip_content(request_content=zip_bytes, file_name=file_name).pipe(_clean_dac1)
-    df.to_feather(PATHS.data + r"/dac1.feather")
+    df = _read_zip_content(request_content=zip_bytes, file_name=file_name).pipe(
+        _clean_dac1
+    )
+    df.to_feather(PYDEFLATE_PATHS.data / "dac1.feather")
     print("Successfully downloaded DAC1 data")
     update_update_date("oecd_dac_data")
 
@@ -113,20 +113,29 @@ class OECD_XE(Data):
     def load_data(self, **kwargs) -> None:
         self._check_method()
 
-        self.data = pd.read_feather(rf"{PATHS.data}{self.available_methods()[self.method]}")
+        self.data = pd.read_feather(
+            rf"{PYDEFLATE_PATHS.data}{self.available_methods()[self.method]}"
+        )
 
     def _get_usd_exchange(self) -> pd.DataFrame:
         if self.data is None:
             self.load_data()
 
-        return self.data[["iso_code", "year", "exchange"]].rename(columns={"exchange": "value"})
+        return self.data[["iso_code", "year", "exchange"]].rename(
+            columns={"exchange": "value"}
+        )
 
     def _get_exchange2usd_dict(self, currency_iso: str) -> dict:
         """Dictionary of currency_iso to USD"""
 
         df = self._get_usd_exchange()
 
-        return df.loc[df.iso_code == currency_iso].dropna().set_index("year")["value"].to_dict()
+        return (
+            df.loc[df.iso_code == currency_iso]
+            .dropna()
+            .set_index("year")["value"]
+            .to_dict()
+        )
 
     def available_methods(self) -> dict:
         """The most complete dataset is obtained by deriving the exchange rate
@@ -155,7 +164,9 @@ class OECD_XE(Data):
             raise ValueError(f"No currency exchange data for {currency_iso}")
 
         # get deflators and base year
-        defl = self.data[["iso_code", "year", "deflator"]].rename(columns={"deflator": "value"})
+        defl = self.data[["iso_code", "year", "deflator"]].rename(
+            columns={"deflator": "value"}
+        )
 
         base = base_year_dict(defl, "year")
 
@@ -175,7 +186,7 @@ class OECD(Data):
         _update_dac1(**kwargs)
 
     def load_data(self, **kwargs) -> None:
-        self.data = pd.read_feather(PATHS.data + r"/dac1.feather")
+        self.data = pd.read_feather(PYDEFLATE_PATHS.data + r"/dac1.feather")
 
     def available_methods(self) -> dict:
         print("Only the DAC Deflators method is available")
@@ -186,9 +197,14 @@ class OECD(Data):
             self.load_data()
 
         if self.method is not None:
-            print("Only the DAC Deflators method is available.\n" f"'Method {self.method}' ignored")
+            print(
+                "Only the DAC Deflators method is available.\n"
+                f"'Method {self.method}' ignored"
+            )
 
-        return self.data[["iso_code", "year", "deflator"]].rename(columns={"deflator": "value"})
+        return self.data[["iso_code", "year", "deflator"]].rename(
+            columns={"deflator": "value"}
+        )
 
     def get_deflator(self, **kwargs) -> pd.DataFrame:
         xe_usd = OECD_XE().get_deflator("USA")

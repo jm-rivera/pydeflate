@@ -5,7 +5,7 @@ import pandas as pd
 from weo import WEO, all_releases, download
 
 from pydeflate import utils
-from pydeflate.config import PATHS
+from pydeflate.config import PYDEFLATE_PATHS
 from pydeflate.get_data.data import Data
 
 
@@ -32,7 +32,7 @@ def _update_weo(latest_y: int = None, latest_r: int = None) -> None:
     download(
         latest_y,
         latest_r,
-        directory=PATHS.data,
+        directory=PYDEFLATE_PATHS.data,
         filename=f"weo{latest_y}_{latest_r}.csv",
     )
     utils.update_update_date("imf")
@@ -86,7 +86,7 @@ class IMF(Data):
             "Estimates Start After",
         ]
 
-        df = WEO(PATHS.data / f"weo{latest_y}_{latest_r}.csv").df
+        df = WEO(PYDEFLATE_PATHS.data / f"weo{latest_y}_{latest_r}.csv").df
 
         self.data = (
             df.drop(to_drop, axis=1)
