@@ -1,6 +1,10 @@
 Changelog
 =========
 
+1.2.2 (2022-11-03)
+------------------
+- Fix issues with `pd.NA` when too many values are replaced. It now uses `np.nan`.
+
 1.2.1 (2022-10-28)
 ------------------
 - Fix issues with the change to pathlib.

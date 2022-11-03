@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 from typing import Union, Callable
 
+import numpy as np
 import pandas as pd
 
 from pydeflate import utils
@@ -95,7 +96,7 @@ class Deflator:
 
         return (
             df.filter(["iso_code", "year", "value"], axis=1)
-            .replace(0, pd.NA)
+            .assign(value=lambda d: d.value.replace(0, np.nan))
             .dropna(subset=["value"])
             .reset_index(drop=True)
             .pipe(self.__align_currencies, xe=self.xe)
