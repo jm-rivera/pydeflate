@@ -1,6 +1,12 @@
 Changelog
 =========
 
+1.2.3 (2022-11-23)
+------------------
+- Reduced the precision level of deflators and exchange rates on DAC data. This update
+aligns with the precision level in DAC data, as published by the OECD.
+
+
 1.2.2 (2022-11-03)
 ------------------
 - Fix issues with `pd.NA` when too many values are replaced. It now uses `np.nan`.
