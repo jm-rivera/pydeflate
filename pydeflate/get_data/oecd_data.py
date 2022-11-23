@@ -71,8 +71,8 @@ def _clean_dac1(df: pd.DataFrame) -> pd.DataFrame:
         .pivot(index=["donor_code", "year"], columns=["type"], values="value")
         .reset_index()
         .assign(
-            exchange=lambda d: d.N / d.A,
-            deflator=lambda d: (100 * d.A / d.D).round(2),  # implied deflator
+            exchange=lambda d: round(d.N / d.A, 4),
+            deflator=lambda d: round(100 * d.A / d.D, 2),  # implied deflator
             iso_code=lambda d: d.donor_code.map(oecd_codes),
             year=lambda d: pd.to_datetime(d.year, format="%Y"),
         )
@@ -213,6 +213,6 @@ class OECD(Data):
             suffixes=("_def", "_xe"),
         )
 
-        df["value"] = round(df.value_def * (df.value_xe / 100), 3)
+        df["value"] = round(df.value_def * (df.value_xe / 100), 2)
 
         return df[["iso_code", "year", "value"]]

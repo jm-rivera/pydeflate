@@ -185,7 +185,3 @@ def deflate(
         df[date_column] = df[date_column].dt.year
 
     return df
-
-
-if __name__ == "__main__":
-    pass
