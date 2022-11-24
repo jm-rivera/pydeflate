@@ -85,8 +85,15 @@ class IMF(Data):
             "Country/Series-specific Notes",
             "Estimates Start After",
         ]
+        try:
+            df = WEO(PYDEFLATE_PATHS.data / f"weo{latest_y}_{latest_r}.csv").df
 
-        df = WEO(PYDEFLATE_PATHS.data / f"weo{latest_y}_{latest_r}.csv").df
+        except FileNotFoundError:
+            print("No IMF WEO data found, downloading latest release")
+            self.update()
+
+        finally:
+            df = WEO(PYDEFLATE_PATHS.data / f"weo{latest_y}_{latest_r}.csv").df
 
         self.data = (
             df.drop(to_drop, axis=1)

@@ -85,9 +85,17 @@ class WB_XE(Data):
         self._check_method()
         indicator = _INDICATORS[self.method]
 
-        self.data = pd.read_feather(
-            config.PYDEFLATE_PATHS.data / f"{indicator}_{START}_{END}.feather"
-        ).pipe(_clean_wb_indicator, indicator)
+        try:
+            self.data = pd.read_feather(
+                config.PYDEFLATE_PATHS.data / f"{indicator}_{START}_{END}.feather"
+            ).pipe(_clean_wb_indicator, indicator)
+        except FileNotFoundError:
+            print("Data not found. Updating...")
+            self.update()
+        finally:
+            self.data = pd.read_feather(
+                config.PYDEFLATE_PATHS.data / f"{indicator}_{START}_{END}.feather"
+            ).pipe(_clean_wb_indicator, indicator)
 
     def available_methods(self) -> dict:
         return {

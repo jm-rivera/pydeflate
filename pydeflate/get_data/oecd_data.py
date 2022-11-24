@@ -110,9 +110,18 @@ class OECD_XE(Data):
     def load_data(self, **kwargs) -> None:
         self._check_method()
 
-        self.data = pd.read_feather(
-            PYDEFLATE_PATHS.data / f"{self.available_methods()[self.method]}"
-        )
+        try:
+            self.data = pd.read_feather(
+                PYDEFLATE_PATHS.data / f"{self.available_methods()[self.method]}"
+            )
+        except FileNotFoundError:
+            print("Data not found, downloading...")
+            self.update()
+
+        finally:
+            self.data = pd.read_feather(
+                PYDEFLATE_PATHS.data / f"{self.available_methods()[self.method]}"
+            )
 
     def _get_usd_exchange(self) -> pd.DataFrame:
         if self.data is None:
@@ -183,7 +192,13 @@ class OECD(Data):
         _update_dac1(**kwargs)
 
     def load_data(self, **kwargs) -> None:
-        self.data = pd.read_feather(PYDEFLATE_PATHS.data / "dac1.feather")
+        try:
+            self.data = pd.read_feather(PYDEFLATE_PATHS.data / "dac1.feather")
+        except FileNotFoundError:
+            print("Data not found, downloading...")
+            self.update()
+        finally:
+            self.data = pd.read_feather(PYDEFLATE_PATHS.data / "dac1.feather")
 
     def available_methods(self) -> dict:
         print("Only the DAC Deflators method is available")
