@@ -1,6 +1,10 @@
 Changelog
 =========
 
+1.2.5 (2022-12-11)
+------------------
+- Update dependencies
+
 1.2.3 (2022-11-23)
 ------------------
 - Reduced the precision level of deflators and exchange rates on DAC data. This update
