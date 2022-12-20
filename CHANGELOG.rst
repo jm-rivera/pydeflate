@@ -1,6 +1,10 @@
 Changelog
 =========
 
+1.2.7 (2022-12-20)
+------------------
+- Update requirements.
+
 1.2.6 (2022-12-11)
 ------------------
 - Revert change to the precision level of deflators for OECD data.

@@ -71,12 +71,9 @@ test = [
     "flake8",
     "flake8-docstrings",
     "pytest-cov",
-    "pandas"
 ]
 
-dev = ["tox", "pre-commit", "virtualenv", "pip", "twine", "toml", "bump2version", "pandas",
-    "numpy", "country-converter", 'pytest','pytest-cov'
-]
+dev = ["tox", "pre-commit", "virtualenv", "pip", "twine", "toml", "bump2version", 'pytest','pytest-cov']
 
 docs = ["Sphinx", "sphinx-rtd-theme", "sphinxcontrib-napoleon", "myst-parser"]
 
