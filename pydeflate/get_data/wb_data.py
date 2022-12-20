@@ -41,7 +41,9 @@ def _download_wb_indicator(
         config.PYDEFLATE_PATHS.data / f"wb_class.csv", index=False
     )
 
-    df.to_feather(config.PYDEFLATE_PATHS.data / f"{indicator}_{start}_{end}.feather")
+    df.reset_index(drop=True).to_feather(
+        config.PYDEFLATE_PATHS.data / f"{indicator}_{start}_{end}.feather"
+    )
     print(f"Successfully updated {indicator} for {start}-{end}")
     update_update_date("wb")
 

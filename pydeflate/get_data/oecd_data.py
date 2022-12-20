@@ -72,7 +72,7 @@ def _clean_dac1(df: pd.DataFrame) -> pd.DataFrame:
         .reset_index()
         .assign(
             exchange=lambda d: round(d.N / d.A, 4),
-            deflator=lambda d: round(100 * d.A / d.D, 2),  # implied deflator
+            deflator=lambda d: round(100 * d.A / d.D, 4),  # implied deflator
             iso_code=lambda d: d.donor_code.map(oecd_codes),
             year=lambda d: pd.to_datetime(d.year, format="%Y"),
         )
@@ -93,7 +93,7 @@ def _update_dac1() -> None:
     df = _read_zip_content(request_content=zip_bytes, file_name=file_name).pipe(
         _clean_dac1
     )
-    df.to_feather(PYDEFLATE_PATHS.data / "dac1.feather")
+    df.reset_index(drop=True).to_feather(PYDEFLATE_PATHS.data / "dac1.feather")
     print("Successfully downloaded DAC1 data")
     update_update_date("oecd_dac_data")
 
@@ -228,6 +228,6 @@ class OECD(Data):
             suffixes=("_def", "_xe"),
         )
 
-        df["value"] = round(df.value_def * (df.value_xe / 100), 2)
+        df["value"] = round(df.value_def * (df.value_xe / 100), 4)
 
         return df[["iso_code", "year", "value"]]

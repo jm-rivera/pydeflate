@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.2.6 (2022-12-11)
+------------------
+- Revert change to the precision level of deflators for OECD data.
+- Fix problem when saving dac1 feather.
+
 1.2.5 (2022-12-11)
 ------------------
 - Update dependencies
