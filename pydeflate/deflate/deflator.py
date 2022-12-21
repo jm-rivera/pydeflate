@@ -92,7 +92,7 @@ class Deflator:
             xed, on=["iso_code", "year"], how="left", suffixes=("_def", "_xe")
         )
 
-        df["value"] = round(100 * df.value_def / df.value_xe, 2)
+        df["value"] = round(100 * df.value_def / df.value_xe, 6)
 
         return (
             df.filter(["iso_code", "year", "value"], axis=1)

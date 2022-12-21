@@ -174,12 +174,12 @@ def value_index(df: pd.DataFrame, base_dict: dict) -> pd.Series:
 
     base_values = (
         df_.loc[lambda d: d.value.notna()]
-        .round(5)
+        .round(6)
         .set_index("iso_code")["value"]
         .to_dict()
     )
 
-    return round(100 * data.value / data.iso_code.map(base_values), 3)
+    return round(100 * data.value / data.iso_code.map(base_values), 6)
 
 
 def rebase(df_: pd.DataFrame, base_year: int) -> pd.Series:
@@ -189,7 +189,7 @@ def rebase(df_: pd.DataFrame, base_year: int) -> pd.Series:
         df_.loc[df_.year.dt.year == base_year].set_index("iso_code")["value"].to_dict()
     )
 
-    return round(100 * df_.value / df_.iso_code.map(base_values), 3)
+    return round(100 * df_.value / df_.iso_code.map(base_values), 6)
 
 
 def check_method(method: str, methods: dict):

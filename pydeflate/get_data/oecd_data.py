@@ -50,6 +50,21 @@ def _download_bulk_file(url: str) -> bytes:
     return requests.get(link).content
 
 
+def _fix_dac_deflator(data: pd.DataFrame):
+    def __clean(group):
+        mode = group.deflator.mode()[0]
+        num_rows_with_mode = group.deflator.eq(mode).sum()
+
+        if num_rows_with_mode > 3:
+            group.loc[group.iso_code == "DAC", "deflator"] = mode
+
+        return group
+
+    data = data.groupby(["year"], group_keys=False).apply(__clean)
+
+    return data
+
+
 def _clean_dac1(df: pd.DataFrame) -> pd.DataFrame:
     """Clean DAC1 to keep only relevant information for deflators and exchange"""
 
@@ -61,18 +76,22 @@ def _clean_dac1(df: pd.DataFrame) -> pd.DataFrame:
         "FLOWS": "flow",
         "Value": "value",
     }
+    query = (
+        "(aid == 1010 & flow == 1140 & year <2018 ) | "
+        "(aid == 11010 & flow == 1160 & year >=2018)"
+    )
 
-    return (
+    data = (
         df.filter(cols, axis=1)
         .rename(columns=cols)
-        .loc[lambda d: d.aid == 1010]  # only Total ODA
-        .loc[lambda d: d.flow == 1140]  # only net disbursements
+        .astype({"year": "int"})
+        .query(query)
         .filter(["donor_code", "type", "year", "value"])
         .pivot(index=["donor_code", "year"], columns=["type"], values="value")
         .reset_index()
         .assign(
-            exchange=lambda d: round(d.N / d.A, 4),
-            deflator=lambda d: round(100 * d.A / d.D, 4),  # implied deflator
+            exchange=lambda d: round(d.N / d.A, 5),
+            deflator=lambda d: round(100 * d.A / d.D, 6),  # implied deflator
             iso_code=lambda d: d.donor_code.map(oecd_codes),
             year=lambda d: pd.to_datetime(d.year, format="%Y"),
         )
@@ -80,6 +99,11 @@ def _clean_dac1(df: pd.DataFrame) -> pd.DataFrame:
         .dropna(subset=["iso_code"])
         .filter(["iso_code", "year", "exchange", "deflator"], axis=1)
     )
+
+    # Check the quality of the DAC deflator
+    data = _fix_dac_deflator(data)
+
+    return data
 
 
 def _update_dac1() -> None:
@@ -228,6 +252,6 @@ class OECD(Data):
             suffixes=("_def", "_xe"),
         )
 
-        df["value"] = round(df.value_def * (df.value_xe / 100), 4)
+        df["value"] = round(df.value_def * (df.value_xe / 100), 6)
 
         return df[["iso_code", "year", "value"]]

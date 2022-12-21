@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.2.8 (2022-12-21)
+------------------
+- Greatly improved how DAC deflators are handled for the "DAC Total" grouping. It now tracks
+  the numbers published by the DAC even if the implied figures from total ODA differ.
+
 1.2.7 (2022-12-20)
 ------------------
 - Update requirements.
