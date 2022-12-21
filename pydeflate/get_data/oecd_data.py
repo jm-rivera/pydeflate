@@ -100,8 +100,9 @@ def _clean_dac1(df: pd.DataFrame) -> pd.DataFrame:
         .filter(["iso_code", "year", "exchange", "deflator"], axis=1)
     )
 
-    # Check the quality of the DAC deflator
-    data = _fix_dac_deflator(data)
+    # Turning this on means matching the OECD deflator for DAC. While this would seem
+    # desirable, it creates differences with the OECD's calculations for DAC Total
+    # data = _fix_dac_deflator(data)
 
     return data
 
