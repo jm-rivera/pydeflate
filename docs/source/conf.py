@@ -11,7 +11,7 @@ import sys
 
 sys.path.insert(0, os.path.abspath('../../'))
 
-__version__ = '1.2.7'
+__version__ = '1.2.8'
 
 project = 'pydeflate'
 copyright = '2022, Jorge Rivera'

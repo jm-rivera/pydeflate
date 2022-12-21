@@ -1,6 +1,6 @@
 __author__ = """Jorge Rivera"""
 __email__ = "jorge.rivera@one.org"
-__version__ = '1.2.7'
+__version__ = '1.2.8'
 
 
 from pydeflate.deflate.deflate import deflate
