@@ -1,6 +1,10 @@
 Changelog
 =========
 
+1.3.0 (2023-01-12)
+-------------------
+- Updated requirements.
+
 1.2.9 (2022-12-21)
 ------------------
 - Greatly improved how DAC deflators are handled for the "DAC Total" grouping. It now tracks
