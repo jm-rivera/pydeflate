@@ -123,4 +123,4 @@ pydeflate/.DS_Store
 .idea/
 
 # Packaged data
-pydeflate/.pydeflate_data/
+/pydeflate/.pydeflate_data/
