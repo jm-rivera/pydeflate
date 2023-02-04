@@ -117,8 +117,10 @@ dmypy.json
 # MAC
 .DS_Store
 pydeflate/.DS_Store
-pydeflate/.DS_Store
 *.icloud
 
 # DataSpell
 .idea/
+
+# Packaged data
+pydeflate/.pydeflate_data/
