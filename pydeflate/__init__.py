@@ -11,7 +11,7 @@ from pydeflate.utils import warn_updates
 
 def set_pydeflate_path(path):
     from pathlib import Path
-    from pydeflate.config import PYDEFLATE_PATHS
+    from pydeflate.pydeflate_config import PYDEFLATE_PATHS
 
     """Set the path to the data folder."""
     global PYDEFLATE_PATHS

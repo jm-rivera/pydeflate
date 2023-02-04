@@ -8,7 +8,7 @@ import pandas as pd
 import requests
 from bs4 import BeautifulSoup as Bs
 
-from pydeflate.config import PYDEFLATE_PATHS
+from pydeflate.pydeflate_config import PYDEFLATE_PATHS
 from pydeflate.get_data.data import Data
 from pydeflate.utils import (
     base_year_dict,

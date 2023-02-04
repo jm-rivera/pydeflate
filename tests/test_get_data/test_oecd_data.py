@@ -1,6 +1,6 @@
 import os
 
-from pydeflate.config import PYDEFLATE_PATHS
+from pydeflate.pydeflate_config import PYDEFLATE_PATHS
 from pydeflate.get_data.oecd_data import OECD_XE, OECD
 
 

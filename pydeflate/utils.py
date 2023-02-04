@@ -7,7 +7,7 @@ import country_converter as coco
 import numpy as np
 import pandas as pd
 
-from pydeflate import config
+from pydeflate import pydeflate_config
 
 CC = coco.CountryConverter()
 

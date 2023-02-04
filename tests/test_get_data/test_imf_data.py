@@ -4,7 +4,7 @@ import pytest
 
 from pydeflate.get_data import imf_data
 import os
-from pydeflate.config import PYDEFLATE_PATHS
+from pydeflate.pydeflate_config import PYDEFLATE_PATHS
 
 
 def test_update():

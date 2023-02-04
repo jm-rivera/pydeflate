@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from pydeflate.config import PYDEFLATE_PATHS
+from pydeflate.pydeflate_config import PYDEFLATE_PATHS
 from pydeflate.utils import warn_updates
 
 

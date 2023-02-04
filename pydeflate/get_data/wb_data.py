@@ -4,7 +4,7 @@ from typing import Union
 import pandas as pd
 from pandas_datareader import wb
 
-from pydeflate import config
+from pydeflate import pydeflate_config
 from pydeflate.get_data.data import Data
 from pydeflate.utils import emu, value_index, update_update_date
 
