@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pydeflate"
-version = "1.2.11"
+version = "1.2.12"
 homepage = "https://github.com/jm-rivera/pydeflate"
 description = "Package to convert current prices figures to constant prices and vice versa"
 readme = "README.rst"
