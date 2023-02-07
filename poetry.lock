@@ -17,7 +17,7 @@ trio = ["trio (>=0.16,<0.22)"]
 
 [[package]]
 name = "beautifulsoup4"
-version = "4.11.1"
+version = "4.11.2"
 description = "Screen-scraping library"
 category = "main"
 optional = false
@@ -135,7 +135,7 @@ source = ["Cython (>=0.29.7)"]
 
 [[package]]
 name = "numpy"
-version = "1.24.1"
+version = "1.24.2"
 description = "Fundamental package for array computing in Python"
 category = "main"
 optional = false
@@ -143,7 +143,7 @@ python-versions = ">=3.8"
 
 [[package]]
 name = "pandas"
-version = "1.5.2"
+version = "1.5.3"
 description = "Powerful data structures for data analysis, time series, and statistics"
 category = "main"
 optional = false
@@ -175,7 +175,7 @@ requests = ">=2.19.0"
 
 [[package]]
 name = "pyarrow"
-version = "10.0.1"
+version = "11.0.0"
 description = "Python library for Apache Arrow"
 category = "main"
 optional = false
@@ -197,7 +197,7 @@ six = ">=1.5"
 
 [[package]]
 name = "pytz"
-version = "2022.7"
+version = "2022.7.1"
 description = "World timezone definitions, modern and historical"
 category = "main"
 optional = false
@@ -306,14 +306,11 @@ test = []
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "c4816ac21b297fc8728abb51f2734e82b86ce143757ed2f3e73b9281f60588cc"
+content-hash = "a927da6651b292e82aca8b745f9e47ff18b5a2e51bfbcaead7e3a390591a2ffa"
 
 [metadata.files]
 anyio = []
-beautifulsoup4 = [
-    {file = "beautifulsoup4-4.11.1-py3-none-any.whl", hash = "sha256:58d5c3d29f5a36ffeb94f02f0d786cd53014cf9b3b3951d42e0080d8a9498d30"},
-    {file = "beautifulsoup4-4.11.1.tar.gz", hash = "sha256:ad9aa55b65ef2808eb405f46cf74df7fcb7044d5cbc26487f96eb2ef2e436693"},
-]
+beautifulsoup4 = []
 certifi = []
 charset-normalizer = []
 country-converter = []

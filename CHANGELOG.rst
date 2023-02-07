@@ -1,6 +1,10 @@
 Changelog
 =========
 
+1.2.10 (2023-02-07)
+-------------------
+- Updated requirements.
+
 1.2.10 (2023-01-12)
 -------------------
 - Updated requirements.
