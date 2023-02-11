@@ -113,7 +113,7 @@ class ExchangeOECD(Exchange):
 
     Attributes:
         method: the method to use to calculate the exchange rate. For this source,
-        the only valid method is "implied".
+        the only valid method is “implied”.
     """
 
     method: str = "implied"
