@@ -1,64 +1,30 @@
 from dataclasses import dataclass
-from typing import Union, Callable
+from bblocks import set_bblocks_data_path, WorldEconomicOutlook
 
 import pandas as pd
-from weo import WEO, all_releases, download
 
-from pydeflate import utils
 from pydeflate.pydeflate_config import PYDEFLATE_PATHS
 from pydeflate.get_data.data import Data
 
-
-def _check_weo_parameters(
-    latest_y: Union[int, None] = None, latest_r: Union[int, None] = None
-) -> (int, int):
-    """Check parameters and return max values or provided input"""
-    if latest_y is None:
-        latest_y = max(*all_releases())[0]
-
-    # if latest release isn't provided, take max value
-    if latest_r is None:
-        latest_r = max(*all_releases())[1]
-
-    return latest_y, latest_r
-
-
-def _update_weo(latest_y: int = None, latest_r: int = None) -> None:
-    """Update data from the World Economic Outlook, using WEO package"""
-
-    latest_y, latest_r = _check_weo_parameters(latest_y, latest_r)
-
-    # Download the file from the IMF website and store in directory
-    download(
-        latest_y,
-        latest_r,
-        directory=PYDEFLATE_PATHS.data,
-        filename=f"weo{latest_y}_{latest_r}.csv",
-    )
-    utils.update_update_date("imf")
+set_bblocks_data_path(PYDEFLATE_PATHS.data)
 
 
 @dataclass
 class IMF(Data):
-    method: Union[str, None] = None
+    method: str | None = None
     data: pd.DataFrame = None
+    _weo: WorldEconomicOutlook = None
     """An object to download and return the latest IMF WEO data for several indicators"""
 
-    def update(
-        self, latest_y: Union[int, None] = None, latest_r: Union[int, None] = None
-    ) -> None:
-        """Update the stored WEO data, using WEO package.
+    def __post_init__(self):
+        self._weo = WorldEconomicOutlook()
 
-        Args:
-            latest_y: passed only optional to override the behaviour to get the latest
-            release year for the WEO.
-            latest_r: passed only optionally to override the behaviour to get the latest
-            released value (1 or 2).
-        """
-        _update_weo(latest_y=latest_y, latest_r=latest_r)
+    def update(self) -> None:
+        """Update the stored WEO data, using WEO package."""
+        self._weo.update_data(reload_data=False)
 
     def load_data(
-        self, latest_y: Union[int, None] = None, latest_r: Union[int, None] = None
+        self, latest_y: int | None = None, latest_r: int | None = None
     ) -> None:
         """loading WEO as a clean dataframe
 
@@ -68,55 +34,49 @@ class IMF(Data):
             latest_r: passed only optionally to override the behaviour to get the latest
             released value (1 or 2).
         """
+        # load the data for available indicators
+        indicators = ["PCPI", "PCPIE", "NGDP_D", "NGDP", "NGDPD"]
+        self._weo.load_data(indicators)
 
-        latest_y, latest_r = _check_weo_parameters(latest_y, latest_r)
-
-        names = {
-            "ISO": "iso_code",
-            "WEO Subject Code": "indicator",
-            "Subject Descriptor": "indicator_name",
-            "Units": "units",
-            "Scale": "scale",
-        }
-        to_drop = [
-            "WEO Country Code",
-            "Country",
-            "Subject Notes",
-            "Country/Series-specific Notes",
-            "Estimates Start After",
-        ]
-        try:
-            df = WEO(PYDEFLATE_PATHS.data / f"weo{latest_y}_{latest_r}.csv").df
-
-        except FileNotFoundError:
-            print("No IMF WEO data found, downloading latest release")
-            self.update()
-
-        finally:
-            df = WEO(PYDEFLATE_PATHS.data / f"weo{latest_y}_{latest_r}.csv").df
-
-        self.data = (
-            df.drop(to_drop, axis=1)
-            .rename(columns=names)
-            .melt(id_vars=names.values(), var_name="date", value_name="value")
-            .assign(
-                year=lambda d: pd.to_datetime(d.date, format="%Y"),
-                value=lambda d: d.value.apply(utils.clean_number),
-            )
-            .dropna(subset=["value"])
-            .drop("date", axis=1)
-            .reset_index(drop=True)
-        )
+        # get the data into a dataframe
+        self.data = self._weo.get_data(keep_metadata=False)
 
     def _get_indicator(self, indicator: str) -> pd.DataFrame:
         """Get a specified imf indicator from the downloaded WEO file"""
-
+        if self.data is None:
+            self.load_data()
         return (
             self.data.loc[lambda d: d.indicator == indicator]
             .filter(["iso_code", "year", "value"], axis=1)
             .sort_values(["iso_code", "year"])
             .reset_index(drop=True)
         )
+
+    def implied_exchange(self, direction: str = "lcu_usd") -> pd.DataFrame:
+        """Get the implied exchange rate used by the IMF
+        Args:
+            direction: the direction of the exchange rate, either lcu_usd for
+            local currency units per usd, or usd_lcu for the opposite
+        """
+
+        # USD data
+        usd = self._get_indicator("NGDPD")
+
+        # LCU data
+        lcu = self._get_indicator("NGDP")
+
+        # Merge datasets
+        d_ = usd.merge(lcu, on=["iso_code", "year"], suffixes=("_usd", "_lcu"))
+
+        # Calculate implied exchange rate
+        if direction == "lcu_usd":
+            d_["value"] = d_["value_lcu"] / d_["value_usd"]
+        elif direction == "usd_lcu":
+            d_["value"] = d_["value_usd"] / d_["value_lcu"]
+        else:
+            raise ValueError(f"direction must be lcu_usd or usd_lcu, not {direction}")
+
+        return d_.filter(["iso_code", "year", "value"], axis=1)
 
     def inflation_acp(self) -> pd.DataFrame:
         """Indicator PCPI, Index"""
@@ -129,7 +89,7 @@ class IMF(Data):
     def inflation_gdp(self) -> pd.DataFrame:
         return self._get_indicator("NGDP_D")
 
-    def available_methods(self) -> dict[str, Callable]:
+    def available_methods(self) -> dict[str, callable]:
         return {
             "gdp": self.inflation_gdp,
             "pcpi": self.inflation_acp,

@@ -201,6 +201,8 @@ class OECD_XE(Data):
 
         base = base_year_dict(defl, "year")
 
+
+
         # get the exchange rate as an index based on the base year
         xe.value = value_index(xe, base)
 

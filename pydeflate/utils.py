@@ -1,13 +1,12 @@
 import datetime
 import json
 import warnings
-from typing import Union
 
 import country_converter as coco
 import numpy as np
 import pandas as pd
 
-from pydeflate import pydeflate_config
+from pydeflate.pydeflate_config import PYDEFLATE_PATHS
 
 CC = coco.CountryConverter()
 
@@ -22,7 +21,7 @@ def _diff_from_today(date: datetime.datetime):
 
 def warn_updates():
 
-    with open(config.PYDEFLATE_PATHS.data / "data_updates.json") as file:
+    with open(PYDEFLATE_PATHS.data / "data_updates.json") as file:
         updates = json.load(file)
 
     for source, date in updates.items():
@@ -43,103 +42,32 @@ def update_update_date(source: str):
     today = datetime.datetime.today().strftime("%Y-%m-%d")
 
     # Check to see if specified path contains an update file. Create one if not
-    if not (config.PYDEFLATE_PATHS.data / "data_updates.json").exists():
+    if not (PYDEFLATE_PATHS.data / "data_updates.json").exists():
         updates = {}
-        with open(config.PYDEFLATE_PATHS.data / "data_updates.json", "w") as outfile:
+        with open(PYDEFLATE_PATHS.data / "data_updates.json", "w") as outfile:
             json.dump(updates, outfile)
 
-    with open(config.PYDEFLATE_PATHS.data / "data_updates.json") as file:
+    with open(PYDEFLATE_PATHS.data / "data_updates.json") as file:
         updates = json.load(file)
 
     updates[source] = today
 
-    with open(config.PYDEFLATE_PATHS.data / "data_updates.json", "w") as outfile:
+    with open(PYDEFLATE_PATHS.data / "data_updates.json", "w") as outfile:
         json.dump(updates, outfile)
 
 
-oecd_codes = {
-    1: "AUT",
-    2: "BEL",
-    3: "DNK",
-    4: "FRA",
-    5: "DEU",
-    6: "ITA",
-    7: "NLD",
-    8: "NOR",
-    9: "PRT",
-    10: "SWE",
-    11: "CHE",
-    12: "GBR",
-    18: "FIN",
-    20: "ISL",
-    21: "IRL",
-    22: "LUX",
-    40: "GRC",
-    50: "ESP",
-    61: "SVN",
-    68: "CZE",
-    69: "SVK",
-    75: "HUN",
-    76: "POL",
-    301: "CAN",
-    302: "USA",
-    701: "JPN",
-    742: "KOR",
-    801: "AUS",
-    820: "NZL",
-    918: "EUI",
-    30: "CYP",
-    45: "MLT",
-    55: "TUR",
-    62: "HRV",
-    70: "LIE",
-    72: "BGR",
-    77: "ROU",
-    82: "EST",
-    83: "LVA",
-    84: "LTU",
-    87: "RUS",
-    130: "DZA",
-    133: "LBY",
-    358: "MEX",
-    543: "IRQ",
-    546: "ISR",
-    552: "KWT",
-    561: "QAT",
-    566: "SAU",
-    576: "ARE",
-    611: "AZE",
-    613: "KAZ",
-    732: "TWN",
-    764: "THA",
-    765: "TLS",
-    20001: "DAC",
-    20002: "MUL",
-    20003: "G7C",
-    20006: "NDA",
-}
+def oecd_codes() -> dict:
+    with open(PYDEFLATE_PATHS.settings / "oecd_codes.json") as file:
+        updates = json.load(file)
 
-emu = [
-    "AUT",
-    "BEL",
-    "CYP",
-    "EST",
-    "FIN",
-    "FRA",
-    "DEU",
-    "GRC",
-    "IRL",
-    "ITA",
-    "LVA",
-    "LTU",
-    "LUX",
-    "MLT",
-    "NLD",
-    "PRT",
-    "SVK",
-    "SVN",
-    "ESP",
-]
+    return {int(k): v for k, v in updates.items()}
+
+
+def emu() -> list:
+    with open(PYDEFLATE_PATHS.settings / "emu.json") as file:
+        emu = json.load(file)
+
+    return emu
 
 
 def clean_number(number):
@@ -216,10 +144,11 @@ def to_iso3(
     df: pd.DataFrame,
     codes_col: str,
     target_col: str,
-    src_classification: Union[str, None] = None,
-    not_found: Union[str, None] = None,
+    src_classification: str | None = None,
+    not_found: str | None = None,
 ) -> pd.DataFrame:
-    df[target_col] = CC.convert(
+    """Convert a column of country codes to iso3"""
+    df[target_col] = CC.pandas_convert(
         df[codes_col], src=src_classification, to="ISO3", not_found=not_found
     )
     return df

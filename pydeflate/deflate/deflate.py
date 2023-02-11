@@ -127,7 +127,7 @@ def deflate(
     # Create ID col.  By default, if a country does not have a DAC deflator, the
     # DAC,Total deflator is used.
     if id_type == "DAC":
-        df["id_"] = df[id_column].map(oecd_codes).fillna("DAC")
+        df["id_"] = df[id_column].map(oecd_codes()).fillna("DAC")
     else:
         df = df.pipe(
             to_iso3, codes_col=id_column, target_col="id_", src_classification=id_type

@@ -1,12 +1,13 @@
 from dataclasses import dataclass
-from typing import Union
 
 import pandas as pd
-from pandas_datareader import wb
-
-from pydeflate import pydeflate_config
 from pydeflate.get_data.data import Data
+from pydeflate.pydeflate_config import PYDEFLATE_PATHS
 from pydeflate.utils import emu, value_index, update_update_date
+
+from bblocks import WorldBankData, set_bblocks_data_path
+
+set_bblocks_data_path(PYDEFLATE_PATHS.data)
 
 _INDICATORS: dict = {
     "gdp": "NY.GDP.DEFL.ZS",
@@ -20,61 +21,16 @@ START: int = 1950
 END: int = 2025
 
 
-def _download_wb_indicator(
-    indicator: str, start: int, end: int, dev: bool = False
-) -> None:
-    """Download an indicator from WB (caching if applicable)"""
-
-    df = (
-        wb.WorldBankReader(
-            symbols=indicator,
-            countries="all",
-            start=start,
-            end=end,
-        )
-        .read()
-        .reset_index(drop=False)
-    )
-
-    countries = wb.get_countries()
-    countries[["name", "iso3c"]].to_csv(
-        config.PYDEFLATE_PATHS.data / f"wb_class.csv", index=False
-    )
-
-    df.reset_index(drop=True).to_feather(
-        config.PYDEFLATE_PATHS.data / f"{indicator}_{start}_{end}.feather"
-    )
-    print(f"Successfully updated {indicator} for {start}-{end}")
-    update_update_date("wb")
-
-
-def _get_iso3c():
-    countries = pd.read_csv(config.PYDEFLATE_PATHS.data / f"wb_class.csv")
-    return countries[["name", "iso3c"]].set_index("name")["iso3c"].to_dict()
-
-
-def _clean_wb_indicator(
-    data: pd.DataFrame,
-    indicator: str,
-) -> pd.DataFrame:
-    """Add iso_code, change value name to value and sort"""
-
-    return (
-        data.assign(
-            iso_code=lambda d: d.country.map(_get_iso3c()),
-            year=lambda d: pd.to_datetime(d.year, format="%Y"),
-        )
-        .rename(columns={indicator: "value"})
-        .dropna(subset=["iso_code"])
-        .sort_values(["iso_code", "year"])
-        .reset_index(drop=True)
-        .filter(["year", "iso_code", "value"], axis=1)
-    )
+def update_world_bank_data() -> None:
+    """Update World Bank data."""
+    wb = WorldBankData()
+    wb.load_data(indicator=list(_INDICATORS.values()), start_year=START, end_year=END)
+    wb.update_data()
 
 
 @dataclass
 class WB_XE(Data):
-    method: Union[str, None] = "exchange"
+    method: str | None = "exchange"
     data: pd.DataFrame = None
 
     def update(self, **kwargs) -> None:
@@ -184,7 +140,7 @@ class WB_XE(Data):
 
 @dataclass
 class WB(Data):
-    method: Union[str, None] = None
+    method: str | None = None
     data: pd.DataFrame = None
     """An object to download and return the latest WB exchange and price data"""
 

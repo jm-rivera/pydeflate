@@ -2,14 +2,13 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Union
 
 import pandas as pd
 
 
 @dataclass
 class Data(ABC):
-    method: Union[str, None]
+    method: str | None
     data: pd.DataFrame
     """Abstract class defining the basic structure and functionality of Data classes.
     Data classes store the price or exchange data from different sources."""
