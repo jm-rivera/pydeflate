@@ -34,7 +34,7 @@ dac_error_params = (
     ],
 )
 
-# WB Parameters
+# WorldBank Parameters
 wb_params = (
     "base, method, source, target, country, tyear, value",
     [
@@ -64,7 +64,7 @@ wb_params = (
     ],
 )
 
-# WB Errors
+# WorldBank Errors
 wb_error_params = (
     "base, method, source, target, error",
     [

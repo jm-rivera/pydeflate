@@ -12,7 +12,7 @@ from pydeflate.utils import emu
 
 @dataclass
 class Exchange(ABC):
-    """An abstract class to update, load, and return exchange rate data
+    """An abstract class to update, load and return exchange rate data.
 
     Attributes:
         method: the method to use to calculate the exchange rate.
@@ -117,21 +117,26 @@ class ExchangeOECD(Exchange):
     """
 
     method: str = "implied"
+    _load_try_count: int = 0
 
     @staticmethod
     def update(**kwargs) -> None:
-        """Update the DAC1 data, which is the source for the OECD exchange rates"""
+        """Update the DAC1 data, which is the source for the OECD exchange rates."""
         _update_dac1()
 
     def load_data(self, **kwargs) -> None:
-        """Load the DAC1 data, which is the source for the OECD exchange rates"""
-        try:
-            self._data = pd.read_feather(PYDEFLATE_PATHS.data / "dac1.feather")
-
-        except FileNotFoundError:
-            logger.info("OECD Data not found, downloading...")
-            self.update()
-            self.load_data()
+        """Load the DAC1 data, which is the source for the OECD exchange rates."""
+        # avoid infinite recursion
+        if self._load_try_count < 1:
+            try:
+                self._data = pd.read_feather(PYDEFLATE_PATHS.data / "dac1.feather")
+            except FileNotFoundError:
+                logger.info("OECD Data not found, downloading...")
+                self._load_try_count = +1
+                self.update()
+                self.load_data()
+        else:
+            raise FileNotFoundError("Could not load OECD data")
 
     def usd_exchange_rate(self, direction: str = "lcu_usd") -> pd.DataFrame:
         """Get the exchange rate of a currency to USD (or vice versa)
@@ -148,7 +153,7 @@ class ExchangeOECD(Exchange):
         if self._data is None:
             self.load_data()
 
-        # Filter the data to only include the required columns, rename the value column
+        # Filter the data to only include the required columns, rename the value column.
         d_ = self._data[["iso_code", "year", "exchange"]].rename(
             columns={"exchange": "value"}
         )
@@ -156,7 +161,7 @@ class ExchangeOECD(Exchange):
         # if the direction is lcu to usd, return the data
         if direction == "lcu_usd":
             return d_
-        # if the direction is usd to lcu, invert the exchange rate
+        # if the direction is usd to lcu, invert the exchange rate.
         elif direction == "usd_lcu":
             d_.value = 1 / d_.value
             return d_
@@ -175,30 +180,36 @@ class ExchangeWorldBank(Exchange):
     """
 
     method: str = "yearly_average"
+    _load_try_count: int = 0
 
     def __post_init__(self):
         """Check that the method is valid"""
         if self.method not in ["yearly_average", "effective_exchange"]:
             raise ValueError("Method must be 'yearly_average' or 'effective_exchange'")
 
-    def update(self, **kwargs) -> None:
+    def update(self) -> None:
         """Update the World Bank data"""
         update_world_bank_data()
 
     def load_data(self, **kwargs) -> None:
         """Load the World Bank data"""
+        # Avoid infinite recursion
 
-        # Try to load the data from disk
-        try:
-            self._data = pd.read_feather(
-                PYDEFLATE_PATHS.data / f"{self.method}_{START}_{END}.feather"
-            )
+        if self._load_try_count < 1:
+            # Try to load the data from disk
+            try:
+                self._data = pd.read_feather(
+                    PYDEFLATE_PATHS.data / f"{self.method}_{START}_{END}.feather"
+                )
 
-        # If the data is not found, download it. Reload the data to the object
-        except FileNotFoundError:
-            logger.info("World Bank data not found, downloading...")
-            self.update()
-            self.load_data()
+            # If the data is not found, download it. Reload the data to the object.
+            except FileNotFoundError:
+                logger.info("World Bank data not found, downloading...")
+                self._load_try_count = +1
+                self.update()
+                self.load_data()
+        else:
+            raise FileNotFoundError("Could not load World Bank data")
 
     def usd_exchange_rate(self, direction: str = "lcu_usd") -> pd.DataFrame:
         """Get the exchange rate of a currency to USD (or vice versa)
@@ -211,6 +222,10 @@ class ExchangeWorldBank(Exchange):
             A dataframe with the exchange rate of the currency to USD (or vice versa).
 
         """
+
+        if direction not in ["lcu_usd", "usd_lcu"]:
+            raise ValueError("Direction must be 'lcu_usd' or 'usd_lcu'")
+
         # If data is not loaded, load it
         if self._data is None:
             self.load_data()
@@ -228,6 +243,13 @@ class ExchangeWorldBank(Exchange):
         # Assign EURO exchange rate to euro are countries from year euro adopted
         df.loc[eur_mask, "value"] = df.year.map(eur)
 
+        # If the direction is lcu to usd, return the data
+
+        if direction == "lcu_usd":
+            return df
+        # if the direction is usd to lcu, invert the exchange rate.
+
+        df.value = 1 / df.value
         return df
 
 
@@ -237,7 +259,7 @@ class ExchangeIMF(Exchange):
 
     Attributes:
         method: the method to use to calculate the exchange rate. For this source,
-        the only valid method is "implied".
+        the only valid method is “implied”.
 
     """
 
@@ -245,7 +267,7 @@ class ExchangeIMF(Exchange):
     _imf: IMF | None = None
 
     def __post_init__(self):
-        """Load an IMF object in order to manage getting the data"""
+        """Load an IMF object to manage getting the data"""
         if self._imf is None:
             self._imf = IMF()
 

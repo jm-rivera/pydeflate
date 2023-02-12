@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from pydeflate.get_data import exchange
+from pydeflate.get_data import exchange_data as exchange
 
 
 class MockExchange(exchange.Exchange):
@@ -57,7 +57,7 @@ def us21():
 
 
 def test_exchange_rate_wrong_iso(mock_exchange):
-    # Test that an error is raised if an incorrect ISO is passed
+    # Test that an error is raised if an incorrect ISO is passed.
     with pytest.raises(ValueError):
         mock_exchange.exchange_rate(currency_iso="XXX")
 
@@ -76,8 +76,8 @@ def test_exchange_rate_non_usd(mock_exchange, fr20, fr21, us20, us21):
 
     assert xe_fr.query(fr20).value.item() == pytest.approx(1)
     assert xe_fr.query(fr21).value.item() == pytest.approx(1)
-    assert xe_fr.query(us20).value.item() == pytest.approx(0.8695, 1e-2)
-    assert xe_fr.query(us21).value.item() == pytest.approx(0.8333, 1e-2)
+    assert xe_fr.query(us20).value.item() == pytest.approx(0.8695, 1e-3)
+    assert xe_fr.query(us21).value.item() == pytest.approx(0.8333, 1e-3)
 
 
 def test_exchange_rate_usd(mock_exchange, fr20, fr21, us20, us21):
@@ -91,18 +91,18 @@ def test_exchange_rate_usd(mock_exchange, fr20, fr21, us20, us21):
 
 
 def test_exchange_deflator_wrong_iso(mock_exchange):
-    # Test that an error is raised if an incorrect ISO is passed
+    # Test that an error is raised if an incorrect ISO is passed.
     with pytest.raises(ValueError):
         mock_exchange.exchange_deflator(currency_iso="XXX", base_year=2020)
 
 
 def test_exchange_deflator_wrong_base_year(mock_exchange):
-    # Test that an error is raised if an incorrect base year is passed
+    # Test that an error is raised if an incorrect base year is passed.
     with pytest.raises(ValueError):
         mock_exchange.exchange_deflator(currency_iso="USA", base_year=2015)
 
 
-def test_exchange_delfator_columns(mock_exchange):
+def test_exchange_deflator_columns(mock_exchange):
     # Get deflator for FRA
     xd_fr = mock_exchange.exchange_deflator(currency_iso="FRA", base_year=2020)
 
@@ -117,14 +117,14 @@ def test_exchange_deflator_non_usd(mock_exchange, fr20, fr21, us20, us21):
     assert xe_fr.query(fr20).value.item() == pytest.approx(100)
     assert xe_fr.query(fr21).value.item() == pytest.approx(100)
     assert xe_fr.query(us20).value.item() == pytest.approx(100)
-    assert xe_fr.query(us21).value.item() == pytest.approx(95.93, 1e-2)
+    assert xe_fr.query(us21).value.item() == pytest.approx(95.83, 1e-3)
 
 
 def test_exchange_deflator_usd(mock_exchange, fr20, fr21, us20, us21):
     # Get rates for USA
     xe_us = mock_exchange.exchange_deflator(currency_iso="USA", base_year=2020)
 
-    assert xe_us.query(fr20).value.item() == pytest.approx(100, 1e-2)
-    assert xe_us.query(fr21).value.item() == pytest.approx(104.348, 1e-2)
+    assert xe_us.query(fr20).value.item() == pytest.approx(100)
+    assert xe_us.query(fr21).value.item() == pytest.approx(104.348, 1e-3)
     assert xe_us.query(us20).value.item() == pytest.approx(100)
     assert xe_us.query(us21).value.item() == pytest.approx(100)

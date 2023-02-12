@@ -6,12 +6,12 @@ from pydeflate.deflate.deflator import Deflator
 from pydeflate.get_data.data import Data
 from pydeflate.get_data.imf_data import IMF
 from pydeflate.get_data.oecd_data import OECD, OECD_XE
-from pydeflate.get_data.wb_data import WB, WB_XE
+from pydeflate.get_data.wb_data import WorldBank, WB_XE
 from pydeflate.utils import check_year_as_number, to_iso3, oecd_codes
 
 DEFLATORS = {
     "oecd_dac": OECD,
-    "wb": WB,
+    "wb": WorldBank,
     "imf": IMF,
 }
 
@@ -48,7 +48,7 @@ def deflate(
             The source of the data used to build the deflators. The value (and
             completeness) of the price deflators may change based on the source.
             Additionally, the OECD DAC data is only available for DAC donors. Both
-            the IMF and WB sources use exchange rates downloaded from the World Bank.
+            the IMF and WorldBank sources use exchange rates downloaded from the World Bank.
         method:{'gdp', 'gdp_linked', 'cpi', 'pcpi', 'pcpie', None}
             The method used to calculate the price deflator:
 
