@@ -1,13 +1,42 @@
-from abc import abstractmethod, ABC
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
 import pandas as pd
 
 from pydeflate.get_data.imf_data import IMF
-from pydeflate.get_data.oecd_data import _update_dac1
-from pydeflate.get_data.wb_data import update_world_bank_data, START, END
+from pydeflate.get_data.wb_data import END, START, update_world_bank_data
 from pydeflate.pydeflate_config import PYDEFLATE_PATHS, logger
 from pydeflate.utils import emu
+
+
+def _exchange_ratio(source_xe: pd.DataFrame, target_xe: pd.DataFrame) -> pd.DataFrame:
+    return (
+        source_xe.merge(
+            target_xe,
+            how="left",
+            on=["year", "iso_code"],
+            suffixes=("_source", "_target"),
+        )
+        .assign(value=lambda d: d.value_source / d.value_target)
+        .drop(["value_source", "value_target"], axis=1)
+    )
+
+
+def _calculate_deflator(xe: pd.DataFrame, base_year: int) -> pd.DataFrame:
+    # get the data for the selected base year.
+    xe_base = xe.query(f"year.dt.year == {base_year}")
+
+    # If base year is not valid, raise error
+    if len(xe_base) == 0:
+        raise ValueError(f"No currency exchange data for {base_year=}")
+
+    # Merge the exchange data and the base year data
+    xe = xe.merge(xe_base, how="left", on=["iso_code"], suffixes=("", "_base"))
+
+    # Calculate the deflator
+    xe.value = round(100 * xe.value / xe.value_base, 6)
+
+    return xe.filter(["iso_code", "year", "value"], axis=1)
 
 
 @dataclass
@@ -89,79 +118,50 @@ class Exchange(ABC):
         """
         # Get exchange data based on the source currency. If LCU set to None
         source_xe = (
-            self.exchange_rate(currency_iso=source_iso) if source_iso != "LCU" else None
+            self.exchange_rate(currency_iso=source_iso)
+            if source_iso != "LCU"
+            else self.exchange_rate(currency_iso="USA").assign(value=1)
         )
         # Check that the source currency is valid
-        if source_xe is not None and len(source_xe) == 0:
+        if len(source_xe) == 0:
             raise ValueError(f"No currency exchange data for {source_iso=}")
 
         # Get exchange data based on the target currency. If LCU set to None
         target_xe = (
-            self.exchange_rate(currency_iso=target_iso) if target_iso != "LCU" else None
-        )
-        # Check that the target currency is valid
-        if target_xe is not None and len(target_xe) == 0:
-            raise ValueError(f"No currency exchange data for {target_iso=}")
-
-        if source_xe is None and target_xe is None:
-            source_xe = self.exchange_rate(currency_iso="USA").assign(value=1)
-            target_xe = self.exchange_rate(currency_iso="USA").assign(value=1)
-
-        if source_xe is None:
-            source_xe = target_xe.assign(value=lambda d: 1 / d.value)
-        if target_xe is None:
-            target_xe = source_xe.assign(value=lambda d: 1 / d.value)
-
-        # calculate conversion ratio
-        ratio = (
-            source_xe.merge(
-                target_xe,
-                how="left",
-                on=["year", "iso_code"],
-                suffixes=("_source", "_target"),
-            )
-            .assign(value=lambda d: d.value_target / d.value_source)
-            .drop(["value_source", "value_target"], axis=1)
-        )
-
-        # get the data for the selected base year.
-        xe = (
             self.exchange_rate(currency_iso=target_iso)
             if target_iso != "LCU"
-            else self.exchange_rate(currency_iso=source_iso)
-            if source_iso != "LCU"
-            else self.exchange_rate(currency_iso="USA")
+            else self.exchange_rate(currency_iso="USA").assign(value=1)
         )
+        # Check that the target currency is valid
+        if len(target_xe) == 0:
+            raise ValueError(f"No currency exchange data for {target_iso=}")
+
+        # calculate conversion ratio
+        exchange_ratio = _exchange_ratio(source_xe=source_xe, target_xe=target_xe)
 
         # get the data for the selected base year.
-        xe_base = xe.query(f"year.dt.year == {base_year}")
-
-        # If base year is not valid, raise error
-        if len(xe_base) == 0:
-            raise ValueError(f"No currency exchange data for {base_year=}")
-
-        # Merge the exchange data and the base year data
-        xe = xe.merge(xe_base, how="left", on=["iso_code"], suffixes=("", "_base"))
+        if target_iso != "LCU":
+            xe = self.exchange_rate(currency_iso=target_iso)
+        elif source_iso != "LCU":
+            xe = self.exchange_rate(currency_iso=source_iso)
+        else:
+            xe = self.exchange_rate(currency_iso="USA").assign(value=1)
 
         # Calculate the deflator
-        xe.value = round(100 * xe.value / xe.value_base, 6)
-
-        # Clean dataframe
-        xe = xe.filter(["iso_code", "year", "value"], axis=1)
+        xe = _calculate_deflator(xe=xe, base_year=base_year)
 
         # Merge the conversion ratio
-        xe = (
-            xe.merge(
-                ratio,
-                how="left",
-                on=["year", "iso_code"],
-                suffixes=("_xe", "_xe_ratio"),
-            )
-            .assign(value=lambda d: d.value_xe * d.value_xe_ratio)
-            .filter(["year", "iso_code", "value"], axis=1)
+        xe = xe.merge(
+            exchange_ratio,
+            how="left",
+            on=["year", "iso_code"],
+            suffixes=("_xe", "_xe_ratio"),
         )
 
-        return xe
+        # Convert deflators to currency of interest
+        xe = xe.assign(value=lambda d: d.value_xe * d.value_xe_ratio)
+
+        return xe.filter(["year", "iso_code", "value"], axis=1)
 
 
 @dataclass
@@ -179,6 +179,8 @@ class ExchangeOECD(Exchange):
     @staticmethod
     def update(**kwargs) -> None:
         """Update the DAC1 data, which is the source for the OECD exchange rates."""
+        from pydeflate.get_data.oecd_data import _update_dac1
+
         _update_dac1()
 
     def load_data(self, **kwargs) -> None:
@@ -359,8 +361,3 @@ class ExchangeIMF(Exchange):
 
         # return the data
         return self._data
-
-
-imf = ExchangeIMF()
-d__ = imf.exchange_deflator(source_iso="USA", target_iso="LCU", base_year=2020)
-d__ = d__.query("iso_code == 'GTM'")

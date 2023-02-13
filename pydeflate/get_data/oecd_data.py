@@ -8,6 +8,7 @@ import requests
 from bs4 import BeautifulSoup as Bs
 
 from pydeflate.get_data.deflate_data import Data
+from pydeflate.get_data.exchange_data import ExchangeOECD
 from pydeflate.pydeflate_config import PYDEFLATE_PATHS, logger
 from pydeflate.utils import oecd_codes, update_update_date
 
@@ -139,6 +140,23 @@ def _update_dac1() -> None:
     logger.info("Successfully downloaded DAC1 data")
 
 
+def _identify_base_year(df: pd.DataFrame) -> int:
+
+    return (
+        df.groupby(["year"], as_index=False)
+        .value.mean(numeric_only=True)
+        .round(2)
+        .loc[lambda d: d.value == 100.00]
+        .year.dt.year.item()
+    )
+
+
+def _calculate_price_deflator(deflators_df: pd.DataFrame) -> pd.DataFrame:
+    return deflators_df.assign(
+        value=lambda d: round(d.value_dac * d.value_exchange / 100, 6)
+    ).filter(["iso_code", "year", "indicator", "value"], axis=1)
+
+
 @dataclass
 class OECD(Data):
     """An object to download and return the latest OECD DAC deflators data."""
@@ -150,14 +168,43 @@ class OECD(Data):
         _update_dac1()
 
     def load_data(self, **kwargs) -> None:
+        """Load the OECD DAC price deflators data.
+
+        If the data is not found, it will be downloaded.
+        DAC deflators are transformed into price deflators by using the
+        implied exchange rate information from the OECD DAC data.
+
+        The deflators that are loaded is therefore *not* the DAC deflator,
+        but the price deflator used to produce the DAC deflators.
+
+        """
         try:
-            self._data = pd.read_feather(PYDEFLATE_PATHS.data / "dac1.feather")
+            pd.read_feather(PYDEFLATE_PATHS.data / "dac1.feather")
         except FileNotFoundError:
             logger.info("Data not found, downloading...")
             self.update()
         finally:
-            self._data = (
+            d_ = (
                 pd.read_feather(PYDEFLATE_PATHS.data / "dac1.feather")
                 .assign(indicator="oecd_dac")
                 .rename(columns={"deflator": "value"})
             )
+
+        # Identify base year
+        base_year = _identify_base_year(d_)
+
+        # Load exchange deflators
+        exchange_deflator = ExchangeOECD().exchange_deflator(
+            source_iso="USA", target_iso="USA", base_year=base_year
+        )
+
+        # Merge deflators and exchange deflators
+        deflators_df = d_.merge(
+            exchange_deflator,
+            on=["iso_code", "year"],
+            how="left",
+            suffixes=("_dac", "_exchange"),
+        )
+
+        # Calculate the price deflator
+        self._data = _calculate_price_deflator(deflators_df=deflators_df)
