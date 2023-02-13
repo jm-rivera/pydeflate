@@ -93,18 +93,18 @@ def test_exchange_rate_usd(mock_exchange, fr20, fr21, us20, us21):
 def test_exchange_deflator_wrong_iso(mock_exchange):
     # Test that an error is raised if an incorrect ISO is passed.
     with pytest.raises(ValueError):
-        mock_exchange.exchange_deflator(currency_iso="XXX", base_year=2020)
+        mock_exchange.exchange_deflator("LCU", target_iso="XXX", base_year=2020)
 
 
 def test_exchange_deflator_wrong_base_year(mock_exchange):
     # Test that an error is raised if an incorrect base year is passed.
     with pytest.raises(ValueError):
-        mock_exchange.exchange_deflator(currency_iso="USA", base_year=2015)
+        mock_exchange.exchange_deflator("LCU", target_iso="USA", base_year=2015)
 
 
 def test_exchange_deflator_columns(mock_exchange):
     # Get deflator for FRA
-    xd_fr = mock_exchange.exchange_deflator(currency_iso="FRA", base_year=2020)
+    xd_fr = mock_exchange.exchange_deflator("LCU", target_iso="FRA", base_year=2020)
 
     # Check that only the correct columns are present
     assert set(xd_fr.columns) == {"year", "iso_code", "value"}
@@ -112,7 +112,7 @@ def test_exchange_deflator_columns(mock_exchange):
 
 def test_exchange_deflator_non_usd(mock_exchange, fr20, fr21, us20, us21):
     # Get rates for FRA
-    xe_fr = mock_exchange.exchange_deflator(currency_iso="FRA", base_year=2020)
+    xe_fr = mock_exchange.exchange_deflator("LCU", target_iso="FRA", base_year=2020)
 
     assert xe_fr.query(fr20).value.item() == pytest.approx(100)
     assert xe_fr.query(fr21).value.item() == pytest.approx(100)
@@ -122,7 +122,7 @@ def test_exchange_deflator_non_usd(mock_exchange, fr20, fr21, us20, us21):
 
 def test_exchange_deflator_usd(mock_exchange, fr20, fr21, us20, us21):
     # Get rates for USA
-    xe_us = mock_exchange.exchange_deflator(currency_iso="USA", base_year=2020)
+    xe_us = mock_exchange.exchange_deflator("LCU", target_iso="USA", base_year=2020)
 
     assert xe_us.query(fr20).value.item() == pytest.approx(100)
     assert xe_us.query(fr21).value.item() == pytest.approx(104.348, 1e-3)

@@ -144,7 +144,7 @@ class OECD(Data):
     """An object to download and return the latest OECD DAC deflators data."""
 
     def __post_init__(self):
-        self._available_methods = {"oecd_dac": "dac_deflator"}
+        self._available_methods = {"dac_deflator": "oecd_dac"}
 
     def update(self, **kwargs) -> None:
         _update_dac1()
@@ -158,6 +158,6 @@ class OECD(Data):
         finally:
             self._data = (
                 pd.read_feather(PYDEFLATE_PATHS.data / "dac1.feather")
-                .assign(indicator="dac_deflator")
+                .assign(indicator="oecd_dac")
                 .rename(columns={"deflator": "value"})
             )

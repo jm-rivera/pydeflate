@@ -72,24 +72,66 @@ class Exchange(ABC):
             .drop(columns=["value_xe", "iso_code_xe"])
         )
 
-    def exchange_deflator(self, currency_iso: str, base_year: int) -> pd.DataFrame:
+    def exchange_deflator(
+        self, source_iso: str, target_iso: str, base_year: int
+    ) -> pd.DataFrame:
         """Get an exchange rate deflator for a given ISO
 
         Args:
-            currency_iso: the iso_code of the currency to get the exchange rate for.
+            source_iso: the iso_code in which the "original" data is based.
+                The default should be "LCU".
+            target_iso: the iso_code of the currency to get the exchange rate for.
             base_year: the base year to calculate the deflator.
 
         Returns:
             A dataframe with the exchange rate deflator for the specified currency.
 
         """
+        # Get exchange data based on the source currency. If LCU set to None
+        source_xe = (
+            self.exchange_rate(currency_iso=source_iso) if source_iso != "LCU" else None
+        )
+        # Check that the source currency is valid
+        if source_xe is not None and len(source_xe) == 0:
+            raise ValueError(f"No currency exchange data for {source_iso=}")
 
-        # get exchange rates
-        xe = self.exchange_rate(currency_iso=currency_iso)
+        # Get exchange data based on the target currency. If LCU set to None
+        target_xe = (
+            self.exchange_rate(currency_iso=target_iso) if target_iso != "LCU" else None
+        )
+        # Check that the target currency is valid
+        if target_xe is not None and len(target_xe) == 0:
+            raise ValueError(f"No currency exchange data for {target_iso=}")
 
-        # If currency is not valid, raise error
-        if int(xe.value.sum()) == 0:
-            raise ValueError(f"No currency exchange data for {currency_iso}")
+        if source_xe is None and target_xe is None:
+            source_xe = self.exchange_rate(currency_iso="USA").assign(value=1)
+            target_xe = self.exchange_rate(currency_iso="USA").assign(value=1)
+
+        if source_xe is None:
+            source_xe = target_xe.assign(value=lambda d: 1 / d.value)
+        if target_xe is None:
+            target_xe = source_xe.assign(value=lambda d: 1 / d.value)
+
+        # calculate conversion ratio
+        ratio = (
+            source_xe.merge(
+                target_xe,
+                how="left",
+                on=["year", "iso_code"],
+                suffixes=("_source", "_target"),
+            )
+            .assign(value=lambda d: d.value_target / d.value_source)
+            .drop(["value_source", "value_target"], axis=1)
+        )
+
+        # get the data for the selected base year.
+        xe = (
+            self.exchange_rate(currency_iso=target_iso)
+            if target_iso != "LCU"
+            else self.exchange_rate(currency_iso=source_iso)
+            if source_iso != "LCU"
+            else self.exchange_rate(currency_iso="USA")
+        )
 
         # get the data for the selected base year.
         xe_base = xe.query(f"year.dt.year == {base_year}")
@@ -104,7 +146,22 @@ class Exchange(ABC):
         # Calculate the deflator
         xe.value = round(100 * xe.value / xe.value_base, 6)
 
-        return xe.filter(["iso_code", "year", "value"], axis=1)
+        # Clean dataframe
+        xe = xe.filter(["iso_code", "year", "value"], axis=1)
+
+        # Merge the conversion ratio
+        xe = (
+            xe.merge(
+                ratio,
+                how="left",
+                on=["year", "iso_code"],
+                suffixes=("_xe", "_xe_ratio"),
+            )
+            .assign(value=lambda d: d.value_xe * d.value_xe_ratio)
+            .filter(["year", "iso_code", "value"], axis=1)
+        )
+
+        return xe
 
 
 @dataclass
@@ -302,3 +359,8 @@ class ExchangeIMF(Exchange):
 
         # return the data
         return self._data
+
+
+imf = ExchangeIMF()
+d__ = imf.exchange_deflator(source_iso="USA", target_iso="LCU", base_year=2020)
+d__ = d__.query("iso_code == 'GTM'")
