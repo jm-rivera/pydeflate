@@ -112,7 +112,9 @@ def test_exchange_deflator_columns(mock_exchange):
 
 def test_exchange_deflator_non_usd(mock_exchange, fr20, fr21, us20, us21):
     # Get rates for FRA
-    xe_fr = mock_exchange.exchange_deflator("LCU", target_iso="FRA", base_year=2020)
+    xe_fr = mock_exchange.exchange_deflator(
+        source_iso="FRA", target_iso="FRA", base_year=2020
+    )
 
     assert xe_fr.query(fr20).value.item() == pytest.approx(100)
     assert xe_fr.query(fr21).value.item() == pytest.approx(100)
@@ -122,7 +124,9 @@ def test_exchange_deflator_non_usd(mock_exchange, fr20, fr21, us20, us21):
 
 def test_exchange_deflator_usd(mock_exchange, fr20, fr21, us20, us21):
     # Get rates for USA
-    xe_us = mock_exchange.exchange_deflator("LCU", target_iso="USA", base_year=2020)
+    xe_us = mock_exchange.exchange_deflator(
+        source_iso="USA", target_iso="USA", base_year=2020
+    )
 
     assert xe_us.query(fr20).value.item() == pytest.approx(100)
     assert xe_us.query(fr21).value.item() == pytest.approx(104.348, 1e-3)

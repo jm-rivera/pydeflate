@@ -20,7 +20,7 @@ class MockData(deflate.Data):
         }
 
     def update(self, **kwargs) -> None:
-        pass
+        super()
 
     def load_data(self, **kwargs) -> None:
         d_ = pd.DataFrame(

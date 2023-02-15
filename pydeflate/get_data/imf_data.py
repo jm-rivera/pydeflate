@@ -5,6 +5,7 @@ from bblocks import WorldEconomicOutlook, set_bblocks_data_path
 
 from pydeflate.get_data.deflate_data import Data
 from pydeflate.pydeflate_config import PYDEFLATE_PATHS
+from pydeflate.tools.update_data import update_update_date
 
 set_bblocks_data_path(PYDEFLATE_PATHS.data)
 
@@ -25,6 +26,7 @@ class IMF(Data):
     def update(self) -> None:
         """Update the stored WEO data, using WEO package."""
         self._weo.update_data(reload_data=False, year=None, release=None)
+        update_update_date(source="IMF")
 
     def load_data(
         self, latest_y: int | None = None, latest_r: int | None = None

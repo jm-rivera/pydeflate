@@ -9,7 +9,7 @@ from pydeflate.get_data.oecd_data import (
     _clean_dac1,
     _download_bulk_file,
     _read_zip_content,
-    _update_dac1,
+    update_dac1,
 )
 
 
@@ -129,13 +129,13 @@ def test__update_dac1(monkeypatch):
     ), patch("pandas.DataFrame.to_feather", return_value=None) as save, patch(
         "pydeflate.get_data.oecd_data.update_update_date", return_value=None
     ) as date:
-        _update_dac1()
+        update_dac1()
 
     assert save.called
     assert date.called
 
 
-@patch("pydeflate.get_data.oecd_data._update_dac1", return_value=None)
+@patch("pydeflate.get_data.oecd_data.update_dac1", return_value=None)
 def test_update(mock_update):
     oecd = OECD()
     oecd.update()

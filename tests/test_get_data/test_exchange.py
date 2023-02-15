@@ -52,7 +52,7 @@ def mock_implied_exchange():
 # ------------------------- UPDATE -------------------------
 
 
-@patch("pydeflate.get_data.exchange_data._update_dac1")
+@patch("pydeflate.get_data.oecd_data.update_dac1")
 def test_exchange_oecd_update(mock_update_dac1):
     ExchangeOECD().update()
     mock_update_dac1.assert_called_once()
@@ -124,8 +124,8 @@ def test_imf_load_data_file_found():
 # ------------------------- LOAD DATA, Not Found -------------------------
 
 
-@patch("pydeflate.get_data.exchange_data._update_dac1")
-@patch("pathlib.Path.exists", return_value=False)
+@patch("pydeflate.get_data.oecd_data.update_dac1")
+@patch("pandas.read_feather", side_effect=FileNotFoundError)
 def test_oecd_load_data_file_not_found(path, dac_update):
     self = ExchangeOECD()
 
@@ -137,7 +137,7 @@ def test_oecd_load_data_file_not_found(path, dac_update):
 
 
 @patch("pydeflate.get_data.exchange_data.update_world_bank_data")
-@patch("pathlib.Path.exists", return_value=False)
+@patch("pandas.read_feather", side_effect=FileNotFoundError)
 def test_wb_load_data_file_not_found(path, wb_update):
     self = ExchangeWorldBank()
 
@@ -148,8 +148,11 @@ def test_wb_load_data_file_not_found(path, wb_update):
     wb_update.assert_called_once()
 
 
-@patch("pydeflate.get_data.exchange_data.IMF.update")
-@patch("pathlib.Path.exists", return_value=False)
+@patch(
+    "pydeflate.get_data.exchange_data.IMF.implied_exchange",
+    side_effect=FileNotFoundError,
+)
+@patch("pandas.read_feather", side_effect=FileNotFoundError)
 def test_imf_load_data_file_not_found(path, wb_update):
     self = ExchangeIMF()
 

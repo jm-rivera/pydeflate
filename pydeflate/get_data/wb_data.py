@@ -6,6 +6,8 @@ from pydeflate.pydeflate_config import PYDEFLATE_PATHS
 
 from bblocks import WorldBankData, set_bblocks_data_path
 
+from pydeflate.tools.update_data import update_update_date
+
 set_bblocks_data_path(PYDEFLATE_PATHS.data)
 
 _INDICATORS: dict = {
@@ -25,6 +27,7 @@ def update_world_bank_data() -> None:
     wb = WorldBankData()
     wb.load_data(indicator=list(_INDICATORS.values()), start_year=START, end_year=END)
     wb.update_data()
+    update_update_date(source="World Bank")
 
 
 @dataclass

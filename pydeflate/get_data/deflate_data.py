@@ -18,17 +18,13 @@ class Data(ABC):
     @abstractmethod
     def update(self, **kwargs) -> None:
         """Update underlying data"""
-        pass
 
     @abstractmethod
     def load_data(self, **kwargs) -> None:
         """Load required data to construct deflator"""
-        pass
 
     def available_methods(self) -> dict:
         """Return a dictionary of available methods with their functions"""
-        if self._available_methods is None:
-            raise NotImplementedError
         return self._available_methods
 
     def get_method(self, method: str) -> pd.DataFrame:

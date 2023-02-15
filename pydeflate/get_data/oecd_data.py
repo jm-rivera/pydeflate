@@ -10,7 +10,8 @@ from bs4 import BeautifulSoup as Bs
 from pydeflate.get_data.deflate_data import Data
 from pydeflate.get_data.exchange_data import ExchangeOECD
 from pydeflate.pydeflate_config import PYDEFLATE_PATHS, logger
-from pydeflate.utils import oecd_codes, update_update_date
+from pydeflate.tools.update_data import update_update_date
+from pydeflate.utils import oecd_codes
 
 warnings.simplefilter("ignore", Warning, lineno=1013)
 
@@ -112,7 +113,7 @@ def _clean_dac1(df: pd.DataFrame) -> pd.DataFrame:
     return data
 
 
-def _update_dac1() -> None:
+def update_dac1() -> None:
     """Update dac1 data from OECD site and save as feather"""
 
     logger.info("Downloading DAC1 data, which may take a bit")
@@ -134,7 +135,7 @@ def _update_dac1() -> None:
     df.to_feather(PYDEFLATE_PATHS.data / "dac1.feather")
 
     # Update the update date
-    update_update_date("oecd_dac_data")
+    update_update_date("OECD DAC")
 
     # Log
     logger.info("Successfully downloaded DAC1 data")
@@ -165,7 +166,7 @@ class OECD(Data):
         self._available_methods = {"dac_deflator": "oecd_dac"}
 
     def update(self, **kwargs) -> None:
-        _update_dac1()
+        update_dac1()
 
     def load_data(self, **kwargs) -> None:
         """Load the OECD DAC price deflators data.

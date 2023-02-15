@@ -54,12 +54,10 @@ class Exchange(ABC):
     @abstractmethod
     def update(self, **kwargs) -> None:
         """Update underlying data"""
-        pass
 
     @abstractmethod
     def load_data(self, **kwargs) -> None:
         """Load required data to construct deflator"""
-        pass
 
     @abstractmethod
     def usd_exchange_rate(self, direction: str = "lcu_to_uds") -> pd.DataFrame:
@@ -72,7 +70,6 @@ class Exchange(ABC):
         Returns:
             A dataframe with the exchange rate of the currency to USD (or vice versa).
         """
-        pass
 
     def exchange_rate(self, currency_iso: str) -> pd.DataFrame:
         """Get an exchange rate for a given ISO
@@ -179,9 +176,9 @@ class ExchangeOECD(Exchange):
     @staticmethod
     def update(**kwargs) -> None:
         """Update the DAC1 data, which is the source for the OECD exchange rates."""
-        from pydeflate.get_data.oecd_data import _update_dac1
+        from pydeflate.get_data import oecd_data
 
-        _update_dac1()
+        oecd_data.update_dac1()
 
     def load_data(self, **kwargs) -> None:
         """Load the DAC1 data, which is the source for the OECD exchange rates."""
