@@ -14,6 +14,9 @@ def _diff_from_today(date: datetime.datetime):
 
 def warn_updates():
 
+    if not (PYDEFLATE_PATHS.data / "data_updates.json").exists():
+        return
+
     with open(PYDEFLATE_PATHS.data / "data_updates.json") as file:
         updates = json.load(file)
 
@@ -26,7 +29,7 @@ def warn_updates():
                 " pydeflate with the most recent data, please run:\n"
                 "`pydeflate.update_all_data()`"
             )
-            logger.warn(message)
+            logger.warning(message)
 
 
 def update_update_date(source: str):
@@ -65,7 +68,3 @@ def update_all_data() -> None:
     for source, func in data.items():
         func()
         logger.info(f"****Successfully updated {source}****\n")
-
-
-if __name__ == "__main__":
-    update_all_data()

@@ -63,7 +63,11 @@ class Deflator:
 
         # Calculate the deflator
         df = (
-            df.assign(value=round(100 * df.value_def / df.value_xe, 6))
+            df.assign(
+                value=round(100 * df.value_def / df.value_xe, 6)
+                if not self.to_current
+                else round(100 * df.value_xe / df.value_def, 6)
+            )
             .filter(["iso_code", "year", "value"], axis=1)
             .assign(value=lambda d: d.value.replace(0, np.nan))
             .dropna(subset=["value"])

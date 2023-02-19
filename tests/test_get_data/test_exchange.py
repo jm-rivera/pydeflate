@@ -26,6 +26,24 @@ def mock_load_data(self, value_name: str = "value"):
     return self
 
 
+def mock_load_data_func(self, value_name: str = "value"):
+    def load_data(*args, **kwargs):
+        self._data = pd.DataFrame(
+            {
+                "year": [
+                    pd.Timestamp("2020-01-01"),
+                    pd.Timestamp("2020-01-01"),
+                    pd.Timestamp("2021-01-01"),
+                    pd.Timestamp("2021-01-01"),
+                ],
+                "iso_code": ["USA", "EMU", "USA", "EMU"],
+                value_name: [100, 110, 105, 115],
+            }
+        )
+
+    return load_data
+
+
 def mock_implied_exchange():
     def load(*args, **kwargs) -> pd.DataFrame:
         data = pd.DataFrame(
@@ -202,18 +220,17 @@ def test_world_bank_get_usd_exchange_data_not_loaded():
 
     # arrange
     self = ExchangeWorldBank()
+    self_test = ExchangeWorldBank()
 
     # Check that data is not loaded
     assert self._data is None
 
-    new_load = patch(
-        "pydeflate.get_data.exchange_data.ExchangeWorldBank.load_data",
-        new_callable=mock_load_data,
-        self=self,
-    )
-
     # act
-    with new_load:
+    with patch(
+        "pydeflate.get_data.exchange_data.ExchangeWorldBank.load_data",
+        new_callable=mock_load_data_func,
+        self=self,
+    ):
         self.usd_exchange_rate()
 
     # assert

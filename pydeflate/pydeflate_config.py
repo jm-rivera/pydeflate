@@ -8,6 +8,7 @@ class PYDEFLATE_PATHS:
     package = Path(__file__).resolve().parent.parent
     data = package / "pydeflate" / ".pydeflate_data"
     settings = package / "pydeflate" / "settings"
+    test_data = package / "tests" / "test_files"
 
 
 # Create a root logger

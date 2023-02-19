@@ -46,7 +46,7 @@ def exchange(
     id_column: str = "iso_code",
     id_type: str = "ISO3",
     value_column: str = "value",
-    target_column: str = "value_xe",
+    target_column: str = "value",
     date_column: str = "date",
 ) -> pd.DataFrame:
     """
@@ -127,26 +127,18 @@ def exchange(
     exchange_rates = (
         _exchange_source[rates_source]()
         .exchange_rate(target_currency)
-        .rename(
-            columns={"year": date_column, "value": target_column, "iso_code": "id_"}
-        )
+        .rename(columns={"year": date_column, "value": value_column, "iso_code": "id_"})
     )
 
     # Create ID col.
     if id_type == "DAC":
-        df["id_"] = df[id_column].map(oecd_codes).fillna("DAC")
+        df["id_"] = df[id_column].map(oecd_codes()).fillna("DAC")
     else:
         df = df.pipe(
             to_iso3, codes_col=id_column, target_col="id_", src_classification=id_type
         )
 
-    # Check source and target currencies
-    if (source_currency not in set(exchange_rates.id_)) and (source_currency != "LCU"):
-        raise KeyError(f"{source_currency} not a valid currency code")
-
-    if (target_currency not in set(exchange_rates.id_)) and (target_currency != "LCU"):
-        raise KeyError(f"{target_currency} not a valid target currency")
-
+    # merge exchange rates with data
     if source_currency == "LCU":
         df = df.merge(
             exchange_rates,
