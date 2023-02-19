@@ -5,6 +5,19 @@ description = "Package to convert current prices figures to constant prices and 
 authors = ["Jorge Rivera <jorge.rivera@one.org>"]
 license = "MIT"
 readme = "README.md"
+classifiers=[
+    'Development Status :: 5 - Production/Stable',
+    'Intended Audience :: End Users/Desktop',
+    'Intended Audience :: Science/Research',
+    'License :: OSI Approved :: MIT License',
+    'Natural Language :: English',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.10',
+]
+
+packages = [
+    { include = "pydeflate" },
+]
 
 [tool.poetry.dependencies]
 python = "^3.10"
