@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from pydeflate import set_pydeflate_path, pydeflate_config
+from pydeflate import pydeflate_config, set_pydeflate_path
 from pydeflate.deflate.deflate import (
     _create_id_col,
     _validate_deflator_method,
@@ -124,6 +124,17 @@ def df():
 
 
 @pytest.fixture
+def df_eur():
+    return pd.DataFrame(
+        {
+            "iso_code": ["FRA", "FRA", "USA", "USA"],
+            "year": [2020, 2021, 2020, 2021],
+            "value": [14_052, 14_140, 31_060, 40_190],
+        }
+    )
+
+
+@pytest.fixture
 def df2current():
     return pd.DataFrame(
         {
@@ -184,12 +195,12 @@ def test_deflate_results_dac_to_constant(df):
         exchange_source="oecd_dac",
     )
     assert result.query("iso_code == 'FRA' and year == 2020")[
-        "value_deflate"
-    ].sum() == pytest.approx(16_743, 1e-4)
+               "value_deflate"
+           ].sum() == pytest.approx(16_743, 1e-4)
 
     assert result.query("iso_code == 'USA' and year == 2020")[
-        "value_deflate"
-    ].sum() == pytest.approx(36_809, 1e-4)
+               "value_deflate"
+           ].sum() == pytest.approx(36_809, 1e-4)
 
 
 def test_deflate_results_dac_to_current(df2current):
@@ -207,12 +218,12 @@ def test_deflate_results_dac_to_current(df2current):
         to_current=True,
     )
     assert result.query("iso_code == 'FRA' and year == 2020")[
-        "value_deflate"
-    ].sum() == pytest.approx(16_013, 1e-4)
+               "value_deflate"
+           ].sum() == pytest.approx(16_013, 1e-4)
 
     assert result.query("iso_code == 'USA' and year == 2020")[
-        "value_deflate"
-    ].sum() == pytest.approx(35_396, 1e-4)
+               "value_deflate"
+           ].sum() == pytest.approx(35_396, 1e-4)
 
 
 def test_deflate_results_imf_to_constant(df):
@@ -229,12 +240,12 @@ def test_deflate_results_imf_to_constant(df):
         exchange_source="imf",
     )
     assert result.query("iso_code == 'FRA' and year == 2020")[
-        "value_deflate"
-    ].sum() == pytest.approx(16_826, 1e-4)
+               "value_deflate"
+           ].sum() == pytest.approx(16_826, 1e-4)
 
     assert result.query("iso_code == 'USA' and year == 2020")[
-        "value_deflate"
-    ].sum() == pytest.approx(36_867, 1e-4)
+               "value_deflate"
+           ].sum() == pytest.approx(36_867, 1e-4)
 
 
 def test_deflate_results_imf_to_current(df2current):
@@ -258,3 +269,27 @@ def test_deflate_results_imf_to_current(df2current):
     assert result.query("iso_code == 'USA' and year == 2020")[
                "value_deflate"
            ].sum() == pytest.approx(35_340, 1e-4)
+
+
+def test_deflate_results_dac_eur_constant(df_eur):
+    result = deflate(
+        df=df_eur,
+        base_year=2021,
+        id_column="iso_code",
+        source_currency="FRA",
+        target_currency="USA",
+        date_column="year",
+        source_column="value",
+        target_column="value_deflate",
+        deflator_method="dac_deflator",
+        deflator_source="oecd_dac",
+        exchange_method="implied",
+        exchange_source="oecd_dac",
+    )
+    assert result.query("iso_code == 'FRA' and year == 2020")[
+               "value_deflate"
+           ].sum() == pytest.approx(16_743, 1e-4)
+
+    assert result.query("iso_code == 'USA' and year == 2020")[
+               "value_deflate"
+           ].sum() == pytest.approx(36_809, 1e-4)
