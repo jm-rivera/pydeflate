@@ -50,7 +50,8 @@ class WorldBank(Data):
 
         # get the paths to the data
         paths = [
-            PYDEFLATE_PATHS.data / f"{i_}_{START}_{END}.feather" for i_ in _INDICATORS
+            PYDEFLATE_PATHS.data / f"{_INDICATORS[i_]}_{START}-{END}_.csv"
+            for i_ in _INDICATORS
         ]
 
         # check if data exists, if not update
@@ -59,6 +60,12 @@ class WorldBank(Data):
                 update_world_bank_data()
                 break
 
-        self._data = pd.concat(
-            [pd.read_feather(path) for path in paths], ignore_index=True
-        )
+        # load the data
+        files = []
+        for path in paths:
+            try:
+                files.append(pd.read_csv(path))
+            except FileNotFoundError:
+                files.append(pd.DataFrame())
+
+        self._data = pd.concat(files, ignore_index=True)

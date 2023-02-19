@@ -2,15 +2,22 @@ import io
 from unittest.mock import patch
 
 import pandas as pd
+import pytest
 import requests
 
 from pydeflate.get_data.oecd_data import (
     OECD,
+    _calculate_price_deflator,
     _clean_dac1,
     _download_bulk_file,
+    _identify_base_year,
     _read_zip_content,
     update_dac1,
 )
+
+from pydeflate import pydeflate_config, set_pydeflate_path
+
+set_pydeflate_path(pydeflate_config.PYDEFLATE_PATHS.test_data)
 
 
 def mock_requests_get(url):
@@ -75,6 +82,17 @@ def test__read_zip_content():
     assert "DONOR" in df.columns
 
 
+def test__read_zip_content_unicode_error():
+    # Test data: with comma as separator
+    request_content = mock_zip_file()  # binary content of the zip file
+    file_name = "test.csv"
+
+    with patch("pandas.read_csv", side_effect=UnicodeDecodeError):
+        # Read the zip file content using the function under test
+        with pytest.raises((UnicodeDecodeError, TypeError)):
+            _read_zip_content(request_content, file_name)
+
+
 def test__download_bulk_file(monkeypatch):
 
     monkeypatch.setattr(requests, "get", mock_requests_get)
@@ -84,9 +102,9 @@ def test__download_bulk_file(monkeypatch):
     assert result == b"test content"
 
 
-def test_clean_dac1():
-    # Create a sample dataframe
-    df = pd.DataFrame(
+@pytest.fixture
+def df():
+    return pd.DataFrame(
         {
             "DONOR": [4, 4, 4, 12, 12, 12],
             "AMOUNTTYPE": ["A", "D", "N", "A", "D", "N"],
@@ -97,8 +115,10 @@ def test_clean_dac1():
         }
     )
 
-    # Expected output
-    expected = pd.DataFrame(
+
+@pytest.fixture
+def expected():
+    return pd.DataFrame(
         {
             "iso_code": ["FRA", "GBR"],
             "year": [pd.Timestamp("2017-01-01"), pd.Timestamp("2019-01-01")],
@@ -106,6 +126,9 @@ def test_clean_dac1():
             "deflator": [100.000000, 90.909091],
         }
     )
+
+
+def test_clean_dac1(df, expected):
 
     # Test the function
     result = _clean_dac1(df)
@@ -141,3 +164,68 @@ def test_update(mock_update):
     oecd.update()
 
     assert mock_update.called
+
+
+def test_identify_base_year():
+
+    test_df = pd.DataFrame(
+        {
+            "iso_code": ["FRA", "FRA"],
+            "year": [pd.Timestamp("2017-01-01"), pd.Timestamp("2019-01-01")],
+            "value": [100, 150],
+        }
+    )
+
+    result = _identify_base_year(test_df)
+
+    assert result == 2017
+
+
+def test_calculate_price_def():
+
+    test_df = pd.DataFrame(
+        {
+            "iso_code": ["FRA", "FRA"],
+            "year": [pd.Timestamp("2017-01-01"), pd.Timestamp("2019-01-01")],
+            "value_dac": [100, 150],
+            "value_exchange": [2, 1],
+        }
+    )
+
+    result = _calculate_price_deflator(test_df)
+
+    assert result.query("year.dt.year == 2017").value.sum() == pytest.approx(2)
+    assert result.query("year.dt.year == 2019").value.sum() == pytest.approx(1.5)
+
+
+def _mock_read():
+    def read_feather(*args, **kwargs):
+        global check
+        try:
+            if check:
+                return pd.DataFrame(
+                    {
+                        "iso_code": ["USA", "USA"],
+                        "year": [
+                            pd.Timestamp("2017-01-01"),
+                            pd.Timestamp("2019-01-01"),
+                        ],
+                        "exchange": [3.0, 2.0],
+                        "deflator": [100.000000, 90.909091],
+                    }
+                )
+        except NameError:
+            check = True
+            raise FileNotFoundError
+
+    return read_feather
+
+
+@patch("pandas.read_feather", new_callable=_mock_read)
+@patch("pydeflate.get_data.oecd_data.update_dac1", return_value=None)
+def test_load_data(update, read):
+    oecd = OECD()
+    oecd.load_data()
+
+    assert len(oecd._data) > 0
+    assert update.called
