@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "pydeflate"
 version = "1.2.10"
-description = "\"Package to convert current prices figures to constant prices and vice versa\""
+description = "Package to convert current prices figures to constant prices and vice versa"
 authors = ["Jorge Rivera <jorge.rivera@one.org>"]
 license = "MIT"
 readme = "README.rst"
@@ -16,7 +16,7 @@ xlrd = "^2.0.1"
 country-converter = "^0.8.0"
 requests = "^2.28.2"
 pyarrow = "^11.0.0"
-bblocks = {git = "https://github.com/ONEcampaign/bblocks.git"}
+bblocks = "^1.0.2"
 
 [tool.poetry.dev-dependencies]
 bump2version = "^1.0.1"
