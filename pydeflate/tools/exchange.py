@@ -1,29 +1,32 @@
-from typing import Union
-
 import pandas as pd
 
-from pydeflate.get_data.oecd_data import OECD_XE
-from pydeflate.get_data.wb_data import WB_XE
+from pydeflate.get_data.exchange_data import (
+    ExchangeIMF,
+    ExchangeOECD,
+    ExchangeWorldBank,
+)
 from pydeflate.utils import check_year_as_number, to_iso3, oecd_codes
 
-__exchange_source = {
-    "wb": WB_XE().get_data,
-    "oecd_dac": OECD_XE().get_data,
+
+_exchange_source = {
+    "world_bank": ExchangeWorldBank,
+    "oecd_dac": ExchangeOECD,
+    "imf": ExchangeIMF,
 }
 
 
 def _check_key_errors(
     rates_source: str,
-    columns: Union[list, pd.Index],
+    columns: str | list | pd.Index,
     value_column: str,
     date_column: str,
 ) -> None:
     """Check whether provided parameters are valid"""
 
-    if rates_source not in __exchange_source.keys():
+    if rates_source not in _exchange_source.keys():
         raise KeyError(
-            f"{rates_source} is not a valid exchange rates source. "
-            f"Please choose from {__exchange_source.keys()}"
+            f"{rates_source=} is not a valid exchange rates source. "
+            f"Please choose from {_exchange_source.keys()}"
         )
 
     if value_column not in columns:
@@ -43,7 +46,7 @@ def exchange(
     id_column: str = "iso_code",
     id_type: str = "ISO3",
     value_column: str = "value",
-    target_column: str = "value_xe",
+    target_column: str = "value",
     date_column: str = "date",
 ) -> pd.DataFrame:
     """
@@ -121,38 +124,30 @@ def exchange(
         target_changed = False
 
     # get the selected rates function
-    xe = __exchange_source[rates_source](target_currency)
-
-    # rename the column names in Xe to match the provided DataFrame
-    xe = xe.rename(
-        columns={"year": date_column, "value": value_column, "iso_code": "id_"}
+    exchange_rates = (
+        _exchange_source[rates_source]()
+        .exchange_rate(target_currency)
+        .rename(columns={"year": date_column, "value": value_column, "iso_code": "id_"})
     )
 
-    # Create ID col.  By default, if a country does not have a DAC deflator, the
-    # DAC,Total deflator is used.
+    # Create ID col.
     if id_type == "DAC":
-        df["id_"] = df[id_column].map(oecd_codes).fillna("DAC")
+        df["id_"] = df[id_column].map(oecd_codes()).fillna("DAC")
     else:
         df = df.pipe(
             to_iso3, codes_col=id_column, target_col="id_", src_classification=id_type
         )
 
-    # Check source and target currencies
-    if (source_currency not in set(xe.id_)) and (source_currency != "LCU"):
-        raise KeyError(f"{source_currency} not a valid currency code")
-
-    if (target_currency not in set(xe.id_)) and (target_currency != "LCU"):
-        raise KeyError(f"{target_currency} not a valid target currency")
-
+    # merge exchange rates with data
     if source_currency == "LCU":
         df = df.merge(
-            xe,
+            exchange_rates,
             on=["id_", date_column],
             suffixes=("", "_xe"),
         )
 
     else:
-        xe = xe.loc[xe.id_ == source_currency]
+        xe = exchange_rates.loc[exchange_rates.id_ == source_currency]
         df = df.merge(
             xe.drop("id_", axis=1),
             on=[date_column],
@@ -161,7 +156,6 @@ def exchange(
 
     # revert change to target_currency if target_changed
     if target_changed:
-        source_currency = target_currency
         target_currency = "LCU"
 
     if target_currency == "LCU":

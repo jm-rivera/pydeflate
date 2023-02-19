@@ -1,71 +1,36 @@
 [tool.poetry]
 name = "pydeflate"
-version = "1.2.12"
-homepage = "https://github.com/jm-rivera/pydeflate"
+version = "1.2.10"
 description = "Package to convert current prices figures to constant prices and vice versa"
-readme = "README.rst"
 authors = ["Jorge Rivera <jorge.rivera@one.org>"]
 license = "MIT"
-classifiers=[
-    'Development Status :: 5 - Production/Stable',
-    'Intended Audience :: End Users/Desktop',
-    'Intended Audience :: Science/Research',
-    'License :: OSI Approved :: MIT License',
-    'Natural Language :: English',
-    'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.10',
-]
-
-
-packages = [
-    { include = "pydeflate" },
-]
+readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-pandas = "^1.5.2"
-BeautifulSoup4 = "^4.11.1"
 numpy = "^1.24.1"
-pandas-datareader = "^0.10.0"
-requests = "^2.28.1"
+pandas = "^1.5.3"
+beautifulsoup4 = "^4.11.2"
+weo = "^0.7.4"
 xlrd = "^2.0.1"
 country-converter = "^0.8.0"
-weo = "^0.7.4"
-pyarrow = "^11"
-
+requests = "^2.28.2"
+pyarrow = "^11.0.0"
+bblocks = "^1.0.2"
 
 [tool.poetry.dev-dependencies]
+bump2version = "^1.0.1"
+black = "^22.12.0"
+pytest = "^7.2.1"
+pytest-cov = "^4.0.0"
 
-
-[tool.black]
-line-length = 88
-skip-string-normalization = true
-target-version = ['py39']
-include = '\.pyi?$'
-exclude = '''
-/(
-    \.eggs
-  | \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | _build
-  | buck-out
-  | build
-  | dist
-)/
-'''
-
-[tool.poetry.extras]
-test = [
-    "black",
-]
-
-dev = ["tox", "pre-commit", "virtualenv", "pip", "twine", "toml", "bump2version"]
-
-docs = ["Sphinx", "sphinx-rtd-theme", "sphinxcontrib-napoleon", "myst-parser"]
+[tool.poetry.group.dev.dependencies]
+pytest-mock = "^3.10.0"
+sphinx = "~5"
+myst-nb = "^0.17.1"
+sphinx-autoapi = "^2.0.1"
+sphinx-rtd-theme = "^1.2.0"
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
