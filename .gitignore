@@ -124,3 +124,4 @@ pydeflate/.DS_Store
 
 # Packaged data
 /pydeflate/.pydeflate_data/
+/.reports/

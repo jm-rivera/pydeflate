@@ -26,6 +26,10 @@ pytest-cov = "^4.0.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest-mock = "^3.10.0"
+sphinx = "~5"
+myst-nb = "^0.17.1"
+sphinx-autoapi = "^2.0.1"
+sphinx-rtd-theme = "^1.2.0"
 
 [build-system]
 requires = ["poetry-core"]
