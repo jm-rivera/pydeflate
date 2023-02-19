@@ -21,6 +21,9 @@ class IMF(Data):
             "Consumer price index": "PCPI",
             "Consumer price index, end of period": "PCPIE",
             "Gross domestic product, deflator": "NGDP_D",
+            "gdp": "NGDP_D",
+            "pcpi": "PCPI",
+            "pcpie": "PCPIE",
         }
 
     def update(self) -> None:

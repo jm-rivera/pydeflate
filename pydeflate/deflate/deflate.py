@@ -88,7 +88,7 @@ def _validate_exchange_source(deflator_method, exchange_source) -> str:
 
     # Default to the first source in the list of valid sources
     if exchange_source is None:
-        exchange_source = ValidExchangeSources[deflator_method][0]
+        exchange_source = ValidExchangeMethods[deflator_method][0]
 
     return exchange_source
 
@@ -128,7 +128,7 @@ def _create_id_col(df: pd.DataFrame, id_type: str, id_column: str) -> pd.DataFra
 def deflate(
     df: pd.DataFrame,
     base_year: int,
-    deflator_source: str,
+    deflator_source: str = None,
     deflator_method: str | None = None,
     exchange_source: str | None = None,
     exchange_method: str | None = None,
@@ -137,12 +137,14 @@ def deflate(
     id_column: str = "iso_code",
     id_type: str = "ISO3",
     date_column: str = "date",
-    source_col: str = "value",
-    target_col: str = "value",
+    source_column: str = "value",
+    target_column: str = "value",
     to_current: bool = False,
     method: str | None = None,
     source: str | None = None,
     iso_column: str | None = None,
+    source_col: str | None = None,
+    target_col: str | None = None,
 ) -> pd.DataFrame:
     """Deflate amounts to a given currency - base year combination.
 
@@ -205,9 +207,9 @@ def deflate(
         date_column:The column containing the date values. The column can contain years (int)
             or datetime objects.
 
-        source_col:The column containing the data to be deflated.
+        source_column:The column containing the data to be deflated.
 
-        target_col: Column where the deflated data will be stored. It can be the same as the
+        target_column: Column where the deflated data will be stored. It can be the same as the
             source column if a copy of the original isn't needed.
 
         to_current: If True, amounts will be treated as in constant prices and converted to
@@ -216,6 +218,8 @@ def deflate(
         iso_column:Provided for backwards compatibility. An alias for id_column
         source: Provided for backwards compatibility. An alias for deflator_source
         method: Provided for backwards compatibility. An alias for deflator_method
+        source_col: Provided for backwards compatibility. An alias for source_column
+        target_col: Provided for backwards compatibility. An alias for target_column
 
     Returns:
         A pandas DataFrame containing the deflated data. Years for which there
@@ -232,7 +236,7 @@ def deflate(
         logger.warning("iso_column is deprecated. Use id_column instead.")
 
     # Backwards compatibility: if the source parameter is used, reassign it
-    if source is not None:
+    if deflator_source is None and source is not None:
         deflator_source = source
         logger.warning("source is deprecated. Use deflator_source instead.")
 
@@ -240,6 +244,16 @@ def deflate(
     if method is not None:
         deflator_method = method
         logger.warning("method is deprecated. Use deflator_method instead.")
+
+    # Backwards compatibility: if the source_col parameter is used, reassign it
+    if source_col is not None:
+        source_column = source_col
+        logger.warning("source_col is deprecated. Use source_column instead.")
+
+    # Backwards compatibility: if the target_col parameter is used, reassign it
+    if target_col is not None:
+        target_column = target_col
+        logger.warning("target_col is deprecated. Use target_column instead.")
 
     # -------------------------- Validation -----------------------------
     deflator_source = _validate_deflator_source(deflator_source=deflator_source)
@@ -253,7 +267,7 @@ def deflate(
     )
 
     exchange_method = _validate_exchange_method(
-        exchange_source=deflator_source, exchange_method=exchange_method
+        exchange_source=exchange_source, exchange_method=exchange_method
     )
 
     # ----------------------------- Set up ---------------------------
@@ -262,8 +276,8 @@ def deflate(
     df = df.copy(deep=True)
 
     # Keep track of original columns to return data in the same order.
-    if target_col not in df.columns:
-        cols = [*df.columns, target_col]
+    if target_column not in df.columns:
+        cols = [*df.columns, target_column]
     else:
         cols = df.columns
 
@@ -298,11 +312,7 @@ def deflate(
     )
 
     # If the reverse option is used, multiply the data. Else divide.
-    if to_current:
-        df[target_col] = df[source_col] * (df.deflator / 100)
-
-    else:
-        df[target_col] = df[source_col] / (df.deflator / 100)
+    df[target_column] = df[source_column] / (df.deflator / 100)
 
     # Keep only the columns present in the original DataFrame (including order)
     df = df.filter(cols, axis=1)
