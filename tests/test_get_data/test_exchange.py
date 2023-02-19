@@ -191,6 +191,13 @@ def test_oecd_get_usd_exchange_data_not_loaded():
     assert self._data is not None
 
 
+def test_world_bank_wrong_method():
+
+    # arrange
+    with pytest.raises(ValueError):
+        ExchangeWorldBank(method="xxx")
+
+
 def test_world_bank_get_usd_exchange_data_not_loaded():
 
     # arrange

@@ -119,9 +119,6 @@ class Exchange(ABC):
             if source_iso != "LCU"
             else self.exchange_rate(currency_iso="USA").assign(value=1)
         )
-        # Check that the source currency is valid
-        if len(source_xe) == 0:
-            raise ValueError(f"No currency exchange data for {source_iso=}")
 
         # Get exchange data based on the target currency. If LCU set to None
         target_xe = (
@@ -129,9 +126,6 @@ class Exchange(ABC):
             if target_iso != "LCU"
             else self.exchange_rate(currency_iso="USA").assign(value=1)
         )
-        # Check that the target currency is valid
-        if len(target_xe) == 0:
-            raise ValueError(f"No currency exchange data for {target_iso=}")
 
         # calculate conversion ratio
         exchange_ratio = _exchange_ratio(source_xe=source_xe, target_xe=target_xe)
