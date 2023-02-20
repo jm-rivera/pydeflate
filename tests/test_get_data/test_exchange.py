@@ -112,7 +112,7 @@ def test_wb_load_data_file_found():
 
     # arrange
     exchange_rates = pd.DataFrame({"USD": [1.0, 1.1, 1.2], "EUR": [0.9, 0.8, 0.7]})
-    read_feather_mock = patch("pandas.read_feather", return_value=exchange_rates)
+    read_feather_mock = patch("pandas.read_csv", return_value=exchange_rates)
 
     # act
     with read_feather_mock as rf_mock:
@@ -155,7 +155,7 @@ def test_oecd_load_data_file_not_found(path, dac_update):
 
 
 @patch("pydeflate.get_data.exchange_data.update_world_bank_data")
-@patch("pandas.read_feather", side_effect=FileNotFoundError)
+@patch("pandas.read_csv", side_effect=FileNotFoundError)
 def test_wb_load_data_file_not_found(path, wb_update):
     self = ExchangeWorldBank()
 

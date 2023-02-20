@@ -1,7 +1,8 @@
 # Changelog
 
-## 1.3.1 (2023-02-20)
+## 1.3.2 (2023-02-20)
 - Updated requirements.
+- Fixed issues with downloading world bank data
 
 ## 1.3.0 (2023-02-19)
 

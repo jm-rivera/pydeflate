@@ -243,13 +243,19 @@ class ExchangeWorldBank(Exchange):
 
     def load_data(self, **kwargs) -> None:
         """Load the World Bank data"""
-        # Avoid infinite recursion
+        # method mapping
+        method_map = {
+            "yearly_average": "PA.NUS.FCRF",
+            "effective_exchange": "PX.REX.REER",
+        }
 
         if self._load_try_count < 1:
             # Try to load the data from disk
             try:
-                self._data = pd.read_feather(
-                    PYDEFLATE_PATHS.data / f"{self.method}_{START}_{END}.feather"
+                self._data = pd.read_csv(
+                    PYDEFLATE_PATHS.data
+                    / f"{method_map[self.method]}_{START}-{END}_.csv",
+                    parse_dates=["date"],
                 )
 
             # If the data is not found, download it. Reload the data to the object.
