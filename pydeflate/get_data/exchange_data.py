@@ -252,11 +252,15 @@ class ExchangeWorldBank(Exchange):
         if self._load_try_count < 1:
             # Try to load the data from disk
             try:
-                self._data = pd.read_csv(
-                    PYDEFLATE_PATHS.data
-                    / f"{method_map[self.method]}_{START}-{END}_.csv",
-                    parse_dates=["date"],
-                ).rename(columns={"date": "year"})
+                self._data = (
+                    pd.read_csv(
+                        PYDEFLATE_PATHS.data
+                        / f"{method_map[self.method]}_{START}-{END}_.csv",
+                        parse_dates=["date"],
+                    )
+                    .rename(columns={"date": "year"})
+                    .drop(columns=["indicator_code"])
+                )
 
             # If the data is not found, download it. Reload the data to the object.
             except FileNotFoundError:
