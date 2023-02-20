@@ -256,7 +256,7 @@ class ExchangeWorldBank(Exchange):
                     PYDEFLATE_PATHS.data
                     / f"{method_map[self.method]}_{START}-{END}_.csv",
                     parse_dates=["date"],
-                )
+                ).rename(columns={"date": "year"})
 
             # If the data is not found, download it. Reload the data to the object.
             except FileNotFoundError:

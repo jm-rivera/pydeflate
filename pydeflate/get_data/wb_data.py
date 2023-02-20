@@ -64,7 +64,11 @@ class WorldBank(Data):
         files = []
         for path in paths:
             try:
-                files.append(pd.read_csv(path))
+                files.append(
+                    pd.read_csv(path, parse_dates=["date"]).rename(
+                        columns={"date": "year"}
+                    )
+                )
             except FileNotFoundError:
                 files.append(pd.DataFrame())
 
