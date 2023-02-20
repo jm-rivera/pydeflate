@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.3.1 (2023-02-20)
+- Updated requirements.
+
 ## 1.3.0 (2023-02-19)
 
 This release includes a major refactoring/rewriting of the underlying
