@@ -111,7 +111,13 @@ def test_wb_load_data_file_found():
     self = ExchangeWorldBank()
 
     # arrange
-    exchange_rates = pd.DataFrame({"USD": [1.0, 1.1, 1.2], "EUR": [0.9, 0.8, 0.7]})
+    exchange_rates = pd.DataFrame(
+        {
+            "USD": [1.0, 1.1, 1.2],
+            "EUR": [0.9, 0.8, 0.7],
+            "indicator_code": ["PA.NUS.PPPC.RF", "PA.NUS.PPPC.RF", "PA.NUS.PPPC.RF"],
+        }
+    )
     read_feather_mock = patch("pandas.read_csv", return_value=exchange_rates)
 
     # act
@@ -120,7 +126,7 @@ def test_wb_load_data_file_found():
 
     # assert
     rf_mock.assert_called_once()
-    assert self._data.equals(exchange_rates)
+    assert self._data.equals(exchange_rates.drop(columns=["indicator_code"]))
 
 
 def test_imf_load_data_file_found():
