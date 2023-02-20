@@ -1,5 +1,5 @@
 __author__ = """Jorge Rivera"""
-__version__ = "1.3.2"
+__version__ = "1.3.3"
 
 from pydeflate.deflate.deflate import deflate
 from pydeflate.tools.exchange import exchange
