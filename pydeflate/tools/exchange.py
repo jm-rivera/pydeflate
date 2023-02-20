@@ -10,6 +10,7 @@ from pydeflate.utils import check_year_as_number, to_iso3, oecd_codes
 
 _exchange_source = {
     "world_bank": ExchangeWorldBank,
+    "wb": ExchangeWorldBank,
     "oecd_dac": ExchangeOECD,
     "imf": ExchangeIMF,
 }
@@ -42,7 +43,7 @@ def exchange(
     df: pd.DataFrame,
     source_currency: str,
     target_currency: str,
-    rates_source: str = "wb",
+    rates_source: str = "world_bank",
     id_column: str = "iso_code",
     id_type: str = "ISO3",
     value_column: str = "value",
