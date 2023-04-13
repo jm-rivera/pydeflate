@@ -196,11 +196,11 @@ def test_deflate_results_dac_to_constant(df):
     )
     assert result.query("iso_code == 'FRA' and year == 2020")[
         "value_deflate"
-    ].sum() == pytest.approx(16_743, 1e-4)
+    ].sum() == pytest.approx(16_838, 1e-4)
 
     assert result.query("iso_code == 'USA' and year == 2020")[
         "value_deflate"
-    ].sum() == pytest.approx(36_809, 1e-4)
+    ].sum() == pytest.approx(36_985, 1e-4)
 
 
 def test_deflate_results_dac_to_current(df2current):
@@ -219,11 +219,11 @@ def test_deflate_results_dac_to_current(df2current):
     )
     assert result.query("iso_code == 'FRA' and year == 2020")[
         "value_deflate"
-    ].sum() == pytest.approx(16_013, 1e-4)
+    ].sum() == pytest.approx(15_922, 1e-4)
 
     assert result.query("iso_code == 'USA' and year == 2020")[
         "value_deflate"
-    ].sum() == pytest.approx(35_396, 1e-4)
+    ].sum() == pytest.approx(35_226, 1e-4)
 
 
 def test_deflate_results_imf_to_constant(df):
@@ -245,7 +245,7 @@ def test_deflate_results_imf_to_constant(df):
 
     assert result.query("iso_code == 'USA' and year == 2020")[
         "value_deflate"
-    ].sum() == pytest.approx(36_867, 1e-4)
+    ].sum() == pytest.approx(36_985, 1e-4)
 
 
 def test_deflate_results_imf_to_current(df2current):
@@ -268,7 +268,7 @@ def test_deflate_results_imf_to_current(df2current):
 
     assert result.query("iso_code == 'USA' and year == 2020")[
         "value_deflate"
-    ].sum() == pytest.approx(35_340, 1e-4)
+    ].sum() == pytest.approx(35_226, 1e-4)
 
 
 def test_deflate_results_dac_eur_constant(df_eur):
@@ -288,8 +288,8 @@ def test_deflate_results_dac_eur_constant(df_eur):
     )
     assert result.query("iso_code == 'FRA' and year == 2020")[
         "value_deflate"
-    ].sum() == pytest.approx(16_743, 1e-4)
+    ].sum() == pytest.approx(16_839, 1e-4)
 
     assert result.query("iso_code == 'USA' and year == 2020")[
         "value_deflate"
-    ].sum() == pytest.approx(36_809, 1e-4)
+    ].sum() == pytest.approx(36_985, 1e-4)

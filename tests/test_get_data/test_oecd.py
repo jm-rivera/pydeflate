@@ -15,7 +15,7 @@ from pydeflate.get_data.oecd_data import (
     update_dac1,
 )
 
-from pydeflate import pydeflate_config, set_pydeflate_path
+from pydeflate import pydeflate_config, set_pydeflate_path, update_dac1
 
 set_pydeflate_path(pydeflate_config.PYDEFLATE_PATHS.test_data)
 
@@ -94,7 +94,6 @@ def test__read_zip_content_unicode_error():
 
 
 def test__download_bulk_file(monkeypatch):
-
     monkeypatch.setattr(requests, "get", mock_requests_get)
 
     result = _download_bulk_file("https://stats.oecd.org/")
@@ -129,7 +128,6 @@ def expected():
 
 
 def test_clean_dac1(df, expected):
-
     # Test the function
     result = _clean_dac1(df)
 
@@ -167,7 +165,6 @@ def test_update(mock_update):
 
 
 def test_identify_base_year():
-
     test_df = pd.DataFrame(
         {
             "iso_code": ["FRA", "FRA"],
@@ -182,7 +179,6 @@ def test_identify_base_year():
 
 
 def test_calculate_price_def():
-
     test_df = pd.DataFrame(
         {
             "iso_code": ["FRA", "FRA"],

@@ -142,9 +142,9 @@ def update_dac1() -> None:
 
 
 def _identify_base_year(df: pd.DataFrame) -> int:
-
     return (
-        df.groupby(["year"], as_index=False)
+        df.query("iso_code in ['FRA','GBR','USA','CAN','DEU','EUI']")
+        .groupby(["year"], as_index=False)
         .value.mean(numeric_only=True)
         .round(2)
         .loc[lambda d: d.value == 100.00]
