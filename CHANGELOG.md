@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.5 (2023-04-13)
+- Fixed an issue created by the preliminary OECD data release which mixes base years
+- Updated requirements
+
+
 ## 1.3.4 (2023-02-20)
 - Updated requirements.
 - Fixed issues with downloading world bank data
