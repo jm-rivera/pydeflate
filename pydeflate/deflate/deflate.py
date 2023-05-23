@@ -299,7 +299,7 @@ def deflate(
             to_current=to_current,
         )
         .get_deflator()
-        .rename(columns={"iso_code": "id_"})
+        .rename(columns={"iso_code": "id_", "year": date_column})
     )
 
     # ----------------------------- Deflate ---------------------------

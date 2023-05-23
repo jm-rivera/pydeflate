@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.6 (2023-05-23)
+- Fixed an issue which meant not all date columns were accepted.
+- Updated requirements
+
 ## 1.3.5 (2023-04-13)
 - Fixed an issue created by the preliminary OECD data release which mixes base years
 - Updated requirements
