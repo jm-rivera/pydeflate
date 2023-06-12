@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.7 (2023-06-12)
+- Fixed an issue created by a change in OECD encoding of files
+- Updated requirements
+
 ## 1.3.6 (2023-05-23)
 - Fixed an issue which meant not all date columns were accepted.
 - Updated requirements
