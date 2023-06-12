@@ -1,3 +1,4 @@
+import csv
 import io
 import warnings
 import zipfile as zf
@@ -19,6 +20,46 @@ _BASE_URL: str = "https://stats.oecd.org/DownloadFiles.aspx?DatasetCode="
 _TABLE1_URL: str = f"{_BASE_URL}TABLE1"
 
 
+def _raw2df(csv_file: csv, sep: str, encoding: str) -> pd.DataFrame:
+    """Convert a raw csv to a DataFrame. Check the result if requested"""
+
+    try:
+        _ = pd.read_csv(
+            csv_file, sep=sep, dtype="str", encoding=encoding, low_memory=False
+        )
+    except UnicodeError:
+        raise pd.errors.ParserError
+
+    unnamed_cols = [c for c in _.columns if "unnamed" in c]
+
+    if len(unnamed_cols) > 3:
+        raise pd.errors.ParserError
+
+    if len(_.columns) < 3:
+        raise pd.errors.ParserError
+
+    return _
+
+
+def _extract_df(request_content, file_name: str, separator: str) -> pd.DataFrame:
+    import copy
+
+    for encoding in ["utf_16", "ISO-8859-1"]:
+        try:
+            rc = copy.deepcopy(request_content)
+
+            # Read the zipfile
+            _ = io.BytesIO(rc)
+            raw_csv = zf.ZipFile(_).open(file_name)
+
+            # convert to a dataframe
+            return _raw2df(csv_file=raw_csv, sep=separator, encoding=encoding)
+        except pd.errors.ParserError:
+            logger.debug(f"{encoding} not valid")
+
+    raise pd.errors.ParserError
+
+
 def _read_zip_content(request_content: bytes, file_name: str) -> pd.DataFrame:
     """Read the contents of a zip file
 
@@ -30,16 +71,20 @@ def _read_zip_content(request_content: bytes, file_name: str) -> pd.DataFrame:
         A pandas dataframe with the contents of the file
 
     """
-    # Read the zipfile
-    _ = io.BytesIO(request_content)
-    zip_file = zf.ZipFile(_).open(file_name)
-
-    # Try two alternative separators to read the CSV file
     try:
-        return pd.read_csv(zip_file, sep=",", encoding="ISO-8859-1", low_memory=False)
+        return _extract_df(
+            request_content=request_content, separator=",", file_name=file_name
+        )
 
     except UnicodeDecodeError:
-        return pd.read_csv(zip_file, sep="|", encoding="ISO-8859-1", low_memory=False)
+        return _extract_df(
+            request_content=request_content, separator="|", file_name=file_name
+        )
+
+    except pd.errors.ParserError:
+        return _extract_df(
+            request_content=request_content, separator="|", file_name=file_name
+        )
 
 
 def _download_bulk_file(url: str) -> bytes:
@@ -94,9 +139,17 @@ def _clean_dac1(df: pd.DataFrame) -> pd.DataFrame:
     data = (
         df.filter(cols, axis=1)
         .rename(columns=cols)
-        .astype({"year": "Int32"})
+        .astype(
+            {
+                "year": "Int32",
+                "aid": "Int32",
+                "flow": "Int32",
+                "value": float,
+                "donor_code": "Int32",
+            }
+        )
         .query(query)
-        .filter(["donor_code", "type", "year", "value"])
+        .filter(["donor_code", "type", "year", "value"], axis=1)
         .pivot(index=["donor_code", "year"], columns=["type"], values="value")
         .reset_index()
         .assign(

@@ -24,4 +24,11 @@ def set_pydeflate_path(path):
 warn_updates()
 
 
-__all__ = ["deflate", "exchange", "update_all_data", "set_pydeflate_path", "get_data"]
+__all__ = [
+    "deflate",
+    "exchange",
+    "update_all_data",
+    "set_pydeflate_path",
+    "get_data",
+    "update_dac1",
+]
