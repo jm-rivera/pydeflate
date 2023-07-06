@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.3.8 (2023-07-06)
+- Updated requirements.
+
 ## 1.3.7 (2023-06-12)
 - Fixed an issue created by a change in OECD encoding of files
 - Updated requirements

@@ -1,6 +1,6 @@
 [[package]]
 name = "anyio"
-version = "3.7.0"
+version = "3.7.1"
 description = "High level compatibility layer for multiple asynchronous event loop implementations"
 category = "main"
 optional = false
@@ -12,27 +12,27 @@ idna = ">=2.8"
 sniffio = ">=1.1"
 
 [package.extras]
-doc = ["packaging", "Sphinx (>=6.1.0)", "sphinx-rtd-theme", "sphinxcontrib-jquery", "sphinx-autodoc-typehints (>=1.2.0)"]
+doc = ["packaging", "sphinx", "sphinx-rtd-theme (>=1.2.2)", "sphinxcontrib-jquery", "sphinx-autodoc-typehints (>=1.2.0)"]
 test = ["anyio", "coverage[toml] (>=4.5)", "hypothesis (>=4.0)", "psutil (>=5.9)", "pytest (>=7.0)", "pytest-mock (>=3.6.1)", "trustme", "uvloop (>=0.17)", "mock (>=4)"]
 trio = ["trio (<0.22)"]
 
 [[package]]
 name = "bblocks"
-version = "1.1.0"
+version = "1.1.1"
 description = "A package with tools to download and analyse international development data. These tools are meant to be the building blocks of further analysis."
 category = "main"
 optional = false
 python-versions = ">=3.10,<4.0"
 
 [package.dependencies]
-beautifulsoup4 = ">=4.11.1,<5.0.0"
+beautifulsoup4 = ">=4.12,<5.0"
 camelot-py = ">=0.10.1,<0.11.0"
-country-converter = ">=0.8.0,<0.9.0"
+country-converter = ">=1.0,<2.0"
 numpy = ">=1.24.1,<2.0.0"
 opencv-python = ">=4.7.0,<5.0.0"
 openpyxl = ">=3.0.10,<4.0.0"
 pandas = ">=1.5.3,<2.0.0"
-pyarrow = ">=11.0.0,<12.0.0"
+pyarrow = ">=12.0,<13.0"
 pyjstat = ">=2.3.0,<3.0.0"
 PyPDF2 = ">=2,<3"
 requests = ">=2.28.2,<3.0.0"
@@ -164,14 +164,19 @@ python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,>=2.7
 
 [[package]]
 name = "country-converter"
-version = "0.8.0"
-description = "The country converter (coco) - a Python package for converting country names between different classifications schemes."
+version = "1.0.0"
+description = "The country converter (coco) - a Python package for converting country names between different classifications schemes"
 category = "main"
 optional = false
-python-versions = "*"
+python-versions = ">=3.7"
 
 [package.dependencies]
 pandas = ">=1.0"
+
+[package.extras]
+dev = ["country-converter"]
+lint = ["black (>=22.3.0)", "isort (>=5.5.2)"]
+test = ["coveralls", "pytest (>=5.4.0)", "pytest-black", "pytest-cov (>=2.7.0)", "pytest-datadir", "pytest-mypy"]
 
 [[package]]
 name = "coverage"
@@ -218,7 +223,7 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "exceptiongroup"
-version = "1.1.1"
+version = "1.1.2"
 description = "Backport of PEP 654 (exception groups)"
 category = "main"
 optional = false
@@ -307,15 +312,15 @@ python-versions = ">=3.5"
 
 [[package]]
 name = "numpy"
-version = "1.24.3"
+version = "1.25.0"
 description = "Fundamental package for array computing in Python"
 category = "main"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 
 [[package]]
 name = "opencv-python"
-version = "4.7.0.72"
+version = "4.8.0.74"
 description = "Wrapper package for OpenCV python bindings."
 category = "main"
 optional = false
@@ -325,7 +330,7 @@ python-versions = ">=3.6"
 numpy = [
     {version = ">=1.21.2", markers = "python_version >= \"3.10\""},
     {version = ">=1.21.4", markers = "python_version >= \"3.10\" and platform_system == \"Darwin\""},
-    {version = ">=1.22.0", markers = "python_version >= \"3.11\""},
+    {version = ">=1.23.5", markers = "python_version >= \"3.11\""},
     {version = ">=1.19.3", markers = "python_version >= \"3.6\" and platform_system == \"Linux\" and platform_machine == \"aarch64\" or python_version >= \"3.9\""},
     {version = ">=1.17.0", markers = "python_version >= \"3.7\""},
     {version = ">=1.17.3", markers = "python_version >= \"3.8\""},
@@ -396,7 +401,7 @@ image = ["pillow"]
 
 [[package]]
 name = "platformdirs"
-version = "3.5.3"
+version = "3.8.0"
 description = "A small Python package for determining appropriate platform-specific dirs, e.g. a \"user data dir\"."
 category = "dev"
 optional = false
@@ -408,11 +413,11 @@ test = ["appdirs (==1.4.4)", "covdefaults (>=2.3)", "pytest-cov (>=4.1)", "pytes
 
 [[package]]
 name = "pluggy"
-version = "1.0.0"
+version = "1.2.0"
 description = "plugin and hook calling mechanisms for python"
 category = "dev"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 
 [package.extras]
 dev = ["pre-commit", "tox"]
@@ -420,7 +425,7 @@ testing = ["pytest", "pytest-benchmark"]
 
 [[package]]
 name = "pyarrow"
-version = "11.0.0"
+version = "12.0.1"
 description = "Python library for Apache Arrow"
 category = "main"
 optional = false
@@ -466,7 +471,7 @@ image = ["pillow"]
 
 [[package]]
 name = "pytest"
-version = "7.3.2"
+version = "7.4.0"
 description = "pytest: simple powerful testing with Python"
 category = "dev"
 optional = false
@@ -500,7 +505,7 @@ testing = ["fields", "hunter", "process-tests", "six", "pytest-xdist", "virtuale
 
 [[package]]
 name = "pytest-mock"
-version = "3.10.0"
+version = "3.11.1"
 description = "Thin-wrapper around the mock package for easier use with pytest"
 category = "dev"
 optional = false
@@ -670,7 +675,7 @@ test = ["pytest", "pytest-cov"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "a8811e61765e5bef50bb10c6c05cbf33c365cf33b5ccdd485e8386d486beddbe"
+content-hash = "578ec2e8d9a2947a16100cb440dd829e7243af9f8dfdfc3a72b4e62eb7db5f91"
 
 [metadata.files]
 anyio = []
@@ -779,10 +784,7 @@ pandas = []
 pathspec = []
 "pdfminer.six" = []
 platformdirs = []
-pluggy = [
-    {file = "pluggy-1.0.0-py2.py3-none-any.whl", hash = "sha256:74134bbf457f031a36d68416e1509f34bd5ccc019f0bcc952c7b909d06b37bd3"},
-    {file = "pluggy-1.0.0.tar.gz", hash = "sha256:4224373bacce55f955a878bf9cfa763c1e360858e330072059e10bad68531159"},
-]
+pluggy = []
 pyarrow = []
 pycparser = [
     {file = "pycparser-2.21-py2.py3-none-any.whl", hash = "sha256:8ee45429555515e1f6b185e78100aea234072576aa43ab53aefcae078162fca9"},
