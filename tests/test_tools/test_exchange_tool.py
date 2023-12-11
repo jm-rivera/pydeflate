@@ -55,7 +55,6 @@ def test_check_key_errors_invalid_source(
 def test_check_key_errors_invalid_value_column(
     valid_columns, valid_source, valid_date_column
 ) -> None:
-
     with pytest.raises(KeyError):
         exchange._check_key_errors(
             rates_source=valid_source,
@@ -68,7 +67,6 @@ def test_check_key_errors_invalid_value_column(
 def test_check_key_errors_invalid_date_column(
     valid_columns, valid_source, valid_value_column
 ) -> None:
-
     with pytest.raises(KeyError):
         exchange._check_key_errors(
             rates_source=valid_source,
@@ -81,7 +79,6 @@ def test_check_key_errors_invalid_date_column(
 def test__check_key_errors_all_valid(
     valid_source, valid_columns, valid_date_column, valid_value_column
 ) -> None:
-
     # test all valid
     exchange._check_key_errors(
         rates_source=valid_source,
@@ -147,7 +144,6 @@ def test_exchange_cols_order_preserved(test_df) -> None:
 
 
 def test_exchange_date_integer(test_df) -> None:
-
     df_ = test_df.assign(date=test_df.date.dt.year)
 
     # test source and target equal

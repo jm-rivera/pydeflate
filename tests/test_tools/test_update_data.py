@@ -18,7 +18,6 @@ def test_diff_from_today() -> None:
 
 
 def test_warn_updates(caplog) -> None:
-
     with patch("json.load", return_value={"IMF": "2021-02-14"}):
         update_data.warn_updates()
 

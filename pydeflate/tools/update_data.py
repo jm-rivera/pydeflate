@@ -13,7 +13,6 @@ def _diff_from_today(date: datetime.datetime):
 
 
 def warn_updates():
-
     if not (PYDEFLATE_PATHS.data / "data_updates.json").exists():
         return
 
