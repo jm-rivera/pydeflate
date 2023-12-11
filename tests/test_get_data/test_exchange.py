@@ -216,14 +216,12 @@ def test_oecd_get_usd_exchange_data_not_loaded():
 
 
 def test_world_bank_wrong_method():
-
     # arrange
     with pytest.raises(ValueError):
         ExchangeWorldBank(method="xxx")
 
 
 def test_world_bank_get_usd_exchange_data_not_loaded():
-
     # arrange
     self = ExchangeWorldBank()
     self_test = ExchangeWorldBank()
@@ -287,7 +285,6 @@ def test_imf_get_usd_exchange_invalid_direction():
 
 
 def test_oecd_get_usd_exchange_lcu_usd():
-
     # arrange
     self = ExchangeOECD()
 
@@ -306,7 +303,6 @@ def test_oecd_get_usd_exchange_lcu_usd():
 
 
 def test_world_bank_get_usd_exchange_lcu_usd():
-
     # arrange
     self = ExchangeWorldBank()
 
@@ -324,7 +320,6 @@ def test_world_bank_get_usd_exchange_lcu_usd():
 
 
 def test_imf_get_usd_exchange_lcu_usd():
-
     # arrange
     self = ExchangeIMF()
 
@@ -383,7 +378,6 @@ def test_world_bank_get_usd_exchange_usd_lcu():
 
 
 def test_imf_get_usd_exchange_usd_lcu():
-
     # arrange
     self = ExchangeIMF()
 
