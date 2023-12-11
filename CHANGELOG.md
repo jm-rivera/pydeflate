@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.3.9 (2023-12-11)
+- Updated requirements.
+
 ## 1.3.8 (2023-07-06)
 - Updated requirements.
 
