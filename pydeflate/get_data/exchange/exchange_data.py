@@ -3,8 +3,8 @@ from dataclasses import dataclass
 
 import pandas as pd
 
-from pydeflate.get_data.imf_data import IMF
-from pydeflate.get_data.wb_data import END, START, update_world_bank_data
+from pydeflate.get_data.deflators.imf_data import IMF
+from pydeflate.get_data.deflators.wb_data import END, START, update_world_bank_data
 from pydeflate.pydeflate_config import PYDEFLATE_PATHS, logger
 from pydeflate.utils import emu
 
@@ -170,7 +170,7 @@ class ExchangeOECD(Exchange):
     @staticmethod
     def update(**kwargs) -> None:
         """Update the DAC1 data, which is the source for the OECD exchange rates."""
-        from pydeflate.get_data import oecd_data
+        from pydeflate.get_data.deflators import oecd_data
 
         oecd_data.update_dac1()
 

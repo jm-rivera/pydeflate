@@ -5,8 +5,8 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
-from pydeflate.get_data.deflate_data import Data
-from pydeflate.get_data.exchange_data import Exchange
+from pydeflate.get_data.deflators.deflate_data import Data
+from pydeflate.get_data.exchange.exchange_data import Exchange
 
 
 @dataclass

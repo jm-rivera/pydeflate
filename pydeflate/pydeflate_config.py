@@ -11,6 +11,8 @@ class PYDEFLATE_PATHS:
     test_data = package / "tests" / "test_files"
 
 
+DEFAULT_BASE: int = 2015
+
 # Create a root logger
 logger = logging.getLogger(__name__)
 

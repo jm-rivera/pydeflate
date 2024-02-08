@@ -4,7 +4,7 @@ __version__ = "1.3.10"
 from pydeflate.deflate.deflate import deflate
 from pydeflate.tools.exchange import exchange
 from pydeflate.tools.update_data import update_all_data, warn_updates
-from pydeflate.get_data.oecd_data import update_dac1
+from pydeflate.get_data.deflators.oecd_data import update_dac1
 from pydeflate import get_data
 
 

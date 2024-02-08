@@ -5,15 +5,12 @@ import pandas as pd
 import pytest
 import requests
 
-from pydeflate.get_data.oecd_data import (
+from pydeflate.get_data.deflators.oecd_data import (
     OECD,
-    _calculate_price_deflator,
-    _clean_dac1,
-    _download_bulk_file,
-    _identify_base_year,
-    _read_zip_content,
-    update_dac1,
+    calculate_price_deflator,
 )
+from pydeflate.get_data.oecd_tools import read_zip_content, download_bulk_file, clean_dac1, \
+    identify_base_year
 
 from pydeflate import pydeflate_config, set_pydeflate_path, update_dac1
 
@@ -75,7 +72,7 @@ def test__read_zip_content():
     file_name = "test.csv"
 
     # Read the zip file content using the function under test
-    df = _read_zip_content(request_content, file_name)
+    df = read_zip_content(request_content, file_name)
 
     # Assert that the returned dataframe has the expected columns and data
     assert "Year" in df.columns
@@ -90,13 +87,13 @@ def test__read_zip_content_unicode_error():
     with patch("pandas.read_csv", side_effect=UnicodeDecodeError):
         # Read the zip file content using the function under test
         with pytest.raises((UnicodeDecodeError, TypeError)):
-            _read_zip_content(request_content, file_name)
+            read_zip_content(request_content, file_name)
 
 
 def test__download_bulk_file(monkeypatch):
     monkeypatch.setattr(requests, "get", mock_requests_get)
 
-    result = _download_bulk_file("https://stats.oecd.org/")
+    result = download_bulk_file("https://stats.oecd.org/")
 
     assert result == b"test content"
 
@@ -129,7 +126,7 @@ def expected():
 
 def test_clean_dac1(df, expected):
     # Test the function
-    result = _clean_dac1(df)
+    result = clean_dac1(df)
 
     # Assert that the result is as expected
     pd.testing.assert_frame_equal(
@@ -173,7 +170,7 @@ def test_identify_base_year():
         }
     )
 
-    result = _identify_base_year(test_df)
+    result = identify_base_year(test_df)
 
     assert result == 2017
 
@@ -188,7 +185,7 @@ def test_calculate_price_def():
         }
     )
 
-    result = _calculate_price_deflator(test_df)
+    result = calculate_price_deflator(test_df)
 
     assert result.query("year.dt.year == 2017").value.sum() == pytest.approx(2)
     assert result.query("year.dt.year == 2019").value.sum() == pytest.approx(1.5)

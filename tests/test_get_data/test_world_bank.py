@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 import pandas as pd
 
-from pydeflate.get_data.wb_data import WorldBank, update_world_bank_data
+from pydeflate.get_data.deflators.wb_data import WorldBank, update_world_bank_data
 from pydeflate import pydeflate_config, set_pydeflate_path
 
 set_pydeflate_path(pydeflate_config.PYDEFLATE_PATHS.test_data)

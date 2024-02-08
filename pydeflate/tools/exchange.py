@@ -1,6 +1,6 @@
 import pandas as pd
 
-from pydeflate.get_data.exchange_data import (
+from pydeflate.get_data.exchange.exchange_data import (
     ExchangeIMF,
     ExchangeOECD,
     ExchangeWorldBank,

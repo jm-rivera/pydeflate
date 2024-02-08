@@ -5,6 +5,8 @@ from dataclasses import dataclass
 
 import pandas as pd
 
+from pydeflate.core.schema import PydeflateSchema
+
 
 @dataclass
 class Data(ABC):
@@ -55,16 +57,23 @@ class Data(ABC):
         d_ = self.get_method(self._available_methods[method])
 
         # get the data for the selected base year.
-        d_base = d_.query(f"year.dt.year == {base_year}")
+        d_base = d_.query(f"{PydeflateSchema.YEAR} == {base_year}")
 
         # If base year is not valid, raise error
         if len(d_base) == 0:
             raise ValueError(f"No currency exchange data for {base_year=}")
 
         # Merge the exchange data and the base year data
-        d_ = d_.merge(d_base, how="left", on=["iso_code"], suffixes=("", "_base"))
+        d_ = d_.merge(
+            d_base, how="left", on=[PydeflateSchema.ISO_CODE], suffixes=("", "_base")
+        )
 
         # Calculate the deflator
-        d_.value = round(100 * d_.value / d_.value_base, 6)
+        d_[PydeflateSchema.VALUE] = round(
+            100 * d_[PydeflateSchema.VALUE] / d_[f"{PydeflateSchema.VALUE}_base"], 6
+        )
 
-        return d_.filter(["iso_code", "year", "value"], axis=1)
+        return d_.filter(
+            [PydeflateSchema.ISO_CODE, PydeflateSchema.YEAR, PydeflateSchema.VALUE],
+            axis=1,
+        )

@@ -54,9 +54,9 @@ def update_update_date(source: str):
 def update_all_data() -> None:
     """Run to update all underlying data."""
 
-    from pydeflate.get_data.imf_data import IMF
-    from pydeflate.get_data.oecd_data import OECD
-    from pydeflate.get_data.wb_data import WorldBank
+    from pydeflate.get_data.deflators.imf_data import IMF
+    from pydeflate.get_data.deflators.oecd_data import OECD
+    from pydeflate.get_data.deflators.wb_data import WorldBank
 
     data = {
         "IMF WEO Data": IMF().update,

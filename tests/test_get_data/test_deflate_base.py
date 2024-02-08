@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import pandas as pd
 import pytest
 
-from pydeflate.get_data import deflate_data as deflate
+from pydeflate.get_data.deflators import deflate_data as deflate
 
 
 @dataclass

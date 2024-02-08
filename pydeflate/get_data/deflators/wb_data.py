@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 import pandas as pd
-from pydeflate.get_data.deflate_data import Data
+from pydeflate.get_data.deflators.deflate_data import Data
 from pydeflate.pydeflate_config import PYDEFLATE_PATHS
 
 from bblocks import WorldBankData, set_bblocks_data_path

@@ -2,8 +2,8 @@ import pandas as pd
 import pytest
 
 from pydeflate.deflate.deflator import Deflator
-from pydeflate.get_data.deflate_data import Data
-from pydeflate.get_data.exchange_data import Exchange
+from pydeflate.get_data.deflators.deflate_data import Data
+from pydeflate.get_data.exchange.exchange_data import Exchange
 
 
 @pytest.fixture

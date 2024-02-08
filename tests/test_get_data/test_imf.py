@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 from pydeflate import pydeflate_config, set_pydeflate_path
-from pydeflate.get_data.imf_data import IMF
+from pydeflate.get_data.deflators.imf_data import IMF
 
 set_pydeflate_path(pydeflate_config.PYDEFLATE_PATHS.test_data)
 

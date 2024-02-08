@@ -1,9 +1,12 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
 
 import pandas as pd
 from bblocks import WorldEconomicOutlook, set_bblocks_data_path
 
-from pydeflate.get_data.deflate_data import Data
+from pydeflate.get_data.deflators.deflate_data import Data
+from pydeflate.get_data.oecd_tools import add_exchange
 from pydeflate.pydeflate_config import PYDEFLATE_PATHS
 from pydeflate.tools.update_data import update_update_date
 
@@ -28,7 +31,7 @@ class IMF(Data):
 
     def update(self) -> None:
         """Update the stored WEO data, using WEO package."""
-        self._weo.update_data(reload_data=False, year=None, release=None)
+        self._weo.update_data(reload_data=True, year=None, release=None)
         update_update_date(source="IMF")
 
     def load_data(
@@ -49,7 +52,7 @@ class IMF(Data):
         # get the data into a dataframe
         self._data = self._weo.get_data(keep_metadata=False)
 
-    def implied_exchange(self, direction: str = "lcu_usd") -> pd.DataFrame:
+    def implied_exchange(self) -> pd.DataFrame:
         """Get the implied exchange rate used by the IMF
         Args:
             direction: the direction of the exchange rate, either lcu_usd for
@@ -65,12 +68,7 @@ class IMF(Data):
         # Merge datasets
         d_ = usd.merge(lcu, on=["iso_code", "year"], suffixes=("_usd", "_lcu"))
 
-        # Calculate implied exchange rate
-        if direction == "lcu_usd":
-            d_["value"] = d_["value_lcu"] / d_["value_usd"]
-        elif direction == "usd_lcu":
-            d_["value"] = d_["value_usd"] / d_["value_lcu"]
-        else:
-            raise ValueError(f"direction must be lcu_usd or usd_lcu, not {direction}")
+        # Add exchange rate
+        d_ = add_exchange(d_, lcu="value_lcu", current_usd="value_usd")
 
-        return d_.filter(["iso_code", "year", "value"], axis=1)
+        return d_

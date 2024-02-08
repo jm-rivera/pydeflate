@@ -1,14 +1,17 @@
+from __future__ import annotations
+
 import pandas as pd
+from pandas.util._decorators import deprecate_kwarg
 
 from pydeflate.deflate.deflator import Deflator
-from pydeflate.get_data.exchange_data import (
+from pydeflate.get_data.exchange.exchange_data import (
     ExchangeIMF,
     ExchangeOECD,
     ExchangeWorldBank,
 )
-from pydeflate.get_data.imf_data import IMF
-from pydeflate.get_data.oecd_data import OECD
-from pydeflate.get_data.wb_data import WorldBank
+from pydeflate.get_data.deflators.imf_data import IMF
+from pydeflate.get_data.deflators.oecd_data import OECD
+from pydeflate.get_data.deflators.wb_data import WorldBank
 from pydeflate.pydeflate_config import logger
 from pydeflate.utils import check_year_as_number, oecd_codes, to_iso3
 
@@ -125,13 +128,18 @@ def _create_id_col(df: pd.DataFrame, id_type: str, id_column: str) -> pd.DataFra
     return df
 
 
+@deprecate_kwarg(old_arg_name="method", new_arg_name="deflator_method")
+@deprecate_kwarg(old_arg_name="source", new_arg_name="deflator_source")
+@deprecate_kwarg(old_arg_name="iso_column", new_arg_name="id_column")
+@deprecate_kwarg(old_arg_name="source_col", new_arg_name="source_column")
+@deprecate_kwarg(old_arg_name="target_col", new_arg_name="target_column")
 def deflate(
     df: pd.DataFrame,
     base_year: int,
-    deflator_source: str = None,
-    deflator_method: str | None = None,
-    exchange_source: str | None = None,
-    exchange_method: str | None = None,
+    deflator_source: str,
+    deflator_method: str,
+    exchange_source: str,
+    exchange_method: str,
     source_currency: str = "USA",
     target_currency: str = "USA",
     id_column: str = "iso_code",
@@ -140,11 +148,6 @@ def deflate(
     source_column: str = "value",
     target_column: str = "value",
     to_current: bool = False,
-    method: str | None = None,
-    source: str | None = None,
-    iso_column: str | None = None,
-    source_col: str | None = None,
-    target_col: str | None = None,
 ) -> pd.DataFrame:
     """Deflate amounts to a given currency - base year combination.
 
@@ -215,11 +218,7 @@ def deflate(
         to_current: If True, amounts will be treated as in constant prices and converted to
         current prices.
 
-        iso_column:Provided for backwards compatibility. An alias for id_column
-        source: Provided for backwards compatibility. An alias for deflator_source
-        method: Provided for backwards compatibility. An alias for deflator_method
-        source_col: Provided for backwards compatibility. An alias for source_column
-        target_col: Provided for backwards compatibility. An alias for target_column
+
 
     Returns:
         A pandas DataFrame containing the deflated data. Years for which there
@@ -227,33 +226,6 @@ def deflate(
 
 
     """
-
-    # ------------------ Backwards compatibility ------------------
-
-    # Backwards compatibility: if the iso_column parameter is used, reassign it
-    if iso_column is not None:
-        id_column = iso_column
-        logger.warning("iso_column is deprecated. Use id_column instead.")
-
-    # Backwards compatibility: if the source parameter is used, reassign it
-    if deflator_source is None and source is not None:
-        deflator_source = source
-        logger.warning("source is deprecated. Use deflator_source instead.")
-
-    # Backwards compatibility: if the method parameter is used, reassign it
-    if method is not None:
-        deflator_method = method
-        logger.warning("method is deprecated. Use deflator_method instead.")
-
-    # Backwards compatibility: if the source_col parameter is used, reassign it
-    if source_col is not None:
-        source_column = source_col
-        logger.warning("source_col is deprecated. Use source_column instead.")
-
-    # Backwards compatibility: if the target_col parameter is used, reassign it
-    if target_col is not None:
-        target_column = target_col
-        logger.warning("target_col is deprecated. Use target_column instead.")
 
     # -------------------------- Validation -----------------------------
     deflator_source = _validate_deflator_source(deflator_source=deflator_source)

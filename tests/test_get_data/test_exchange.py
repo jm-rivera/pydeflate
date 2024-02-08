@@ -3,7 +3,7 @@ from unittest.mock import patch
 import pandas as pd
 import pytest
 
-from pydeflate.get_data.exchange_data import (
+from pydeflate.get_data.exchange.exchange_data import (
     ExchangeIMF,
     ExchangeOECD,
     ExchangeWorldBank,

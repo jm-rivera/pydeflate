@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from pydeflate.get_data import exchange_data as exchange
+from pydeflate.get_data.exchange import exchange_data as exchange
 
 
 class MockExchange(exchange.Exchange):
