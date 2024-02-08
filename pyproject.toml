@@ -28,13 +28,13 @@ weo = "^0.7.4"
 xlrd = "^2.0.1"
 country-converter = "^1"
 requests = "^2.28.2"
-pyarrow = "^14.0"
+pyarrow = "^14"
 bblocks = "^1.2.1"
 
 
 [tool.poetry.dev-dependencies]
 bump2version = "^1.0.1"
-black = "^23"
+black = "^24"
 pytest = "^7.2.1"
 pytest-cov = "^4.0.0"
 pytest-mock = "^3.10.0"
