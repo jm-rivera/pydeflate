@@ -19,8 +19,7 @@ set_bblocks_data_path(PYDEFLATE_PATHS.data)
 @dataclass
 class IMF(Data):
     _weo: WorldEconomicOutlook = None
-    _exchange: pd.DataFrame = None
-    _data: dict[str, pd.DataFrame] = field(default_factory=dict)
+
     """An object to download and return the latest IMF WEO data for several indicators"""
 
     def __post_init__(self):
@@ -109,23 +108,27 @@ class IMF(Data):
         self._weo.load_data(indicators)
 
         # Load exchange data
-        self._exchange = self._implied_exchange()
+        self._exchange["imf_weo"] = self._implied_exchange()
 
         # get the data into a dataframe
         for method in set(self._available_methods.values()):
             self._data[method] = self._price_deflator(method=method)
 
-        # Combine the price and exchange
-        for method in self._data:
-            self.data[method] = self._data[method].merge(
-                self._exchange,
-                on=[PydeflateSchema.ISO_CODE, PydeflateSchema.YEAR],
-                how="left",
-            )
         return self
 
-    def get_data(self, method: str = "gdp", **kwargs) -> pd.DataFrame:
-        return self.data[self._available_methods[method]]
+    def get_data(
+        self, deflator_method: str = "gdp", exchange_method: str = "imf_weo", **kwargs
+    ) -> pd.DataFrame:
+        # Combine the price and exchange
+
+        self.data[deflator_method] = self._data[
+            self._available_methods[deflator_method]
+        ].merge(
+            self._exchange[exchange_method],
+            on=[PydeflateSchema.ISO_CODE, PydeflateSchema.YEAR],
+            how="left",
+        )
+        return self.data[deflator_method]
 
 
 if __name__ == "__main__":
