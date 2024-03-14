@@ -1,6 +1,9 @@
 # Changelog
 
-## 1.3.10 (2024-02-29)
+## 1.3.12 (2024-03-14)
+* Fixed a bug introduced by changes in the OECD bulk download service.
+
+## 1.3.11 (2024-02-29)
 - Updated requirements.
 
 ## 1.3.9 (2023-12-11)

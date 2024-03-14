@@ -103,7 +103,17 @@ def _download_bulk_file(url: str) -> bytes:
 
     # parse html
     page = Bs(response.text, "html.parser")
-    link = list(page.find_all("a"))[0].attrs["onclick"][15:-3].replace("_", "-")
+
+    # ---
+    links = list(page.find_all("a"))
+
+    # Get the right link for the right file
+    links = [link for link in links if "xml" not in link.text.lower()]
+
+    # Get the link ending
+    link = links[0].attrs["onclick"][15:-3].replace("_", "-")
+
+    # Build the link
     link = f"https://stats.oecd.org/FileView2.aspx?IDFile={link}"
 
     return requests.get(link).content
