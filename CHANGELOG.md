@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.0 (2024-05-06)
+- Implements a change to the oda_reader package to manage reading the OECD DAC data. There are no changes in terms of usage, but it greatly optimises how data is read. 
+- The above change fixes an error where newly downloaded files were not
+read automaticall.y
+
 ## 1.3.13 (2024-04-29)
 - Updated requirements.
 

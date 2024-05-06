@@ -1,12 +1,8 @@
-import csv
-import io
 import warnings
-import zipfile as zf
 from dataclasses import dataclass
 
 import pandas as pd
-import requests
-from bs4 import BeautifulSoup as Bs
+from oda_reader import download_dac1
 
 from pydeflate.get_data.deflate_data import Data
 from pydeflate.get_data.exchange_data import ExchangeOECD
@@ -16,107 +12,14 @@ from pydeflate.utils import oecd_codes
 
 warnings.simplefilter("ignore", Warning, lineno=1013)
 
-_BASE_URL: str = "https://stats.oecd.org/DownloadFiles.aspx?DatasetCode="
-_TABLE1_URL: str = f"{_BASE_URL}TABLE1"
 
-
-def _raw2df(csv_file: csv, sep: str, encoding: str) -> pd.DataFrame:
-    """Convert a raw csv to a DataFrame. Check the result if requested"""
-
-    try:
-        _ = pd.read_csv(
-            csv_file, sep=sep, dtype="str", encoding=encoding, low_memory=False
-        )
-    except UnicodeError:
-        raise pd.errors.ParserError
-
-    unnamed_cols = [c for c in _.columns if "unnamed" in c]
-
-    if len(unnamed_cols) > 3:
-        raise pd.errors.ParserError
-
-    if len(_.columns) < 3:
-        raise pd.errors.ParserError
-
-    return _
-
-
-def _extract_df(request_content, file_name: str, separator: str) -> pd.DataFrame:
-    import copy
-
-    for encoding in ["utf_16", "ISO-8859-1"]:
-        try:
-            rc = copy.deepcopy(request_content)
-
-            # Read the zipfile
-            _ = io.BytesIO(rc)
-            raw_csv = zf.ZipFile(_).open(file_name)
-
-            # convert to a dataframe
-            return _raw2df(csv_file=raw_csv, sep=separator, encoding=encoding)
-        except pd.errors.ParserError:
-            logger.debug(f"{encoding} not valid")
-
-    raise pd.errors.ParserError
-
-
-def _read_zip_content(request_content: bytes, file_name: str) -> pd.DataFrame:
-    """Read the contents of a zip file
-
-    Args:
-        request_content: the content of the request
-        file_name: the name of the file to read.
-
-    Returns:
-        A pandas dataframe with the contents of the file
-
-    """
-    try:
-        return _extract_df(
-            request_content=request_content, separator=",", file_name=file_name
-        )
-
-    except UnicodeDecodeError:
-        return _extract_df(
-            request_content=request_content, separator="|", file_name=file_name
-        )
-
-    except pd.errors.ParserError:
-        return _extract_df(
-            request_content=request_content, separator="|", file_name=file_name
-        )
-
-
-def _download_bulk_file(url: str) -> bytes:
-    """Get zipfile bytes from the webpage
-
-    Args:
-        url: the url to download the file from
-
-    Returns:
-        The content of the file (bytes)
-
-    """
-
-    # get URL
-    response = requests.get(url)
-
-    # parse html
-    page = Bs(response.text, "html.parser")
-
-    # ---
-    links = list(page.find_all("a"))
-
-    # Get the right link for the right file
-    links = [link for link in links if "xml" not in link.text.lower()]
-
-    # Get the link ending
-    link = links[0].attrs["onclick"][15:-3].replace("_", "-")
-
-    # Build the link
-    link = f"https://stats.oecd.org/FileView2.aspx?IDFile={link}"
-
-    return requests.get(link).content
+def _compute_deflators_and_exchange(data: pd.DataFrame) -> pd.DataFrame:
+    return data.assign(
+        exchange=lambda d: round(d.N / d.A, 5),
+        deflator=lambda d: round(100 * d.A / d.D, 6),  # implied deflator
+        iso_code=lambda d: d.donor_code.map(oecd_codes()),
+        year=lambda d: pd.to_datetime(d.year, format="%Y"),
+    ).assign(exchange=lambda d: d.exchange.fillna(1))
 
 
 def _clean_dac1(df: pd.DataFrame) -> pd.DataFrame:
@@ -130,14 +33,7 @@ def _clean_dac1(df: pd.DataFrame) -> pd.DataFrame:
     """
 
     # Columns to keep and rename
-    cols = {
-        "DONOR": "donor_code",
-        "AMOUNTTYPE": "type",
-        "AIDTYPE": "aid",
-        "Year": "year",
-        "FLOWS": "flow",
-        "Value": "value",
-    }
+    cols = {"amounttype_code": "type", "aidtype_code": "aid", "flows_code": "flow"}
 
     # Get only the official definition of the data
     query = (
@@ -147,30 +43,18 @@ def _clean_dac1(df: pd.DataFrame) -> pd.DataFrame:
 
     # Clean the data
     data = (
-        df.filter(cols, axis=1)
-        .rename(columns=cols)
-        .astype(
-            {
-                "year": "Int32",
-                "aid": "Int32",
-                "flow": "Int32",
-                "value": float,
-                "donor_code": "Int32",
-            }
-        )
+        df.rename(columns=cols)
         .query(query)
         .filter(["donor_code", "type", "year", "value"], axis=1)
         .pivot(index=["donor_code", "year"], columns=["type"], values="value")
         .reset_index()
-        .assign(
-            exchange=lambda d: round(d.N / d.A, 5),
-            deflator=lambda d: round(100 * d.A / d.D, 6),  # implied deflator
-            iso_code=lambda d: d.donor_code.map(oecd_codes()),
-            year=lambda d: pd.to_datetime(d.year, format="%Y"),
-        )
-        .assign(exchange=lambda d: d.exchange.fillna(1))
+    )
+
+    data = (
+        data.pipe(_compute_deflators_and_exchange)
         .dropna(subset=["iso_code"])
         .filter(["iso_code", "year", "exchange", "deflator"], axis=1)
+        .reset_index(drop=True)
     )
 
     return data
@@ -179,29 +63,19 @@ def _clean_dac1(df: pd.DataFrame) -> pd.DataFrame:
 def update_dac1() -> None:
     """Update dac1 data from OECD site and save as feather"""
 
-    logger.info("Downloading DAC1 data, which may take a bit")
-
-    # File name to read
-    file_name = "Table1_Data.csv"
-
-    # Download the zip bytes
-    zip_bytes = _download_bulk_file(url=_TABLE1_URL)
-
-    # Read the zip file and clean the data
-    df = (
-        _read_zip_content(request_content=zip_bytes, file_name=file_name)
-        .pipe(_clean_dac1)
-        .reset_index(drop=True)
+    # Use oda_reader to get the data
+    df = download_dac1(
+        filters={"measure": ["1010", "11010"], "flow_type": ["1140", "1160"]}
     )
 
+    # Clean the data
+    df = df.pipe(_clean_dac1)
+
     # Save the data
-    df.to_feather(PYDEFLATE_PATHS.data / "dac1.feather")
+    df.to_feather(PYDEFLATE_PATHS.data / "pydeflate_dac1.feather")
 
     # Update the update date
     update_update_date("OECD DAC")
-
-    # Log
-    logger.info("Successfully downloaded DAC1 data")
 
 
 def _identify_base_year(df: pd.DataFrame) -> int:
@@ -243,16 +117,14 @@ class OECD(Data):
 
         """
         try:
-            pd.read_feather(PYDEFLATE_PATHS.data / "dac1.feather")
+            d_ = pd.read_feather(PYDEFLATE_PATHS.data / "pydeflate_dac1.feather")
         except FileNotFoundError:
             logger.info("Data not found, downloading...")
             self.update()
-        finally:
-            d_ = (
-                pd.read_feather(PYDEFLATE_PATHS.data / "dac1.feather")
-                .assign(indicator="oecd_dac")
-                .rename(columns={"deflator": "value"})
-            )
+            self.load_data()
+            return
+
+        d_ = d_.assign(indicator="oecd_dac").rename(columns={"deflator": "value"})
 
         # Identify base year
         base_year = _identify_base_year(d_)
