@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.4.1 (2024-05-07)
+- Fixed a bug in reading the exchange data
+
 ## 1.4.0 (2024-05-06)
 - Implements a change to the oda_reader package to manage reading the OECD DAC data. There are no changes in terms of usage, but it greatly optimises how data is read. 
 - The above change fixes an error where newly downloaded files were not

@@ -175,18 +175,25 @@ class ExchangeOECD(Exchange):
         oecd_data.update_dac1()
 
     def load_data(self, **kwargs) -> None:
-        """Load the DAC1 data, which is the source for the OECD exchange rates."""
-        # avoid infinite recursion
-        if self._load_try_count < 1:
-            try:
-                self._data = pd.read_feather(PYDEFLATE_PATHS.data / "dac1.feather")
-            except FileNotFoundError:
-                logger.info("OECD Data not found, downloading...")
-                self._load_try_count = +1
-                self.update()
-                self.load_data()
-        else:
-            raise FileNotFoundError("Could not load OECD data")
+        """Load the OECD DAC price deflators data.
+
+        If the data is not found, it will be downloaded.
+        DAC deflators are transformed into price deflators by using the
+        implied exchange rate information from the OECD DAC data.
+
+        The deflators that are loaded is therefore *not* the DAC deflator,
+        but the price deflator used to produce the DAC deflators.
+
+        """
+        try:
+            self._data = pd.read_feather(
+                PYDEFLATE_PATHS.data / "pydeflate_dac1.feather"
+            )
+        except FileNotFoundError:
+            logger.info("Data not found, downloading...")
+            self.update()
+            self.load_data()
+            return
 
     def usd_exchange_rate(self, direction: str = "lcu_usd") -> pd.DataFrame:
         """Get the exchange rate of a currency to USD (or vice versa)
