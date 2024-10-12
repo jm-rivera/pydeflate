@@ -17,3 +17,9 @@ def check_file_age(file: Path) -> int:
 
     # Return the difference in days between today and the file's date
     return (current_date - file_date).days
+
+
+def today() -> str:
+    from datetime import datetime
+
+    return datetime.today().strftime("%Y-%m-%d")
