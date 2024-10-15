@@ -158,24 +158,31 @@ def prefix_pydeflate_to_columns(
     return df
 
 
-def identify_base_year(df: pd.DataFrame, measure: str) -> int:
+def identify_base_year(df: pd.DataFrame, measure: str, year: str = "year") -> int:
     """Identify the base year for a given measure where the value is equal to 100.
 
     Args:
         df (pd.DataFrame): DataFrame containing the deflator data with 'year' and the given measure.
         measure (str): The column name for the measure to find the base year for.
+        year (str): The column name for the year.
 
     Returns:
         int: The base year, or None if no base year is found.
     """
     # Find the year where the deflator measure is exactly 100 (or very close)
-    base_year = df.loc[df[measure].round(2) == 100, "year"]
+    base_year = df.loc[df[measure].round(2) == 100, year]
 
     # Return the year if found, otherwise return None
     return base_year.iloc[0] if not base_year.empty else None
 
 
-def compute_exchange_deflator(df: pd.DataFrame, base_year_measure: str) -> pd.DataFrame:
+def compute_exchange_deflator(
+    df: pd.DataFrame,
+    base_year_measure: str,
+    exchange: str = "EXCHANGE",
+    year: str = "year",
+    grouper: list[str] = None,
+) -> pd.DataFrame:
     """Compute the exchange rate deflator for each group of entities.
 
     This function calculates a deflator for the exchange rate by identifying a base year
@@ -184,31 +191,42 @@ def compute_exchange_deflator(df: pd.DataFrame, base_year_measure: str) -> pd.Da
     Args:
         df (pd.DataFrame): Input DataFrame containing columns 'year', and 'EXCHANGE'.
         base_year_measure (str): The column name for the measure to find the base year for.
+        exchange (str): The column name for the exchange rate.
+        year (str): The column name for the year.
+        grouper (list): List of columns to group by before applying the deflator.
 
     Returns:
         pd.DataFrame: DataFrame with an additional column for the exchange rate deflator.
     """
 
-    def _add_deflator(group: pd.DataFrame, measure: str = "NGDPD_D") -> pd.DataFrame:
+    def _add_deflator(
+        group: pd.DataFrame,
+        measure: str = "NGDPD_D",
+        exchange: str = "EXCHANGE",
+        year: str = "year",
+    ) -> pd.DataFrame:
         # Identify the base year for the deflator
-        base_year = identify_base_year(group, measure=measure)
+        base_year = identify_base_year(group, measure=measure, year=year)
 
         # If no base year is found, return the group unchanged
         if base_year is None:
             return group
 
         # Extract the exchange rate value for the base year
-        base_value = group.loc[group["year"] == base_year, "EXCHANGE"].values
+        base_value = group.loc[group[year] == base_year, exchange].values
 
         # If base value is found and valid, calculate the deflator
         if base_value.size > 0 and pd.notna(base_value[0]):
-            group["EXCHANGE_D"] = round(100 * group["EXCHANGE"] / base_value[0], 5)
+            group[f"{exchange}_D"] = round(100 * group[exchange] / base_value[0], 5)
 
         return group
 
+    if grouper is None:
+        grouper = ["entity", "entity_code"]
+
     # Apply the deflator computation for each group of 'entity' and 'entity_code'
-    return df.groupby(["entity", "entity_code"], group_keys=False).apply(
-        _add_deflator, measure=base_year_measure
+    return df.groupby(grouper, group_keys=False).apply(
+        _add_deflator, measure=base_year_measure, exchange=exchange, year=year
     )
 
 
