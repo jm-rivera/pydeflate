@@ -152,3 +152,54 @@ class Exchange:
 
         # Drop all columns that start with pydeflate_ merging and return the result
         return merged_data.filter(regex="^(?!pydeflate_)")
+
+    def deflator(self) -> pd.DataFrame:
+        return self.exchange_data.filter(
+            [
+                "pydeflate_year",
+                "pydeflate_entity_code",
+                "pydeflate_iso3",
+                "pydeflate_EXCHANGE_D",
+            ]
+        )
+
+    def merge_deflator(
+        self,
+        data: pd.DataFrame,
+        entity_column: str,
+        year_column: str,
+        year_format: str = "%Y",
+        use_source_codes: bool = False,
+    ) -> pd.DataFrame:
+        """Merge the deflator data to the input data based on year and entity.
+
+        Args:
+            data (pd.DataFrame): The input DataFrame
+            entity_column (str): The column name containing the entity or country codes.
+            year_column (str): The column name containing the year information.
+            year_format (str, optional): The format of the year (default is '%Y').
+            use_source_codes (bool, optional): Whether to use source entity codes
+            instead of ISO3 (default is False).
+
+        Returns:
+            pd.DataFrame: DataFrame with the deflator data merged to the input data.
+
+        """
+
+        # Convert the year to an integer
+        data["pydeflate_year"] = pd.to_datetime(
+            data[year_column], format=year_format
+        ).dt.year
+
+        # Merge exchange rate data to the input data based on year and entity
+        merged_data = data.merge(
+            self.deflator(),
+            how="left",
+            left_on=["pydeflate_year", entity_column],
+            right_on=[
+                "pydeflate_year",
+                "pydeflate_entity_code" if use_source_codes else "pydeflate_iso3",
+            ],
+        )
+
+        return merged_data.filter(regex="^(?!pydeflate_)")
