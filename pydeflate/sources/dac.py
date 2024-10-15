@@ -10,6 +10,7 @@ from pydeflate.sources.common import (
     enforce_pyarrow_types,
     compute_exchange_deflator,
     read_data,
+    prefix_pydeflate_to_columns,
 )
 
 
@@ -106,6 +107,7 @@ def download_dac():
         .pipe(_rename_columns)
         .pipe(compute_exchange_deflator, base_year_measure="DAC_DEFLATOR")
         .pipe(_compute_dac_gdp_deflator)
+        .pipe(prefix_pydeflate_to_columns)
         .pipe(enforce_pyarrow_types)
     )
 
@@ -127,4 +129,4 @@ def read_dac(update: bool = False) -> pd.DataFrame:
 
 
 if __name__ == "__main__":
-    df = read_dac(update=False)
+    df = read_dac(update=True)

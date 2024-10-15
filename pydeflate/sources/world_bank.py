@@ -9,6 +9,7 @@ from pydeflate.sources.common import (
     today,
     compute_exchange_deflator,
     read_data,
+    prefix_pydeflate_to_columns,
 )
 
 _INDICATORS: dict = {
@@ -106,6 +107,7 @@ def download_wb() -> None:
     df = (
         df.pipe(compute_exchange_deflator, base_year_measure="NGDP_D")
         .assign(pydeflate_iso3=lambda d: d.entity_code)
+        .pipe(prefix_pydeflate_to_columns)
         .pipe(enforce_pyarrow_types)
     )
 
@@ -142,4 +144,4 @@ def read_wb(update: bool = False) -> pd.DataFrame:
 
 
 if __name__ == "__main__":
-    df = read_wb(False)
+    df = read_wb(True)

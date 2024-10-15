@@ -10,6 +10,7 @@ from pydeflate.sources.common import (
     enforce_pyarrow_types,
     compute_exchange_deflator,
     read_data,
+    prefix_pydeflate_to_columns,
 )
 
 # List of WEO indicators of interest
@@ -161,6 +162,7 @@ def download_weo() -> None:
         .pipe(add_pydeflate_iso3, column="entity", from_type="regex")
         .pipe(_pivot_concept_code)
         .pipe(compute_exchange_deflator, base_year_measure="NGDP_D")
+        .pipe(prefix_pydeflate_to_columns)
         .pipe(enforce_pyarrow_types)
     )
 
@@ -197,4 +199,4 @@ def read_weo(update: bool = False) -> pd.DataFrame:
 
 if __name__ == "__main__":
     # Download the WEO data
-    dfi = read_weo(update=False)
+    dfi = read_weo(update=True)

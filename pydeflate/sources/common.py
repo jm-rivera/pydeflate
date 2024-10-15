@@ -139,6 +139,25 @@ def add_pydeflate_iso3(
     return df
 
 
+def prefix_pydeflate_to_columns(
+    df: pd.DataFrame, prefix: str = "pydeflate_"
+) -> pd.DataFrame:
+    """Add a prefix to all columns in a DataFrame.
+
+    Args:
+        df (pd.DataFrame): The DataFrame to add the prefix to.
+        prefix (str): The prefix to add to the column names.
+
+    Returns:
+        pd.DataFrame: The DataFrame with the prefixed column names.
+    """
+    df.columns = [
+        f"{prefix}{col}" if not col.startswith(prefix) else col for col in df.columns
+    ]
+
+    return df
+
+
 def identify_base_year(df: pd.DataFrame, measure: str) -> int:
     """Identify the base year for a given measure where the value is equal to 100.
 

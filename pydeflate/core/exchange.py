@@ -30,14 +30,14 @@ class Exchange:
         """Initialize the Exchange object and process the exchange rate data."""
         # Load and filter the relevant columns from the exchange rate data
         self.exchange_data = self.reader(self.update).filter(
-            ["year", "entity_code", "pydeflate_iso3", "EXCHANGE", "EXCHANGE_D"]
+            [
+                "pydeflate_year",
+                "pydeflate_entity_code",
+                "pydeflate_iso3",
+                "pydeflate_EXCHANGE",
+                "pydeflate_EXCHANGE_D",
+            ]
         )
-
-        # Ensure column names follow a consistent naming convention with 'pydeflate_' prefix
-        self.exchange_data.columns = [
-            f"pydeflate_{col}" if not col.startswith("pydeflate_") else col
-            for col in self.exchange_data.columns
-        ]
 
         # Handle cases where EUR is represented differently in the World Bank data
         if self.name == "World Bank":
