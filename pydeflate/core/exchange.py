@@ -2,7 +2,6 @@ from dataclasses import dataclass, field
 
 import pandas as pd
 
-from pydeflate.sources.common import compute_exchange_deflator
 from pydeflate.sources.imf import read_weo
 
 
@@ -28,12 +27,11 @@ class Exchange:
     target_currency: str = "USA"
     update: bool = False
     exchange_data: pd.DataFrame = field(default_factory=pd.DataFrame)
-    _raw_data: pd.DataFrame = field(default_factory=pd.DataFrame)
 
     def __post_init__(self):
         """Initialize the Exchange object and process the exchange rate data."""
         # Load and filter the relevant columns from the exchange rate data
-        self._raw_data = self.reader(self.update).filter(
+        self.exchange_data = self.reader(self.update).filter(
             [
                 "pydeflate_year",
                 "pydeflate_entity_code",
@@ -45,64 +43,91 @@ class Exchange:
 
         # Handle cases where EUR is represented differently in the World Bank data
         if self.name == "World Bank":
-            self._raw_data["pydeflate_iso3"] = self._raw_data["pydeflate_iso3"].replace(
-                {"EMU": "EUR"}
-            )
-
-        # Assign data to exchange_data
-        self.exchange_data = self._raw_data.copy()
+            self.exchange_data["pydeflate_iso3"] = self.exchange_data[
+                "pydeflate_iso3"
+            ].replace({"EMU": "EUR"})
 
         # If source and target currencies are the same, set the exchange rate to 1
         if self.source_currency == self.target_currency:
             self.exchange_data["pydeflate_EXCHANGE"] = 1
             self.exchange_data["pydeflate_EXCHANGE_D"] = 1
-
-        # Convert exchange rates if the source currency is not LCU
-        if self.source_currency != "LCU":
-            self._convert_exchange(self.source_currency)
-
-        # Convert exchange rates if the target currency is not USA or LCU
-        if self.target_currency != "LCU":
-            self._convert_exchange(self.target_currency)
-
-        # If target currency is LCU, invert the exchange rates to match the local currency unit
-        if self.target_currency == "LCU":
-            self.exchange_data["pydeflate_EXCHANGE"] = (
-                1 / self.exchange_data["pydeflate_EXCHANGE"]
+        else:
+            self.exchange_data = self.exchange_rate(
+                self.source_currency, self.target_currency
             )
 
-        self.exchange_data = compute_exchange_deflator(
-            self.exchange_data,
-            base_year_measure="pydeflate_EXCHANGE_D",
-            exchange="pydeflate_EXCHANGE",
-            year="pydeflate_year",
-            grouper=["pydeflate_year", "pydeflate_entity_code", "pydeflate_iso3"],
-        )
+    def _get_exchange_rate(self, currency):
+        """Helper function to fetch exchange rates for a given currency."""
+        exchange_rate = self.exchange_data.loc[
+            self.exchange_data["pydeflate_iso3"] == currency
+        ]
+        return exchange_rate.drop(columns="pydeflate_EXCHANGE_D")
 
-    def _convert_exchange(self, to_currency: str):
-        """Convert exchange rates to a specified target currency.
+    def _convert_exchange(self, to_: str) -> pd.DataFrame:
+        """Converts exchange rates based on the target currency.
+
+        This method retrieves exchange rates for a given target currency, merges the
+        target exchange rates with the base exchange rates, and computes the final
+        exchange rate by dividing the base exchange rate by the target exchange rate.
 
         Args:
-            to_currency (str): The currency code to which the exchange rates should be converted.
+            to_ (str): The target currency code.
 
         Returns:
-            pd.DataFrame: DataFrame with converted exchange rates.
-        """
-        currency = self._raw_data.loc[lambda d: d["pydeflate_iso3"] == to_currency]
+            pd.DataFrame: A DataFrame with the adjusted exchange rates for the target currency.
 
-        # Merge the exchange rates to the original DataFrame and calculate the conversion
-        self.exchange_data = (
-            self.exchange_data.merge(
-                currency.filter(["pydeflate_year", "pydeflate_EXCHANGE"]),
-                on="pydeflate_year",
-                suffixes=("", "_to"),
-            )
-            .assign(
-                pydeflate_EXCHANGE=lambda d: d["pydeflate_EXCHANGE"]
-                / d["pydeflate_EXCHANGE_to"]
-            )
-            .drop(columns=["pydeflate_EXCHANGE_to"])
+        Raises:
+            ValueError: If no exchange rate data is available for the target currency.
+        """
+
+        if to_ == "LCU":
+            return self.exchange_data.copy().assign(pydeflate_EXCHANGE=1)
+
+        usd_rate = self.exchange_data.copy()
+        target_exchange = self._get_exchange_rate(to_)
+
+        if target_exchange.empty:
+            raise ValueError(f"No currency exchange data for {to_=}")
+
+        merged = pd.merge(
+            usd_rate,
+            target_exchange,
+            how="left",
+            on=["pydeflate_year"],
+            suffixes=("", "_to"),
+        ).assign(
+            pydeflate_EXCHANGE=lambda d: d.pydeflate_EXCHANGE / d.pydeflate_EXCHANGE_to
         )
+
+        return merged.drop(columns=merged.filter(regex="_to$").columns, axis=1)
+
+    def exchange_rate(self, from_currency: str, to_currency: str):
+        """Calculates the exchange rates between the source and target currencies.
+
+        Args:
+            from_currency (str): The source currency code.
+            to_currency (str): The target currency code.
+
+        Returns:
+            None
+        """
+        # Get exchange data based on the source currency.
+        source = self._convert_exchange(to_=from_currency)
+
+        # Get exchange data based on the target currency.
+        target = self._convert_exchange(to_=to_currency)
+
+        merged = pd.merge(
+            source,
+            target,
+            how="left",
+            on=["pydeflate_year", "pydeflate_entity_code", "pydeflate_iso3"],
+            suffixes=("", "_to"),
+        ).assign(
+            pydeflate_EXCHANGE=lambda d: d.pydeflate_EXCHANGE / d.pydeflate_EXCHANGE_to
+        )
+
+        return merged.drop(columns=merged.filter(regex="_to$").columns, axis=1)
 
     def exchange(
         self,
@@ -217,7 +242,7 @@ if __name__ == "__main__":
         name="WEO",
         reader=read_weo,
         source_currency="FRA",
-        target_currency="USA",
+        target_currency="TGO",
     )
 
     d = weo.exchange_data.query("pydeflate_iso3=='FRA'")
