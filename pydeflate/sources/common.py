@@ -178,7 +178,7 @@ def identify_base_year(df: pd.DataFrame, measure: str, year: str = "year") -> in
 
 def compute_exchange_deflator(
     df: pd.DataFrame,
-    base_year_measure: str,
+    base_year_measure: str | None = None,
     exchange: str = "EXCHANGE",
     year: str = "year",
     grouper: list[str] = None,
@@ -201,15 +201,18 @@ def compute_exchange_deflator(
 
     def _add_deflator(
         group: pd.DataFrame,
-        measure: str = "NGDPD_D",
+        measure: str | None = "NGDPD_D",
         exchange: str = "EXCHANGE",
         year: str = "year",
     ) -> pd.DataFrame:
         # Identify the base year for the deflator
-        base_year = identify_base_year(group, measure=measure, year=year)
+        if measure is not None:
+            base_year = identify_base_year(group, measure=measure, year=year)
+        else:
+            base_year = group.dropna(subset=exchange)[year].max()
 
         # If no base year is found, return the group unchanged
-        if base_year is None:
+        if base_year is None or pd.isna(base_year):
             return group
 
         # Extract the exchange rate value for the base year

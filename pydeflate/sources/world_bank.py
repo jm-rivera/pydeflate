@@ -11,6 +11,7 @@ from pydeflate.sources.common import (
     read_data,
     prefix_pydeflate_to_columns,
 )
+from pydeflate.utils import emu
 
 _INDICATORS: dict = {
     "NY.GDP.DEFL.ZS": "NGDP_D",  # GDP Deflator (Index)
@@ -54,6 +55,40 @@ def get_wb_indicator(series: str, value_name: str | None = None) -> pd.DataFrame
         )
         .reset_index(drop=True)  # Drop the old index after reset
     )
+
+
+def _eur_series_fix(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Fix the exchange rate for the Euro area countries. This is done by assigning the
+    exchange rate of the Euro to the countries in the Euro area. This is necessary
+    because the series for Euro area countries are missing EUR exchange rates.
+
+    Args:
+        df: pd.DataFrame: The DataFrame containing the World Bank data.
+
+    Returns:
+        pd.DataFrame: The DataFrame with the fixed exchange rates for the Euro area countries.
+
+    """
+    # Handle cases where EUR is represented differently in the World Bank data
+    df["entity_code"] = df["entity_code"].replace({"EMU": "EUR"})
+
+    # Find the "Euro" data. This is done given that some countries are missing
+    # exchange rates, but they are part of the Euro area.
+    eur = (
+        df.loc[lambda d: d["entity_code"] == "EUR"]
+        .dropna(subset=["EXCHANGE"])
+        .set_index("year")["EXCHANGE"]
+        .to_dict()
+    )
+
+    # Euro area countries without exchange rates
+    eur_mask = (df["entity_code"].isin(emu())) & (df["EXCHANGE"].isna())
+
+    # Assign EURO exchange rate to euro are countries from year euro adopted
+    df.loc[eur_mask, "EXCHANGE"] = df["year"].map(eur)
+
+    return df
 
 
 def _parallel_download_indicators(indicators: dict) -> list[pd.DataFrame]:
@@ -105,8 +140,10 @@ def download_wb() -> None:
 
     # cleaning
     df = (
-        df.pipe(compute_exchange_deflator, base_year_measure="NGDP_D")
+        df.pipe(_eur_series_fix)
+        .pipe(compute_exchange_deflator, base_year_measure="NGDP_D")
         .assign(pydeflate_iso3=lambda d: d.entity_code)
+        .sort_values(by=["year", "entity_code"])
         .pipe(prefix_pydeflate_to_columns)
         .pipe(enforce_pyarrow_types)
     )

@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 
 import pandas as pd
 
-from pydeflate.sources.imf import read_weo
+from pydeflate.sources.common import compute_exchange_deflator
 
 
 @dataclass
@@ -41,12 +41,6 @@ class Exchange:
             ]
         )
 
-        # Handle cases where EUR is represented differently in the World Bank data
-        if self.name == "World Bank":
-            self.exchange_data["pydeflate_iso3"] = self.exchange_data[
-                "pydeflate_iso3"
-            ].replace({"EMU": "EUR"})
-
         # If source and target currencies are the same, set the exchange rate to 1
         if self.source_currency == self.target_currency:
             self.exchange_data["pydeflate_EXCHANGE"] = 1
@@ -61,7 +55,7 @@ class Exchange:
         exchange_rate = self.exchange_data.loc[
             self.exchange_data["pydeflate_iso3"] == currency
         ]
-        return exchange_rate.drop(columns="pydeflate_EXCHANGE_D")
+        return exchange_rate
 
     def _convert_exchange(self, to_: str) -> pd.DataFrame:
         """Converts exchange rates based on the target currency.
@@ -96,7 +90,7 @@ class Exchange:
             on=["pydeflate_year"],
             suffixes=("", "_to"),
         ).assign(
-            pydeflate_EXCHANGE=lambda d: d.pydeflate_EXCHANGE / d.pydeflate_EXCHANGE_to
+            pydeflate_EXCHANGE=lambda d: d.pydeflate_EXCHANGE / d.pydeflate_EXCHANGE_to,
         )
 
         return merged.drop(columns=merged.filter(regex="_to$").columns, axis=1)
@@ -117,6 +111,7 @@ class Exchange:
         # Get exchange data based on the target currency.
         target = self._convert_exchange(to_=to_currency)
 
+        # Merge the source and target exchange data and compute the final exchange rate.
         merged = pd.merge(
             source,
             target,
@@ -127,7 +122,18 @@ class Exchange:
             pydeflate_EXCHANGE=lambda d: d.pydeflate_EXCHANGE / d.pydeflate_EXCHANGE_to
         )
 
-        return merged.drop(columns=merged.filter(regex="_to$").columns, axis=1)
+        # Drop unnecessary columns
+        merged = merged.drop(columns=merged.filter(regex="_to$").columns, axis=1)
+
+        # Compute the exchange rate deflator
+        merged = compute_exchange_deflator(
+            merged,
+            exchange="pydeflate_EXCHANGE",
+            year="pydeflate_year",
+            grouper=["pydeflate_entity_code", "pydeflate_iso3"],
+        )
+
+        return merged
 
     def exchange(
         self,
@@ -235,14 +241,3 @@ class Exchange:
         )
 
         return merged_data.filter(regex="^(?!pydeflate_)")
-
-
-if __name__ == "__main__":
-    weo = Exchange(
-        name="WEO",
-        reader=read_weo,
-        source_currency="FRA",
-        target_currency="TGO",
-    )
-
-    d = weo.exchange_data.query("pydeflate_iso3=='FRA'")
