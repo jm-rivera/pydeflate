@@ -192,6 +192,12 @@ class Exchange:
         return merged_data.filter(regex="^(?!pydeflate_)")
 
     def deflator(self) -> pd.DataFrame:
+        """Get the exchange rate deflator data.
+
+        Returns:
+            pd.DataFrame: DataFrame with the exchange rate deflator data.
+        """
+        
         return self.exchange_data.filter(
             [
                 "pydeflate_year",
