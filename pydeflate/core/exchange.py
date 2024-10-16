@@ -197,7 +197,7 @@ class Exchange:
         Returns:
             pd.DataFrame: DataFrame with the exchange rate deflator data.
         """
-        
+
         return self.exchange_data.filter(
             [
                 "pydeflate_year",
