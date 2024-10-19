@@ -109,6 +109,7 @@ def download_dac():
         .pipe(_compute_dac_gdp_deflator)
         .pipe(prefix_pydeflate_to_columns)
         .pipe(enforce_pyarrow_types)
+        .reset_index(drop=True)
     )
 
     # Get today's date to use as a file suffix

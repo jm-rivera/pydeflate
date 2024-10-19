@@ -164,6 +164,7 @@ def download_weo() -> None:
         .pipe(compute_exchange_deflator, base_year_measure="NGDP_D")
         .pipe(prefix_pydeflate_to_columns)
         .pipe(enforce_pyarrow_types)
+        .reset_index(drop=True)
     )
 
     # Get today's date to use as a file suffix
