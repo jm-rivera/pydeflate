@@ -1,11 +1,13 @@
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 import pandas as pd
 from hdx.location.country import Country
 
 from pydeflate.pydeflate_config import logger, PYDEFLATE_PATHS
+
+AvailableDeflators = Literal["NGDP_D", "NGDP_DL", "PCPI", "PCPIE"]
 
 
 def check_file_age(file: Path) -> int:
