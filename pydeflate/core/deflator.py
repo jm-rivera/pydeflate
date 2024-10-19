@@ -5,7 +5,7 @@ import pandas as pd
 
 from pydeflate.core.exchange import Exchange
 from pydeflate.core.source import Source
-from pydeflate.sources.common import AvailableDeflators, compute_exchange_deflator
+from pydeflate.sources.common import AvailableDeflators
 
 
 @dataclass
