@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 
 import pandas as pd
 
+from pydeflate.core.source import Source
 from pydeflate.sources.common import compute_exchange_deflator
 
 
@@ -13,16 +14,14 @@ class Exchange:
     for conversions between source and target currencies.
 
     Attributes:
-        name (str): The name of the exchange rate data source (e.g., "World Bank").
-        reader (callable): A function that reads the exchange rate data.
+        source (Source): An instance of the Source class to fetch exchange rate data.
         source_currency (str): The source currency code (default is 'LCU' - Local Currency Unit).
         target_currency (str): The target currency code (default is 'USA' - US Dollar).
         update (bool): Flag to indicate if the exchange data should be updated (default: False).
         exchange_data (pd.DataFrame): DataFrame holding the exchange rate data.
     """
 
-    name: str
-    reader: callable
+    source: Source
     source_currency: str = "LCU"
     target_currency: str = "USA"
     update: bool = False
@@ -31,15 +30,7 @@ class Exchange:
     def __post_init__(self):
         """Initialize the Exchange object and process the exchange rate data."""
         # Load and filter the relevant columns from the exchange rate data
-        self.exchange_data = self.reader(self.update).filter(
-            [
-                "pydeflate_year",
-                "pydeflate_entity_code",
-                "pydeflate_iso3",
-                "pydeflate_EXCHANGE",
-                "pydeflate_EXCHANGE_D",
-            ]
-        )
+        self.exchange_data = self.source.lcu_usd_exchange()
 
         # If source and target currencies are the same, set the exchange rate to 1
         if self.source_currency == self.target_currency:
