@@ -3,6 +3,7 @@ from typing import Literal
 
 import pandas as pd
 
+from pydeflate.core.exchange import Exchange
 from pydeflate.core.source import Source
 from pydeflate.sources.common import AvailableDeflators, compute_exchange_deflator
 
@@ -16,11 +17,10 @@ class Deflator:
 
     """
 
-    source: Source
+    source: Source | Exchange
     deflator_type: Literal["price", "exchange"]
     price_kind: AvailableDeflators | None
     base_year: int
-    update: bool = False
     deflator_data: pd.DataFrame = field(default_factory=pd.DataFrame)
 
     def __post_init__(self):
@@ -47,15 +47,8 @@ class Deflator:
                 raise ValueError(
                     "`price_kind` should be None when `deflator_type` is 'exchange'."
                 )
-            exchange = self.source.lcu_usd_exchange()
-
-            # Compute the exchange rate deflator
-            self.deflator_data = compute_exchange_deflator(
-                exchange,
-                exchange="pydeflate_EXCHANGE",
-                year="pydeflate_year",
-                grouper=["pydeflate_entity_code", "pydeflate_iso3"],
-            ).drop(columns=["pydeflate_EXCHANGE"])
+            self.deflator_data = self.source.deflator()
+            self.source = self.source.source
 
         else:
             raise ValueError(f"Invalid deflator type: {self.deflator_type}")
@@ -141,16 +134,14 @@ class ExchangeDeflator(Deflator):
     Args:
         source (Source): The source from which to fetch exchange rate data.
         base_year (int): The base year to rebase the deflator data.
-        update (bool, optional): Whether to update the data from the source. Defaults to False.
     """
 
-    def __init__(self, source: Source, base_year: int, update: bool = False):
+    def __init__(self, source: Exchange, base_year: int):
         super().__init__(
             source=source,
             deflator_type="exchange",
             price_kind=None,
             base_year=base_year,
-            update=update,
         )
 
 
@@ -164,7 +155,6 @@ class PriceDeflator(Deflator):
         source (Source): The source from which to fetch price deflator data.
         kind (AvailableDeflators): The type of price deflator to apply (e.g., GDP deflator or CPI).
         base_year (int): The base year to rebase the deflator data.
-        update (bool, optional): Whether to update the data from the source. Defaults to False.
     """
 
     def __init__(
@@ -172,12 +162,10 @@ class PriceDeflator(Deflator):
         source: Source,
         kind: AvailableDeflators,
         base_year: int,
-        update: bool = False,
     ):
         super().__init__(
             source=source,
             deflator_type="price",
             price_kind=kind,
             base_year=base_year,
-            update=update,
         )
