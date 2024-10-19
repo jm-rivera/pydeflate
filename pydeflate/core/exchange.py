@@ -17,14 +17,12 @@ class Exchange:
         source (Source): An instance of the Source class to fetch exchange rate data.
         source_currency (str): The source currency code (default is 'LCU' - Local Currency Unit).
         target_currency (str): The target currency code (default is 'USA' - US Dollar).
-        update (bool): Flag to indicate if the exchange data should be updated (default: False).
         exchange_data (pd.DataFrame): DataFrame holding the exchange rate data.
     """
 
     source: Source
     source_currency: str = "LCU"
     target_currency: str = "USA"
-    update: bool = False
     exchange_data: pd.DataFrame = field(default_factory=pd.DataFrame)
 
     def __post_init__(self):
