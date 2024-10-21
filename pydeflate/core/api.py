@@ -53,20 +53,36 @@ class BaseDeflate:
         # drop where necessary data is missing
         data = data.set_index(self._idx).dropna(how="any").reset_index()
 
-        # Calculate the operation to apply to the deflator
-        op = (
-            (lambda x, y: 100 * x / y)
-            if self.to_current
-            else (lambda x, y: 0.01 * x * y)
-        )
-
         # Calculate price-exchange deflator
-        data["pydeflate_deflator"] = op(
+        data["pydeflate_deflator"] = self._calculate_deflator_value(
             data[f"pydeflate_{self.price_deflator.price_kind}"],
             data["pydeflate_EXCHANGE_D"],
+            data[f"pydeflate_EXCHANGE"],
         )
 
         self.pydeflate_data = data
+
+    def _calculate_deflator_value(
+        self, price_def: pd.Series, exchange_def: pd.Series, exchange_rate: pd.Series
+    ):
+        """Calculate the combined deflator value based on the price, exchange,
+        and exchange rate. The deflator value is calculated differently based on
+        the `to_current` attribute.
+
+        Args:
+            price_def (pd.Series): The price deflator.
+            exchange_def (pd.Series): The exchange deflator.
+            exchange_rate (pd.Series): The exchange rate.
+
+        Returns:
+            pd.Series: The deflator value.
+
+        """
+        return (
+            exchange_def / (price_def * exchange_rate)
+            if self.to_current
+            else (price_def * exchange_def) / (10_000 * exchange_rate)
+        )
 
     def _merge_components(self, df: pd.DataFrame, other: pd.DataFrame):
         merged = df.merge(other, how="outer", on=self._idx, suffixes=("", "_ex"))
@@ -99,22 +115,21 @@ class BaseDeflate:
         ).dt.year
 
         # Merge data to the input data based on year and entity
-        merged_data = (
-            data.merge(
-                self.pydeflate_data,
-                how="outer",
-                left_on=["pydeflate_year", entity_column],
-                right_on=self._idx,
-                suffixes=("", "_pydeflate"),
-                indicator=True,
-            )
-            .filter(regex="^(?!pydeflate_)(?!.*_pydeflate$)")
-            .pipe(enforce_pyarrow_types)
-        )
+        merged_data = data.merge(
+            self.pydeflate_data,
+            how="outer",
+            left_on=["pydeflate_year", entity_column],
+            right_on=self._idx,
+            suffixes=("", "_pydeflate"),
+            indicator=True,
+        ).pipe(enforce_pyarrow_types)
 
-        self._unmatched_data = merged_data.loc[merged_data["_merge"] == "left_only"]
+        self._unmatched_data = merged_data.loc[
+            merged_data["_merge"] == "left_only"
+        ].filter(regex="^(?!pydeflate_)(?!.*_pydeflate$)")
+
         self._merged_data = (
-            merged_data.loc[merged_data["_merge"] != "left_only"]
+            merged_data.loc[merged_data["_merge"] != "right_only"]
             .drop(columns="_merge")
             .reset_index(drop=True)
         )
@@ -166,6 +181,13 @@ class BaseDeflate:
         # Flag missing data
         self._flag_missing_pydeflate_data()
 
+        # Calculate deflated values
+        self._merged_data[target_value_column] = (
+            self._merged_data[value_column] / self._merged_data["pydeflate_deflator"]
+        ).round(6)
+
+        return self._merged_data[cols]
+
 
 if __name__ == "__main__":
     ds = DAC()
@@ -173,22 +195,22 @@ if __name__ == "__main__":
     base_deflate = BaseDeflate(
         deflator_source=ds,
         exchange_source=ds,
-        base_year=2022,
+        base_year=2023,
         price_kind="NGDP_D",
         source_currency="LCU",
-        target_currency="USA",
+        target_currency="FRA",
         use_source_codes=False,
         to_current=False,
     )
 
     df = pd.DataFrame(
         {
-            "year": [2020, 2020, 2021],
-            "entity_code": ["FRA", "PER", "PER"],
-            "value": [100, 100, 100],
+            "year": [2022, 2023],
+            "entity_code": ["FRA", "FRA"],
+            "value": [15228, 14266],
         }
     )
 
-    base_deflate.deflate(
+    df = base_deflate.deflate(
         data=df, entity_column="entity_code", year_column="year", value_column="value"
     )
