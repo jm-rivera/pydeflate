@@ -24,17 +24,17 @@ def setup_logger(name) -> logging.Logger:
     logger_ = logging.getLogger(name)
     logger_.setLevel(logging.INFO)
 
-    console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.INFO)
+    # Only add handlers if the logger has none to avoid duplication
+    if not logger_.hasHandlers():
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.INFO)
 
-    formatter = logging.Formatter(
-        "%(asctime)s - %(name)s - %(levelname)s:\n %(message)s"
-    )
-    console_handler.setFormatter(formatter)
+        formatter = logging.Formatter(
+            "%(asctime)s - %(name)s - %(levelname)s:\n %(message)s"
+        )
+        console_handler.setFormatter(formatter)
 
-    logger_.addHandler(console_handler)
+        logger_.addHandler(console_handler)
+        logger_.propagate = False
 
     return logger_
-
-
-logger = setup_logger("pydeflate")

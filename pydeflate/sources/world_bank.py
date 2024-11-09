@@ -4,7 +4,8 @@ from pathlib import Path
 import pandas as pd
 import wbgapi as wb
 
-from pydeflate.pydeflate_config import PYDEFLATE_PATHS, logger
+from pydeflate import logger
+from pydeflate.pydeflate_config import PYDEFLATE_PATHS
 from pydeflate.sources.common import (
     enforce_pyarrow_types,
     today,

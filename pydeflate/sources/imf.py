@@ -3,7 +3,8 @@ from pathlib import Path
 import pandas as pd
 from imf_reader import weo
 
-from pydeflate.pydeflate_config import PYDEFLATE_PATHS, logger
+from pydeflate import logger
+from pydeflate.pydeflate_config import PYDEFLATE_PATHS
 from pydeflate.sources.common import (
     today,
     add_pydeflate_iso3,

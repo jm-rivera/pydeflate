@@ -4,7 +4,8 @@ import country_converter as coco
 import numpy as np
 import pandas as pd
 
-from pydeflate.pydeflate_config import PYDEFLATE_PATHS, logger
+from pydeflate import logger
+from pydeflate.pydeflate_config import PYDEFLATE_PATHS
 from pydeflate.sources.common import enforce_pyarrow_types
 
 

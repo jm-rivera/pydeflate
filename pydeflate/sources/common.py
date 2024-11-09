@@ -5,7 +5,8 @@ from typing import Any, Literal
 import pandas as pd
 from hdx.location.country import Country
 
-from pydeflate.pydeflate_config import logger, PYDEFLATE_PATHS
+from pydeflate import logger
+from pydeflate.pydeflate_config import PYDEFLATE_PATHS
 
 AvailableDeflators = Literal["NGDP_D", "NGDP_DL", "PCPI", "PCPIE"]
 

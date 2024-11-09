@@ -13,6 +13,8 @@ classifiers=[
     'Natural Language :: English',
     'Programming Language :: Python :: 3',
     'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
 ]
 
 packages = [
@@ -20,27 +22,19 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.10"
-numpy = "^1.26"
+python = ">=3.10, <4.0"
 pandas = "^2"
-beautifulsoup4 = "^4.12"
-weo = "^0.7.4"
-xlrd = "^2.0.1"
-country-converter = "^1"
-requests = "^2.28.2"
 pyarrow = ">14"
-bblocks = "^1.2.1"
 imf-reader = "^1.1.0"
 hdx-python-country = "^3.8.1"
 oda-reader = "^1.0.0"
+wbgapi = "^1.0.12"
+country-converter = "^1.2"
 
 
 [tool.poetry.dev-dependencies]
 bump2version = "^1.0.1"
 black = "^24"
-pytest = "^7.2.1"
-pytest-cov = "^4.0.0"
-pytest-mock = "^3.10.0"
 
 
 [build-system]
