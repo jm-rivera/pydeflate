@@ -38,3 +38,6 @@ def setup_logger(name) -> logging.Logger:
         logger_.propagate = False
 
     return logger_
+
+
+logger = setup_logger("pydeflate")

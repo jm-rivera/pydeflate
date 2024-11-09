@@ -270,25 +270,6 @@ files = [
 ]
 
 [[package]]
-name = "country-converter"
-version = "1.2"
-description = "The country converter (coco) - a Python package for converting country names between different classifications schemes"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "country_converter-1.2-py3-none-any.whl", hash = "sha256:5a5e54f9542cc8e109d53a39fa9e9179e6a97826e72594dd16e948611cb278fa"},
-    {file = "country_converter-1.2.tar.gz", hash = "sha256:74e87db54b91eda56c5eecc9e36e1b5ca79ca2bca58012ecc4f55ef8a13a6631"},
-]
-
-[package.dependencies]
-pandas = ">=1.0"
-
-[package.extras]
-dev = ["country-converter[lint,test]"]
-lint = ["black (>=22.3.0)", "isort (>=5.5.2)"]
-test = ["coveralls", "pytest (>=5.4.0)", "pytest-black", "pytest-cov (>=2.7.0)", "pytest-datadir", "pytest-mypy"]
-
-[[package]]
 name = "et-xmlfile"
 version = "2.0.0"
 description = "An implementation of lxml.xmlfile for the standard library"
@@ -1979,4 +1960,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10, <4.0"
-content-hash = "b97cf8c88b2bbcf52624fd83999ff20bd49641fa258dc09c4ef0a068c1ac41e5"
+content-hash = "d41a903b12dad71ecc132e963b888fe05cfc7190dc919acb5e74729c946ab162"

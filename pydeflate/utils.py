@@ -1,11 +1,9 @@
 import json
 
-import country_converter as coco
 import numpy as np
 import pandas as pd
 
-from pydeflate import logger
-from pydeflate.pydeflate_config import PYDEFLATE_PATHS
+from pydeflate.pydeflate_config import PYDEFLATE_PATHS, logger
 from pydeflate.sources.common import enforce_pyarrow_types
 
 
@@ -51,27 +49,12 @@ def check_year_as_number(df: pd.DataFrame, date_column: str) -> (pd.DataFrame, b
     return df, year_as_number
 
 
-def to_iso3(
-    df: pd.DataFrame,
-    codes_col: str,
-    target_col: str,
-    src_classification: str | None = None,
-    not_found: str | None = None,
-) -> pd.DataFrame:
-    """Convert a column of country codes to iso3"""
-
-    cc = coco.CountryConverter()
-
-    df[target_col] = cc.pandas_convert(
-        df[codes_col], src=src_classification, to="ISO3", not_found=not_found
-    )
-
-    return df
-
-
 def create_pydeflate_year(
-    data: pd.DataFrame, year_column: str, year_format: str = "%Y"
+    data: pd.DataFrame, year_column: str, year_format: str | None = None
 ) -> pd.DataFrame:
+    if year_format is None:
+        year_format = "ISO8601"
+
     data = data.copy()
 
     data["pydeflate_year"] = pd.to_datetime(
@@ -87,7 +70,6 @@ def merge_user_and_pydeflate_data(
     entity_column: str,
     ix: list[str],
 ) -> pd.DataFrame:
-
     return data.merge(
         pydeflate_data,
         how="outer",

@@ -5,10 +5,9 @@ from typing import Any, Literal
 import pandas as pd
 from hdx.location.country import Country
 
-from pydeflate import logger
-from pydeflate.pydeflate_config import PYDEFLATE_PATHS
+from pydeflate.pydeflate_config import PYDEFLATE_PATHS, logger
 
-AvailableDeflators = Literal["NGDP_D", "NGDP_DL", "PCPI", "PCPIE"]
+AvailableDeflators = Literal["NGDP_D", "NGDP_DL", "CPI", "PCPI", "PCPIE"]
 
 
 def check_file_age(file: Path) -> int:

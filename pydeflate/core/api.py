@@ -13,6 +13,21 @@ from pydeflate.utils import (
 )
 
 
+def resolve_common_currencies(currency: str, source: str) -> str:
+    mapping = {
+        "USD": "USA",
+        "EUR": "EMU",
+        "GBP": "GBR",
+        "JPY": "JPN",
+        "CAD": "CAN",
+    }
+
+    if source == "DAC":
+        mapping["EUR"] = "EUI"
+
+    return mapping.get(currency, currency)
+
+
 def _base_operation(
     base_obj,
     data: pd.DataFrame,
@@ -20,8 +35,9 @@ def _base_operation(
     year_column: str,
     value_column: str,
     target_value_column: str | None = None,
-    year_format: str = "%Y",
+    year_format: str | None = None,
     exchange: bool = False,
+    reversed_: bool = False,
 ):
     """Perform deflation or exchange rate adjustment on input data using pydeflate data.
 
@@ -35,6 +51,7 @@ def _base_operation(
         year_format (str, optional): Format of the year. Defaults to "%Y".
         exchange (bool, optional): Whether to perform an exchange rate adjustment (True)
         or deflation (False).
+        reversed_ (bool, optional): If True, perform the operation in reverse.
 
     Returns:
         pd.DataFrame: DataFrame with adjusted values and original columns preserved.
@@ -61,18 +78,16 @@ def _base_operation(
 
     # Flag missing data
     flag_missing_pydeflate_data(base_obj._unmatched_data)
+    x = base_obj._merged_data[value_column]
+    y = base_obj._merged_data[
+        "pydeflate_EXCHANGE" if exchange else "pydeflate_deflator"
+    ]
 
-    # Calculate deflated values
-    if exchange:
-        base_obj._merged_data[target_value_column] = (
-            base_obj._merged_data[value_column]
-            * base_obj._merged_data["pydeflate_EXCHANGE"]
-        ).round(6)
+    # Apply the correct operation based on `exchange` and `reversed`
+    if (exchange and not reversed_) or (not exchange and reversed_):
+        base_obj._merged_data[target_value_column] = (x * y).round(6)
     else:
-        base_obj._merged_data[target_value_column] = (
-            base_obj._merged_data[value_column]
-            / base_obj._merged_data["pydeflate_deflator"]
-        ).round(6)
+        base_obj._merged_data[target_value_column] = (x / y).round(6)
 
     return base_obj._merged_data[cols]
 
@@ -101,6 +116,16 @@ class BaseExchange:
             use_source_codes (bool, optional): Use source-specific entity codes.
              Defaults to False.
         """
+
+        # Try to accept common currencies by their country codes
+        source_currency = resolve_common_currencies(
+            source_currency, exchange_source.name
+        )
+
+        target_currency = resolve_common_currencies(
+            target_currency, exchange_source.name
+        )
+
         self.exchange_rates = Exchange(
             source=exchange_source,
             source_currency=source_currency,
@@ -127,7 +152,7 @@ class BaseExchange:
         data: pd.DataFrame,
         entity_column: str,
         year_column: str,
-        year_format: str = "%Y",
+        year_format: str | None = None,
     ) -> None:
         """Merge pydeflate exchange rate data into input data by year and entity.
 
@@ -164,7 +189,8 @@ class BaseExchange:
         year_column: str,
         value_column: str,
         target_value_column: str | None = None,
-        year_format: str = "%Y",
+        year_format: str | None = None,
+        reversed_: bool = False,
     ):
         """Apply exchange rate conversion to input data.
 
@@ -175,6 +201,7 @@ class BaseExchange:
             value_column (str): Column with values to adjust.
             target_value_column (str | None, optional): Column for adjusted values. Defaults to `value_column`.
             year_format (str, optional): Format of the year. Defaults to "%Y".
+            reversed_ (bool, optional): If True, perform the operation in reverse. defaults to False.
 
         Returns:
             pd.DataFrame: DataFrame with exchange rate-adjusted values.
@@ -188,6 +215,7 @@ class BaseExchange:
             value_column=value_column,
             target_value_column=target_value_column,
             year_format=year_format,
+            reversed_=reversed_,
         )
 
 
@@ -222,6 +250,15 @@ class BaseDeflate:
             use_source_codes (bool, optional): Use source-specific entity codes. Defaults to False.
             to_current (bool, optional): If True, adjust to current year values. Defaults to False.
         """
+
+        # Try to accept common currencies by their country codes
+        source_currency = resolve_common_currencies(
+            source_currency, deflator_source.name
+        )
+
+        target_currency = resolve_common_currencies(
+            target_currency, deflator_source.name
+        )
 
         self.exchange_rates = Exchange(
             source=exchange_source,
@@ -305,7 +342,7 @@ class BaseDeflate:
         data: pd.DataFrame,
         entity_column: str,
         year_column: str,
-        year_format: str = "%Y",
+        year_format: str | None = None,
     ) -> None:
         """Merge pydeflate deflator data into the input data by year and entity.
 
@@ -342,7 +379,7 @@ class BaseDeflate:
         year_column: str,
         value_column: str,
         target_value_column: str | None = None,
-        year_format: str = "%Y",
+        year_format: str | None = None,
     ):
         """Apply deflation adjustment to input data using pydeflate deflator rates.
 

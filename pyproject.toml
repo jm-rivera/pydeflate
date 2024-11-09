@@ -29,7 +29,6 @@ imf-reader = "^1.1.0"
 hdx-python-country = "^3.8.1"
 oda-reader = "^1.0.0"
 wbgapi = "^1.0.12"
-country-converter = "^1.2"
 
 
 [tool.poetry.dev-dependencies]
