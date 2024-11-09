@@ -1,8 +1,9 @@
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 import pandas as pd
 import wbgapi as wb
-from concurrent.futures import ThreadPoolExecutor, as_completed
+
 from pydeflate.pydeflate_config import PYDEFLATE_PATHS, logger
 from pydeflate.sources.common import (
     enforce_pyarrow_types,
@@ -182,4 +183,4 @@ def read_wb(update: bool = False) -> pd.DataFrame:
 
 
 if __name__ == "__main__":
-    df = read_wb(True)
+    df = read_wb(False)

@@ -1,5 +1,5 @@
-from pathlib import Path
 import logging
+from pathlib import Path
 
 
 class PYDEFLATE_PATHS:
@@ -11,8 +11,30 @@ class PYDEFLATE_PATHS:
     test_data = package / "tests" / "test_files"
 
 
-DEFAULT_BASE: int = 2015
+def setup_logger(name) -> logging.Logger:
+    """Set up the logger.
 
-logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+    Args:
+        name (str): The name of the logger.
 
-logger = logging.getLogger("oda_importer")
+    Returns:
+        logging.Logger: The logger.
+
+    """
+    logger_ = logging.getLogger(name)
+    logger_.setLevel(logging.INFO)
+
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.INFO)
+
+    formatter = logging.Formatter(
+        "%(asctime)s - %(name)s - %(levelname)s:\n %(message)s"
+    )
+    console_handler.setFormatter(formatter)
+
+    logger_.addHandler(console_handler)
+
+    return logger_
+
+
+logger = setup_logger("pydeflate")
