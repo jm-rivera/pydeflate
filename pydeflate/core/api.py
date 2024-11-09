@@ -2,12 +2,203 @@ import pandas as pd
 
 from pydeflate.core.deflator import ExchangeDeflator, PriceDeflator
 from pydeflate.core.exchange import Exchange
-from pydeflate.core.source import Source, DAC, WorldBank
-from pydeflate.pydeflate_config import logger
-from pydeflate.sources.common import AvailableDeflators, enforce_pyarrow_types
+from pydeflate.core.source import Source
+from pydeflate.sources.common import AvailableDeflators
+from pydeflate.utils import (
+    create_pydeflate_year,
+    merge_user_and_pydeflate_data,
+    get_unmatched_pydeflate_data,
+    get_matched_pydeflate_data,
+    flag_missing_pydeflate_data,
+)
+
+
+def _base_operation(
+    base_obj,
+    data: pd.DataFrame,
+    entity_column: str,
+    year_column: str,
+    value_column: str,
+    target_value_column: str | None = None,
+    year_format: str = "%Y",
+    exchange: bool = False,
+):
+    """Perform deflation or exchange rate adjustment on input data using pydeflate data.
+
+    Args:
+        base_obj (BaseExchange | BaseDeflate): The base object containing pydeflate data.
+        data (pd.DataFrame): Data to be adjusted.
+        entity_column (str): Column with entity or country identifiers.
+        year_column (str): Column with year information.
+        value_column (str): Column with values to be adjusted.
+        target_value_column (str | None, optional): Column to store adjusted values. Defaults to `value_column`.
+        year_format (str, optional): Format of the year. Defaults to "%Y".
+        exchange (bool, optional): Whether to perform an exchange rate adjustment (True)
+        or deflation (False).
+
+    Returns:
+        pd.DataFrame: DataFrame with adjusted values and original columns preserved.
+    """
+    # Make a copy of the input data to avoid modifying the original data
+    data = data.copy(deep=True)
+
+    target_value_column = target_value_column or value_column
+
+    # Keep track of original columns to return data in the same order.
+    cols = (
+        [*data.columns, target_value_column]
+        if target_value_column not in data.columns
+        else data.columns
+    )
+
+    # Merge pydeflate data to the input data
+    base_obj._merge_pydeflate_data(
+        data=data,
+        entity_column=entity_column,
+        year_column=year_column,
+        year_format=year_format,
+    )
+
+    # Flag missing data
+    flag_missing_pydeflate_data(base_obj._unmatched_data)
+
+    # Calculate deflated values
+    if exchange:
+        base_obj._merged_data[target_value_column] = (
+            base_obj._merged_data[value_column]
+            * base_obj._merged_data["pydeflate_EXCHANGE"]
+        ).round(6)
+    else:
+        base_obj._merged_data[target_value_column] = (
+            base_obj._merged_data[value_column]
+            / base_obj._merged_data["pydeflate_deflator"]
+        ).round(6)
+
+    return base_obj._merged_data[cols]
+
+
+class BaseExchange:
+    """Performs currency exchange rate conversions within data, using pydeflate.
+
+    Provides methods to merge pydeflate exchange rate data with user data and apply
+    exchange rate adjustments, allowing for straightforward currency conversions
+    within a dataset.
+    """
+
+    def __init__(
+        self,
+        exchange_source: Source,
+        source_currency: str,
+        target_currency: str,
+        use_source_codes: bool = False,
+    ):
+        """Initialize a BaseExchange instance with exchange rate data and identifiers.
+
+        Args:
+            exchange_source (Source): Data source for exchange rates.
+            source_currency (str): Original currency for conversion.
+            target_currency (str): Target currency for conversion.
+            use_source_codes (bool, optional): Use source-specific entity codes.
+             Defaults to False.
+        """
+        self.exchange_rates = Exchange(
+            source=exchange_source,
+            source_currency=source_currency,
+            target_currency=target_currency,
+        )
+
+        self._idx = [
+            "pydeflate_year",
+            "pydeflate_entity_code" if use_source_codes else "pydeflate_iso3",
+        ]
+
+        self._load_pydeflate_data()
+
+    def _load_pydeflate_data(self) -> None:
+        """Load and prepare pydeflate exchange rate data."""
+        self.pydeflate_data = (
+            self.exchange_rates.exchange_data.set_index(self._idx)
+            .dropna(how="any")
+            .reset_index()
+        )
+
+    def _merge_pydeflate_data(
+        self,
+        data: pd.DataFrame,
+        entity_column: str,
+        year_column: str,
+        year_format: str = "%Y",
+    ) -> None:
+        """Merge pydeflate exchange rate data into input data by year and entity.
+
+        Args:
+            data (pd.DataFrame): Input DataFrame to merge with pydeflate data.
+            entity_column (str): Column name for entity or country codes.
+            year_column (str): Column name for year information.
+            year_format (str, optional): Year format. Defaults to '%Y'.
+        """
+
+        # Convert the year to an integer
+        data = create_pydeflate_year(
+            data=data, year_column=year_column, year_format=year_format
+        )
+
+        # Merge data to the input data based on year and entity
+        merged_data = merge_user_and_pydeflate_data(
+            data=data,
+            pydeflate_data=self.pydeflate_data,
+            entity_column=entity_column,
+            ix=self._idx,
+        )
+
+        # store unmatched data
+        self._unmatched_data = get_unmatched_pydeflate_data(merged_data=merged_data)
+
+        # store matched data
+        self._merged_data = get_matched_pydeflate_data(merged_data=merged_data)
+
+    def exchange(
+        self,
+        data: pd.DataFrame,
+        entity_column: str,
+        year_column: str,
+        value_column: str,
+        target_value_column: str | None = None,
+        year_format: str = "%Y",
+    ):
+        """Apply exchange rate conversion to input data.
+
+        Args:
+            data (pd.DataFrame): Data to apply exchange rate adjustment.
+            entity_column (str): Column with entity identifiers.
+            year_column (str): Column with year information.
+            value_column (str): Column with values to adjust.
+            target_value_column (str | None, optional): Column for adjusted values. Defaults to `value_column`.
+            year_format (str, optional): Format of the year. Defaults to "%Y".
+
+        Returns:
+            pd.DataFrame: DataFrame with exchange rate-adjusted values.
+        """
+        return _base_operation(
+            base_obj=self,
+            exchange=True,
+            data=data,
+            entity_column=entity_column,
+            year_column=year_column,
+            value_column=value_column,
+            target_value_column=target_value_column,
+            year_format=year_format,
+        )
 
 
 class BaseDeflate:
+    """Deflating monetary values over time with exchange rates and price indices.
+
+    Combines price deflators, exchange rate deflators, and pydeflate data to allow
+    for adjustments of monetary values across different time periods, enabling accurate
+    economic comparisons over time.
+    """
+
     def __init__(
         self,
         deflator_source: Source,
@@ -19,6 +210,18 @@ class BaseDeflate:
         use_source_codes: bool = False,
         to_current: bool = False,
     ):
+        """Initialize a BaseDeflate instance with deflator and exchange rate sources.
+
+        Args:
+            deflator_source (Source): Data source for price deflators.
+            exchange_source (Source): Data source for exchange rates.
+            base_year (int): Reference year for base value adjustments.
+            price_kind (AvailableDeflators): Type of deflator (e.g., CPI).
+            source_currency (str): Currency of the input data.
+            target_currency (str): Currency for conversion.
+            use_source_codes (bool, optional): Use source-specific entity codes. Defaults to False.
+            to_current (bool, optional): If True, adjust to current year values. Defaults to False.
+        """
 
         self.exchange_rates = Exchange(
             source=exchange_source,
@@ -45,6 +248,9 @@ class BaseDeflate:
         self.__post_init__()
 
     def __post_init__(self):
+        """Post-initialization process to merge deflator, exchange, and pydeflate data."""
+
+        # Merge deflator and exchange rate data
         data = self._merge_components(
             df=self.price_deflator.deflator_data,
             other=self.exchange_deflator.deflator_data,
@@ -65,18 +271,15 @@ class BaseDeflate:
     def _calculate_deflator_value(
         self, price_def: pd.Series, exchange_def: pd.Series, exchange_rate: pd.Series
     ):
-        """Calculate the combined deflator value based on the price, exchange,
-        and exchange rate. The deflator value is calculated differently based on
-        the `to_current` attribute.
+        """Compute the combined deflator value using price deflator, exchange deflator, and rates.
 
         Args:
-            price_def (pd.Series): The price deflator.
-            exchange_def (pd.Series): The exchange deflator.
-            exchange_rate (pd.Series): The exchange rate.
+            price_def (pd.Series): Series of price deflator values.
+            exchange_def (pd.Series): Series of exchange deflator values.
+            exchange_rate (pd.Series): Series of exchange rates.
 
         Returns:
-            pd.Series: The deflator value.
-
+            pd.Series: Series with combined deflator values.
         """
         return (
             exchange_def / (price_def * exchange_rate)
@@ -85,6 +288,15 @@ class BaseDeflate:
         )
 
     def _merge_components(self, df: pd.DataFrame, other: pd.DataFrame):
+        """Combine data components, merging deflator and exchange rate information.
+
+        Args:
+            df (pd.DataFrame): Main DataFrame for merging.
+            other (pd.DataFrame): Additional data to merge into `df`.
+
+        Returns:
+            pd.DataFrame: Merged DataFrame without duplicate columns.
+        """
         merged = df.merge(other, how="outer", on=self._idx, suffixes=("", "_ex"))
         return merged.drop(columns=merged.filter(regex=f"_ex$").columns, axis=1)
 
@@ -95,59 +307,33 @@ class BaseDeflate:
         year_column: str,
         year_format: str = "%Y",
     ) -> None:
-        """Merge pydeflate's data to the input data based on year and entity.
+        """Merge pydeflate deflator data into the input data by year and entity.
 
         Args:
-            data (pd.DataFrame): The input DataFrame
-            entity_column (str): The column name containing the entity or country codes.
-            year_column (str): The column name containing the year information.
-            year_format (str, optional): The format of the year (default is '%Y').
-
-
-        Returns:
-            pd.DataFrame: DataFrame with pydeflate data merged to the input data.
-
+            data (pd.DataFrame): Input DataFrame to merge with pydeflate data.
+            entity_column (str): Column for entity or country identifiers.
+            year_column (str): Column for year information.
+            year_format (str, optional): Format of the year. Defaults to '%Y'.
         """
 
         # Convert the year to an integer
-        data["pydeflate_year"] = pd.to_datetime(
-            data[year_column], format=year_format
-        ).dt.year
+        data = create_pydeflate_year(
+            data=data, year_column=year_column, year_format=year_format
+        )
 
         # Merge data to the input data based on year and entity
-        merged_data = data.merge(
-            self.pydeflate_data,
-            how="outer",
-            left_on=["pydeflate_year", entity_column],
-            right_on=self._idx,
-            suffixes=("", "_pydeflate"),
-            indicator=True,
-        ).pipe(enforce_pyarrow_types)
-
-        self._unmatched_data = merged_data.loc[
-            merged_data["_merge"] == "left_only"
-        ].filter(regex="^(?!pydeflate_)(?!.*_pydeflate$)")
-
-        self._merged_data = (
-            merged_data.loc[merged_data["_merge"] != "right_only"]
-            .drop(columns="_merge")
-            .reset_index(drop=True)
+        merged_data = merge_user_and_pydeflate_data(
+            data=data,
+            pydeflate_data=self.pydeflate_data,
+            entity_column=entity_column,
+            ix=self._idx,
         )
 
-    def _flag_missing_pydeflate_data(self):
-        """Flag data which is present in the input data but missing in pydeflate's data."""
-        if self._unmatched_data.empty:
-            return
+        # store unmatched data
+        self._unmatched_data = get_unmatched_pydeflate_data(merged_data=merged_data)
 
-        missing = (
-            self._unmatched_data.drop_duplicates()
-            .dropna(axis=1)
-            .drop(columns="_merge")
-            .to_string(index=False)
-        )
-
-        # log all missing data
-        logger.info(f"Missing deflator data for:\n {missing}")
+        # store matched data
+        self._merged_data = get_matched_pydeflate_data(merged_data=merged_data)
 
     def deflate(
         self,
@@ -158,59 +344,25 @@ class BaseDeflate:
         target_value_column: str | None = None,
         year_format: str = "%Y",
     ):
-        # Make a copy of the input data to avoid modifying the original data
-        data = data.copy(deep=True)
+        """Apply deflation adjustment to input data using pydeflate deflator rates.
 
-        if not target_value_column:
-            target_value_column = value_column
+        Args:
+            data (pd.DataFrame): Data for deflation adjustment.
+            entity_column (str): Column with entity identifiers.
+            year_column (str): Column with year information.
+            value_column (str): Column with values to deflate.
+            target_value_column (str | None, optional): Column to store deflated values. Defaults to `value_column`.
+            year_format (str, optional): Format of the year. Defaults to "%Y".
 
-        # Keep track of original columns to return data in the same order.
-        if target_value_column not in data.columns:
-            cols = [*data.columns, target_value_column]
-        else:
-            cols = df.columns
-
-        # Merge pydeflate data to the input data
-        self._merge_pydeflate_data(
+        Returns:
+            pd.DataFrame: DataFrame with deflated values.
+        """
+        return _base_operation(
+            base_obj=self,
             data=data,
             entity_column=entity_column,
             year_column=year_column,
+            value_column=value_column,
+            target_value_column=target_value_column,
             year_format=year_format,
         )
-
-        # Flag missing data
-        self._flag_missing_pydeflate_data()
-
-        # Calculate deflated values
-        self._merged_data[target_value_column] = (
-            self._merged_data[value_column] / self._merged_data["pydeflate_deflator"]
-        ).round(6)
-
-        return self._merged_data[cols]
-
-
-if __name__ == "__main__":
-    ds = DAC()
-
-    base_deflate = BaseDeflate(
-        deflator_source=ds,
-        exchange_source=ds,
-        base_year=2023,
-        price_kind="NGDP_D",
-        source_currency="LCU",
-        target_currency="FRA",
-        use_source_codes=False,
-        to_current=False,
-    )
-
-    df = pd.DataFrame(
-        {
-            "year": [2022, 2023],
-            "entity_code": ["FRA", "FRA"],
-            "value": [15228, 14266],
-        }
-    )
-
-    df = base_deflate.deflate(
-        data=df, entity_column="entity_code", year_column="year", value_column="value"
-    )
