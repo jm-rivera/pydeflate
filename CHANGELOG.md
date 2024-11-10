@@ -1,5 +1,26 @@
 # Changelog
 
+## 1.4.2 (2024-06-28)
+- Use a later version of oda_reader to deal with a bug found in the new OECD donor 
+ code schema.
+
+## 1.4.1 (2024-05-07)
+- Fixed a bug in reading the exchange data
+
+## 1.4.0 (2024-05-06)
+- Implements a change to the oda_reader package to manage reading the OECD DAC data. There are no changes in terms of usage, but it greatly optimises how data is read. 
+- The above change fixes an error where newly downloaded files were not
+read automatically
+
+## 1.3.13 (2024-04-29)
+- Updated requirements.
+
+## 1.3.12 (2024-03-14)
+* Fixed a bug introduced by changes in the OECD bulk download service.
+
+## 1.3.11 (2024-02-29)
+- Updated requirements.
+
 ## 1.3.9 (2023-12-11)
 - Updated requirements.
 
