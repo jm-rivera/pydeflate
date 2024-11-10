@@ -222,7 +222,7 @@ def compute_exchange_deflator(
 
         # If base value is found and valid, calculate the deflator
         if base_value.size > 0 and pd.notna(base_value[0]):
-            group[f"{exchange}_D"] = round(100 * group[exchange] / base_value[0], 5)
+            group[f"{exchange}_D"] = round(100 * group[exchange] / base_value[0], 6)
 
         return group
 
@@ -231,7 +231,11 @@ def compute_exchange_deflator(
 
     # Apply the deflator computation for each group of 'entity' and 'entity_code'
     return df.groupby(grouper, group_keys=False).apply(
-        _add_deflator, measure=base_year_measure, exchange=exchange, year=year
+        _add_deflator,
+        measure=base_year_measure,
+        exchange=exchange,
+        year=year,
+        include_groups=True,
     )
 
 
