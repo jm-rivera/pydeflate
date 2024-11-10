@@ -197,7 +197,13 @@ df_constant = oecd_dac_deflate(
 
 Pydeflate uses data on price/gdp deflators and exchange rates from various sources. Each source offers different options for deflators and exchange rates.
 
+For all sources, Exchange rates between two non USD currency pairs are derived from
+the LCU to USD exchange rates selected.
+
 ### International Monetary Fund
+The IMF provides estimates where data is not available, including for several
+years into the future. Using these price deflators, combined with the corresponding
+exchange rates, can also allow users to convert data to constant prices for future years.
 
 Deflator Functions:
 - `imf_gdp_deflate`: Uses GDP deflators.
@@ -242,46 +248,6 @@ This package relies on data from the following sources:
 
 This data is provided based on the terms and conditions set by the
 original sources.
-
-For all sources, Exchange rates between two non USD currency pairs are derived from
-the LCU to USD exchange rates selected.
-
-#### International Monetary Fund World Economic Outlook
-
-For price/gdp deflators from the IMF, the following options are available:
-- GDP deflators.
-- Consumer Price Index data.
-- End-of-period Consumer Price Index data (e.g. for December each year).
-
-The IMF provides estimates where data is not available, including for several
-years into the future. Using these price deflators, combined with the corresponding
-exchange rates, allows users to convert data to constant prices for future years.
-
-For exchange rates, the exchange rates used by the World Economic Outlook are derived from the WEOs data on GDP in US Dollars and Local Currency Units.
-
-
-#### World Bank
-
-For price/gdp deflators from the World Bank, the following options are available (`deflator_method`):
-
-
-In terms of price or GDP deflators, pydeflate provides the following
-- `gdp`: in order to use GDP deflators.
-- `gdp_linked`: to use the World Bank's GDP deflator series which
-  has been linked to produce a consistent time series to
-  counteract breaks in series over time due to changes in base
-  years, sources or methodologies.
-- `cpi`: to use Consumer Price Index data
-
-For exchange rates, the following options are available from the World Bank (`exchange_method`):
-- `yearly_average`: as used by the World Bank, based on IMF International Financial Statistics data.
-
-#### OECD Development Assistance Committee
-
-For price/gdp deflators from the OECD DAC, `pydeflate` uses the OECD DAC's own deflator series.
-
-For exchange rates, `pydeflate` uses the exchange rates used and published by the DAC.
-
 
 ## Handling Missing Data
 
