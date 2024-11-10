@@ -259,7 +259,6 @@ class BaseDeflate:
         target_currency = resolve_common_currencies(
             target_currency, deflator_source.name
         )
-
         self.exchange_rates = Exchange(
             source=exchange_source,
             source_currency=source_currency,
@@ -319,7 +318,7 @@ class BaseDeflate:
             pd.Series: Series with combined deflator values.
         """
         return (
-            exchange_def / (price_def * exchange_rate)
+            (10_000 * exchange_rate) / (price_def * exchange_def)
             if self.to_current
             else (price_def * exchange_def) / (10_000 * exchange_rate)
         )
