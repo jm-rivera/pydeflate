@@ -1,5 +1,17 @@
 # Changelog
 
+## v2.0.0 (2024-11-10)
+
+🚀 Major Release
+- New Function Names and API Structure:
+  - Introduced source-specific deflator functions (e.g., imf_gdp_deflate, wb_gdp_deflate, oecd_dac_deflate). 
+  - Added source-specific exchange functions for currency conversion (e.g., imf_exchange, oecd_dac_exchange).
+- Deprecated deflate function; users are encouraged to transition to new deflator functions. 
+- Improved Setup and Data Requirements:
+  - Streamlined DataFrame requirements: id_column, year_column, and value_column now required explicitly. 
+  - Added use_source_codes parameter to allow for DAC, IMF, and other source-specific country codes.
+- And much more. Please see the release documentation or the readme for more details.
+
 ## 1.4.2 (2024-06-28)
 - Use a later version of oda_reader to deal with a bug found in the new OECD donor 
  code schema.
