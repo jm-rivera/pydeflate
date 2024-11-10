@@ -231,11 +231,7 @@ def compute_exchange_deflator(
 
     # Apply the deflator computation for each group of 'entity' and 'entity_code'
     return df.groupby(grouper, group_keys=False).apply(
-        _add_deflator,
-        measure=base_year_measure,
-        exchange=exchange,
-        year=year,
-        include_groups=True,
+        _add_deflator, measure=base_year_measure, exchange=exchange, year=year
     )
 
 

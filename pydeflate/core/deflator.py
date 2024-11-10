@@ -118,7 +118,7 @@ class Deflator:
         # Rebase the deflator values
         rebased[value_column] = (
             100 * rebased[original_value_column] / rebased["base_year_value"]
-        ).round(5)
+        ).round(6)
 
         # Update the deflator data
         self.deflator_data = rebased.drop(columns=["base_year_value"])

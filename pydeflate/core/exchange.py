@@ -30,10 +30,9 @@ class Exchange:
         # Load and filter the relevant columns from the exchange rate data
         self.exchange_data = self.source.lcu_usd_exchange()
 
-        # If source and target currencies are the same, set the exchange rate to 1
         if self.source_currency == self.target_currency:
+            self.exchange_data = self.exchange_rate("LCU", self.target_currency)
             self.exchange_data["pydeflate_EXCHANGE"] = 1
-            self.exchange_data["pydeflate_EXCHANGE_D"] = 1
         else:
             self.exchange_data = self.exchange_rate(
                 self.source_currency, self.target_currency
