@@ -65,7 +65,11 @@ def _pivot_amount_type(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def _compute_exchange(df: pd.DataFrame) -> pd.DataFrame:
-    df["EXCHANGE"] = round(df["N"] / df["A"], 5).fillna(1)
+    # The values for certain providers should be 1
+    df.loc[lambda d: d.donor_code >= 20000, "N"] = df.loc[
+        lambda d: d.donor_code >= 20000, "A"
+    ]
+    df["EXCHANGE"] = round(df["N"] / df["A"], 6).fillna(1)
     return df
 
 
