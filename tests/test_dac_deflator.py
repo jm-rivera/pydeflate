@@ -1,3 +1,6 @@
+from pydeflate import oecd_dac_deflate
+
+
 def get_test_data():
     from oda_reader import download_dac1
 
@@ -16,10 +19,10 @@ def get_test_data():
     return data
 
 
-def test_to_constant(tolerance=0.01):
-    from pydeflate import oecd_dac_deflate
+df = get_test_data()
 
-    df = get_test_data()
+
+def test_to_constant(tolerance=0.01):
 
     # Perform the deflation calculation
     test_df = oecd_dac_deflate(
@@ -50,9 +53,6 @@ def test_to_constant(tolerance=0.01):
 
 
 def test_to_current(tolerance=0.01):
-    from pydeflate import oecd_dac_deflate
-
-    df = get_test_data()
 
     # Perform the adjustment to current currency
     test_df = oecd_dac_deflate(
@@ -68,6 +68,37 @@ def test_to_current(tolerance=0.01):
 
     # Calculate the percentage deviation
     deviations = abs((test_df["value"] - test_df["A"]) / test_df["A"])
+
+    # Filter out rows where A is NaN to avoid unnecessary comparisons
+    mask = test_df["A"].notna() & (deviations >= tolerance)
+    failing_rows = test_df[mask]
+
+    # Focus on donor codes under 20000
+    failing_rows = failing_rows.loc[lambda d: d.donor_code < 20000]
+
+    # Assert that no rows exceed the tolerance
+    assert failing_rows.empty, (
+        f"Deviation exceeded {tolerance*100:.2f}% in the following "
+        f"donors:\n"
+        f"{failing_rows.donor_code.unique()}"
+    )
+
+
+def test_from_lcu(tolerance=0.01):
+
+    # Perform the adjustment to current currency
+    test_df = oecd_dac_deflate(
+        data=df,
+        base_year=2022,
+        source_currency="LCU",
+        target_currency="USA",
+        id_column="donor_code",
+        use_source_codes=True,
+        value_column="N",
+    )
+
+    # Calculate the percentage deviation
+    deviations = abs((test_df["value"] - test_df["D"]) / test_df["D"])
 
     # Filter out rows where A is NaN to avoid unnecessary comparisons
     mask = test_df["A"].notna() & (deviations >= tolerance)
