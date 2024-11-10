@@ -35,20 +35,6 @@ def clean_number(number):
 
     return float(number)
 
-
-def check_year_as_number(df: pd.DataFrame, date_column: str) -> (pd.DataFrame, bool):
-    """Check whether the date column contains an int instead of datetime.
-    This changes the column to datetime and returns a flag"""
-
-    if pd.api.types.is_numeric_dtype(df[date_column]):
-        df[date_column] = pd.to_datetime(df[date_column], format="%Y")
-        year_as_number = True
-    else:
-        year_as_number = False
-
-    return df, year_as_number
-
-
 def create_pydeflate_year(
     data: pd.DataFrame, year_column: str, year_format: str | None = None
 ) -> pd.DataFrame:
