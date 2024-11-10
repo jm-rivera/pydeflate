@@ -16,6 +16,35 @@ When converting to or from constant prices, it takes into account changes in pri
 **pydeflate v2 has recently been released. It includes api changes which break backwards-compatibility**. While a version of the `deflate` function is still available, it is now deprecated and will be removed in future versions. Please use the new deflator functions for improved simplicity, clarity and performance.
 
 
+# Table of Contents
+
+
+- [Installation](#installation)
+
+- [Basic Usage](#basic-usage)
+  - [Setting Up pydeflate](#setting-up-pydeflate)
+  - [DataFrame Requirements](#dataframe-requirements)
+  
+- [Converting Current to Constant Prices](#converting-current-to-constant-prices)
+  - [Example](#example-convert-current-to-constant-prices)
+
+- [Available Deflator Functions](#available-deflator-functions)
+
+- [Currency Conversion](#currency-conversion)
+  - [Example](#example-currency-conversion)
+
+- [Example: Using Source-Specific Codes](#example-using-source-specific-codes)
+
+- [Data Sources and Method Options](#data-sources-and-method-options)
+  - [International Monetary Fund](#international-monetary-fund)
+  - [World Bank](#world-bank)
+  - [OECD Development Assistance Committee](#oecd-development-assistance-committee)
+  - [Sources](#sources)
+
+- [Handling Missing Data](#handling-missing-data)
+
+- [Updating Underlying Data](#updating-underlying-data)
+
 ## Installation
 
 Install pydeflate using pip:
@@ -128,6 +157,42 @@ df_can = oecd_dac_exchange(
 )
 ```
 
+## Example: Using Source-Specific Codes
+
+If your data uses source-specific country codes (e.g., DAC codes), set use_source_codes=True and specify the appropriate id_column.
+
+```python
+from pydeflate import oecd_dac_deflate, set_pydeflate_path
+import pandas as pd
+
+
+# Specify the path where deflator and exchange data will be saved
+set_pydeflate_path("path/to/data/folder")
+
+# Example data with DAC codes
+data = {
+    'dac_code': [302, 4, 4],
+    'year': [2010, 2016, 2018],
+    'value': [100, 100, 100]
+}
+
+df = pd.DataFrame(data)
+
+# Convert using DAC deflators and DAC codes
+df_constant = oecd_dac_deflate(
+    data=df,
+    base_year=2016,
+    source_currency="USA", # Data is in USD
+    target_currency="LCU", # Convert to local currency units
+    id_column="dac_code", # DAC codes
+    use_source_codes=True,  # Use source-specific codes
+    year_column="year", # Can be string, integer or datetime
+    value_column="value", # Column to be converted
+    target_value_column="value_constant" # It could also be the same as value_column
+)
+
+```
+
 ## Data Sources and Method Options
 
 Pydeflate uses data on price/gdp deflators and exchange rates from various sources. Each source offers different options for deflators and exchange rates.
@@ -159,7 +224,7 @@ Exchange Function:
 
 Notes:
 - The linked GDP deflator series counters breaks in series over time due to changes in base years or methodologies.
-- Exchange rates are based on IMF International Financial Statistics data.
+- Exchange rates are based on IMF International Financial Statistics data
 
 ### OECD Development Assistance Committee
 
@@ -169,49 +234,7 @@ Deflator Function:
 Exchange Function:
 - `oecd_dac_exchange`: Uses exchange rates used and published by the DAC.
 
-
-Using Source-Specific Codes
-
-If your data uses source-specific country codes (e.g., DAC codes), set use_source_codes=True and specify the appropriate id_column.
-
-```python
-from pydeflate.deflate.deflators import oecd_dac_deflate
-import pandas as pd
-
-# Example data with DAC codes
-data = {
-    'dac_code': [302, 4, 4],
-    'year': [2010, 2016, 2018],
-    'value': [100, 100, 100]
-}
-
-df = pd.DataFrame(data)
-
-# Convert using DAC deflators and DAC codes
-df_constant = oecd_dac_deflate(
-    data=df,
-    base_year=2016,
-    source_currency="USA",
-    target_currency="LCU",
-    id_column="dac_code",
-    use_source_codes=True,  # Use source-specific codes
-    year_column="year",
-    value_column="value",
-    target_value_column="value_constant"
-)
-
-```
-
-## Handling Missing Data
-
-Pydeflate relies on data from external sources. If there are missing values in the deflator or exchange rate data for certain countries or years, pydeflate will flag this in the output DataFrame. Ensure that your data aligns with the available data from the selected source.
-
-## Updating Underlying Data
-
-Pydeflate periodically updates its underlying data from the World Bank, IMF, and OECD. If the data on your system is older than 50 days, pydeflate will display a warning upon import.
-
-
-## Sources
+### Sources
 This package relies on data from the following sources:
 - OECD DAC: https://www.oecd.org/dac/
 - IMF World Economic Outlook: https://www.imf.org/en/Publications/WEO
@@ -223,7 +246,7 @@ original sources.
 For all sources, Exchange rates between two non USD currency pairs are derived from
 the LCU to USD exchange rates selected.
 
-### International Monetary Fund World Economic Outlook
+#### International Monetary Fund World Economic Outlook
 
 For price/gdp deflators from the IMF, the following options are available:
 - GDP deflators.
@@ -237,7 +260,7 @@ exchange rates, allows users to convert data to constant prices for future years
 For exchange rates, the exchange rates used by the World Economic Outlook are derived from the WEOs data on GDP in US Dollars and Local Currency Units.
 
 
-### World Bank
+#### World Bank
 
 For price/gdp deflators from the World Bank, the following options are available (`deflator_method`):
 
@@ -253,8 +276,19 @@ In terms of price or GDP deflators, pydeflate provides the following
 For exchange rates, the following options are available from the World Bank (`exchange_method`):
 - `yearly_average`: as used by the World Bank, based on IMF International Financial Statistics data.
 
-### OECD Development Assistance Committee
+#### OECD Development Assistance Committee
 
 For price/gdp deflators from the OECD DAC, `pydeflate` uses the OECD DAC's own deflator series.
 
 For exchange rates, `pydeflate` uses the exchange rates used and published by the DAC.
+
+
+## Handling Missing Data
+
+Pydeflate relies on data from external sources. If there are missing values in the deflator or exchange rate data for certain countries or years, pydeflate will flag this in the output DataFrame. Ensure that your data aligns with the available data from the selected source.
+
+## Updating Underlying Data
+
+Pydeflate periodically updates its underlying data from the World Bank, IMF, and OECD. If the data on your system is older than 50 days, pydeflate will display a warning upon import.
+
+
