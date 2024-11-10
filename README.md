@@ -1,187 +1,243 @@
 # pydeflate
 
 [![pypi](https://img.shields.io/pypi/v/pydeflate.svg)](https://pypi.python.org/pypi/pydeflate)
-[![Documentation Status](https://readthedocs.org/projects/pydeflate/badge/?version=latest)](https://pydeflate.readthedocs.io/en/latest/?version=latest)
 [![black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Downloads](https://pepy.tech/badge/pydeflate/month)](https://pepy.tech/project/pydeflate)
-[![Coverage](https://codecov.io/gh/jm-rivera/pydeflate/branch/main/graph/badge.svg?token=uwKI5DyO3w)](https://codecov.io/gh/jm-rivera/pydeflate)
 
-**pydeflate** is a Python package to convert flows data to constant
-prices. This can be done from any source currency to any desired base
-year and currency. **Pydeflate** can also be used to convert constant
-data to current prices and to convert from one currency to another (in
-current and constant prices). Users can choose the source of the
-exchange and deflator/prices data (currently, IMF, World Bank or OECD
-DAC).
+**pydeflate** is a Python package to:
+- Convert current price data to constant prices.
+- Convert constant price data to current prices.
+- Convert data from one currency to another (in both current and constant prices).
 
-## Getting started
+When converting to or from constant prices, it takes into account changes in prices and exchange rates over time. This allows for accurate comparisons across years, countries, and currencies.
 
-### Installation
+## Important Note
 
-pydeflate can be installed from PyPI. From the command line:
+**pydeflate v2 has recently been released. It includes api changes which break backwards-compatibility**. While a version of the `deflate` function is still available, it is now deprecated and will be removed in future versions. Please use the new deflator functions for improved simplicity, clarity and performance.
+
+
+## Installation
+
+Install pydeflate using pip:
 
 ```bash
-
-pip install pydeflate
-
+pip install pydeflate --upgrade
 ```
 
-## Basic usage
+## Basic Usage
 
-### Current to constant
+### Setting Up pydeflate
 
-Convert data expressed in current USD prices to constant EUR prices for
-a given base year:
+Before using pydeflate, you must specify where the deflator and exchange data should be saved. This only needs to be done once per script or notebook.
 
 ```python
-from pydeflate import deflate, set_pydeflate_path
+from pydeflate import set_pydeflate_path
+
+# Specify the path where deflator and exchange data will be saved
+set_pydeflate_path("path/to/data/folder")
+```
+
+### DataFrame requirements
+You need to provide a pandas DataFrame in order to convert data with `pydeflate`. The DataFrame must have at least the following columns:
+- **An `id_column`**: you must specify its name using the `id_column` parameter. By default, it expects `ISO3` country codes. Previous versions of pydeflate used to convert data automatically, but that could inadvertently introduce errors by mis-identifying countries. You can use tools like `bblocks`, `hdx-python-country` or `country-converter` to help you add `ISO3` codes to your data. If you're working with data from the same source as the one you're using in `pydeflate`, you can also set `use_source_codes=True`. That allows you to use the same encoding as the source data (e.g., DAC codes, IMF entity codes).
+- **A `year_column`**: which can be a string, integer, or datetime. This is needed in order to match the data to the right deflator or exchange rate. By default, pydeflate assumes that the year column is named `year`. You can change this by setting the `year_column` parameter. If the optional parameter `year_format` is not set, pydeflate will try to infer the format of the year column. You can also provide a `year_format` as a string, to specify the format of your data's year column.
+- **A `value_column`**: which contains the data to be converted. By default, pydeflate assumes that the value column is named `value`. You can change this by setting the `value_column` parameter. The type of the value column must be numeric (int, float).
+
+## Converting Current to Constant Prices
+
+Pydeflate includes multiple sources and methods to deflate data. They all work in a very similar way. For this example, we will use the IMF GDP deflator and exchange rates data.
+
+### Example: Convert Current to Constant Prices
+In this example, we first import the `imf_gdp_deflate` function and create a sample DataFrame. We then convert the data to constant 2015 EUR prices using the IMF GDP deflators and exchange rates.
+
+Note that both the `source_currency` and the `target_currency` are specified using the ISO3 country codes of the country whose currency is being used. Note that either can also be specified as `LCU` which stands for 'local currency units', or the local currency for each individual country, instead applying a single currency to all values. For convenience `pydeflate` also accepts the currency codes of certain countries (like `USD` in place of `USA`, `EUR` in place of any country that uses the euro, `GBP` in place of `GBR`, etc).
+
+If the required data to perform the conversion is not available, pydeflate will download it from the source and save it in the specified data folder. If the stored data is older than 50 days, `pydeflate` will inform you and encourage you to set the `update_data` parameter to `True`.
+
+```python
+from pydeflate import imf_gdp_deflate, set_pydeflate_path
 import pandas as pd
 
-# Specify where the deflator and exchange data should be saved
+# Specify the path where deflator and exchange data will be saved
 set_pydeflate_path("path/to/data/folder")
 
-# example data
+# Example data in current USD prices
 data = {
     'iso_code': ['FRA', 'USA', 'GTM'],
     'year': [2017, 2017, 2017],
     'value': [50, 100, 200]
 }
 
-# create an example dataframe, in current USD prices
-df = pd.DataFrame.from_dict(data)
+df = pd.DataFrame(data)
 
-# convert to EUR 2015 constant prices
-df_constant = deflate(
-    df=df,
+# Convert to constant EUR prices (base year 2015)
+df_constant = imf_gdp_deflate(
+    data=df,
     base_year=2015,
-    deflator_source='world_bank',
-    deflator_method='gdp',
-    exchange_source="world_bank",
-    source_currency="USA",  # since data is in USD
-    target_currency="EMU",  # we want the result in constant EUR
-    id_column="iso_code",
-    id_type="ISO3",  # specifying this is optional in most cases
-    date_column="year",
-    source_column="value", # where the original data is
-    target_col="value_constant", # where the new data will be stored
+    source_currency="USA",  # Data is in USD
+    target_currency="FRA",  # Convert to Euro
+    id_column="iso_code", # must be ISO3 code
+    year_column="year", # Can be string, integer or datetime
+    value_column="value", # Column to be converted
+    target_value_column="value_constant" # It could also be the same as value_column
 )
 ```
 
-This results in a dataframe containing a new column `value_constant` in
-2015 constant prices. In the background, pydeflate takes into account:
+### Available Deflator Functions
 
-- changes in princes, through a gdp deflator in this case
-- changes in exchange rates overtime
+- `imf_gdp_deflate`: Uses GDP deflators and exchange rates from the IMF World Economic Outlook.
+- `imf_cpi_deflate`: Uses Consumer Price Index and exchange rates data from the IMF World Economic Outlook.
+- `imf_cpi_e_deflate`: Uses end-of-period Consumer Price Index and exchange rates data from the IMF World Economic Outlook.
+- `wb_gdp_deflate`: Uses GDP deflators and exchange rates from the World Bank.
+- `wb_gdp_linked_deflate`: Uses the World Bank’s linked GDP deflator and exchange rates data.
+- `wb_cpi_deflate`: Uses Consumer Price Index and exchange rate data from the World Bank.
+- `oecd_dac_deflate`: Uses the OECD DAC deflator series (prices and exchange rates).
 
-### Current Local Currency Units to constant in a different currency
-Pydeflate can also handle data that is expressed in local currency
-units. In that case, users can specify `LCU` as the source currency.
+
+
+## Currency Conversion
+Pydeflate includes multiple sources for currency exchange. They all work in a very similar way, using yearly exchange rates. For this example, we will use the OECD DAC exchange rates.
+
+### Example: Currency Conversion
 
 ```python
-from pydeflate import deflate, set_pydeflate_path
+from pydeflate import oecd_dac_exchange, set_pydeflate_path
 import pandas as pd
 
-# Specify where the deflator and exchange data should be saved
+# Specify the path where deflator and exchange data will be saved
 set_pydeflate_path("path/to/data/folder")
 
-# example data
+# Example data in current local currency units
 data = {
-    'country': ['United Kingdom', 'United Kingdom', 'Japan'],
-    'date': [2011, 2015, 2015],
+    'iso_code': ['GBR', 'CAN', 'JPN'],
+    'year': [2011, 2015, 2015],
     'value': [100, 100, 100]
 }
 
-# create an example dataframe, in current local currency units
-df = pd.DataFrame.from_dict(data)
+df = pd.DataFrame(data)
 
-# convert to USD 2018 constant prices
-df_constant = deflate(
-    df=df,
-    base_year=2018,
-    deflator_source='imf',
-    deflator_method='pcpi',
-    exchange_source="imf",
-    source_currency="LCU",  # since data is in LCU
-    target_currency="USA",  # to get data in USD
-    id_column="iso_code",
-    date_column="date",
-    source_col="value",
-    target_col="value",  # to not create a new column
+# Convert from local currency (e.g GBP, CAD, JPY in this case) to Canadian Dollars
+df_can = oecd_dac_exchange(
+    data=df,
+    source_currency="LCU", # Local currency units
+    target_currency="CAN", # Convert to Canadian Dollars (can also use 'CAD')
+    id_column="iso_code", # must be ISO3 code
+    year_column="year", # Can be string, integer or datetime
+    value_column="value", # Column to be converted
+    target_value_column="value_can" # It could also be the same as value_column
 )
-
 ```
 
-### Constant to current
-Users can also convert a dataset expressed in constant prices to current
-prices using pydeflate. To avoid introducing errors, users should know
-which methodology/ data was used to create constant prices by the
-original source. The basic usage is the same as before, but the
-`to_current` parameter is set to `True`.
+## Data Sources and Method Options
 
-For example, to convert DAC data expressed in 2016 USD constant prices
-to current US dollars:
+Pydeflate uses data on price/gdp deflators and exchange rates from various sources. Each source offers different options for deflators and exchange rates.
+
+### International Monetary Fund
+
+Deflator Functions:
+- `imf_gdp_deflate`: Uses GDP deflators.
+- `imf_cpi_deflate`: Uses Consumer Price Index data.
+- `imf_cpi_e_deflate`: Uses end-of-period Consumer Price Index data.
+
+
+Exchange Function:
+- `imf_exchange`: Uses exchange rates derived from the IMF’s data.
+
+Notes:
+- IMF data includes estimates for future years, allowing conversion to constant prices for future dates.
+- Exchange rates are derived from the IMF’s implied rates.
+
+### World Bank
+
+Deflator Functions:
+- `wb_gdp_deflate`: Uses GDP deflators.
+- `wb_gdp_linked_deflate`: Uses the World Bank’s linked GDP deflator series.
+- `wb_cpi_deflate`: Uses Consumer Price Index data.
+
+Exchange Function:
+- `wb_exchange`: Uses yearly average exchange rates.
+
+Notes:
+- The linked GDP deflator series counters breaks in series over time due to changes in base years or methodologies.
+- Exchange rates are based on IMF International Financial Statistics data.
+
+### OECD Development Assistance Committee
+
+Deflator Function:
+- `oecd_dac_deflate`: Uses the DAC’s own deflator series.
+
+Exchange Function:
+- `oecd_dac_exchange`: Uses exchange rates used and published by the DAC.
+
+
+Using Source-Specific Codes
+
+If your data uses source-specific country codes (e.g., DAC codes), set use_source_codes=True and specify the appropriate id_column.
 
 ```python
-from pydeflate import deflate, set_pydeflate_path
+from pydeflate.deflate.deflators import oecd_dac_deflate
 import pandas as pd
 
-# Specify where the deflator and exchange data should be saved
-set_pydeflate_path("path/to/data/folder")
-
-# example data
+# Example data with DAC codes
 data = {
     'dac_code': [302, 4, 4],
-    'date': [2010, 2016, 2018],
+    'year': [2010, 2016, 2018],
     'value': [100, 100, 100]
 }
 
-# create an example dataframe, in current local currency units
-df = pd.DataFrame.from_dict(data)
+df = pd.DataFrame(data)
 
-# convert to USD 2018 constant prices
-df_current = deflate(
-    df=df,
+# Convert using DAC deflators and DAC codes
+df_constant = oecd_dac_deflate(
+    data=df,
     base_year=2016,
-    deflator_source='oecd_dac',
-    deflator_method='dac_deflator',
-    exchange_source="oecd_dac",
-    source_currency="USA",  # since data is in USD constant
-    target_currency="LCU",  # to get the current LCU figures
+    source_currency="USA",
+    target_currency="LCU",
     id_column="dac_code",
-    id_type="DAC",
-    date_column="date",
-    source_column="value",
-    target_column="value_current",
-    to_current=True,
+    use_source_codes=True,  # Use source-specific codes
+    year_column="year",
+    value_column="value",
+    target_value_column="value_constant"
 )
+
 ```
 
-## Data source and method options
+## Handling Missing Data
 
-In order to convert the data, pydeflate uses data on **price/gdp deflators** and
-**exchange rates**. Each of these data sources can come from the `OECD DAC`,
-`IMF (WEO)` or `World Bank`.
+Pydeflate relies on data from external sources. If there are missing values in the deflator or exchange rate data for certain countries or years, pydeflate will flag this in the output DataFrame. Ensure that your data aligns with the available data from the selected source.
+
+## Updating Underlying Data
+
+Pydeflate periodically updates its underlying data from the World Bank, IMF, and OECD. If the data on your system is older than 50 days, pydeflate will display a warning upon import.
+
+
+## Sources
+This package relies on data from the following sources:
+- OECD DAC: https://www.oecd.org/dac/
+- IMF World Economic Outlook: https://www.imf.org/en/Publications/WEO
+- World Bank DataBank: https://databank.worldbank.org/home.aspx
+
+This data is provided based on the terms and conditions set by the
+original sources.
 
 For all sources, Exchange rates between two non USD currency pairs are derived from
 the LCU to USD exchange rates selected.
 
-### International Monetary Fund World Economic Outlook ("imf")
+### International Monetary Fund World Economic Outlook
 
-For price/gdp deflators from the IMF, the following options are available (`deflator_method`):
-- `gdp`: in order to use GDP deflators.
-- `pcpi`: in order to use Consumer Price Index data.
-- `pcpie`: to use end-of-period Consumer Price Index data
-  (e.g. for December each year).
+For price/gdp deflators from the IMF, the following options are available:
+- GDP deflators.
+- Consumer Price Index data.
+- End-of-period Consumer Price Index data (e.g. for December each year).
 
 The IMF provides estimates where data is not available, including for several
 years into the future. Using these price deflators, combined with the corresponding
 exchange rates, allows users to convert data to constant prices for future years.
 
-For exchange rates, the following options are available from the imf (`exchange_method`):
-- `implied`: to use the exchange rates used by the World Economic Outlook, derived from
-    the WEOs data on GDP in US Dollars and Local Currency Units.
+For exchange rates, the exchange rates used by the World Economic Outlook are derived from the WEOs data on GDP in US Dollars and Local Currency Units.
 
-### World Bank ("world_bank")
+
+### World Bank
 
 For price/gdp deflators from the World Bank, the following options are available (`deflator_method`):
 
@@ -197,82 +253,8 @@ In terms of price or GDP deflators, pydeflate provides the following
 For exchange rates, the following options are available from the World Bank (`exchange_method`):
 - `yearly_average`: as used by the World Bank, based on IMF International Financial Statistics data.
 
+### OECD Development Assistance Committee
 
-### OECD Development Assistance Committee ("oecd_dac")
+For price/gdp deflators from the OECD DAC, `pydeflate` uses the OECD DAC's own deflator series.
 
-For price/gdp deflators from the OECD DAC, the following options are available (`deflator_method`):
-
-In terms of price or GDP deflators, pydeflate provides the following:
-- `dac_deflator`: in order to use the DAC's own deflator series.
-
-For exchange rates, the following options are available from the OECD DAC (`exchange_method`):
-- `implied`: to use the exchange rates used and published by the DAC.
-
-
-
-## Additional features
-
-Pydeflate relies on data from the World Bank, IMF and OECD for its
-calculations. This data is updated periodically. If the version of the
-data stored in the user's computer is older than 50 days, pydeflate will
-show a warning on import.
-
-Users can always update the underlying data by using:
-
-```python
-import pydeflate
-
-pydeflate.update_all_data()
-
-```
-
-Pydeflate also provides users with a tool to exchange figures from one
-currency to another, without applying any deflators. This should only be
-used on numbers expressed in current prices, however.
-
-For example, to convert numbers in current Local Currency Units (LCU) to
-current Canadian Dollars:
-
-```python
-import pydeflate
-import pandas as pd
-
-# example data
-data = {
-    'iso_code': ['GBR', 'CAN', 'JPN'],
-    'date': [2011, 2015, 2015],
-    'value': [100, 100, 100]
-}
-
-# create an example dataframe, in current local currency units
-df = pd.DataFrame.from_dict(data)
-
-# convert to USD 2018 constant prices
-df_can = pydeflate.exchange(
-    df=df,
-    source_currency="LCU",  # since data is in LCU
-    target_currency="CAN",  # to get data in Canadian Dollars
-    rates_source='imf', 
-    value_column='value',
-    target_column='value_CAN',
-    id_column="iso_code",
-    id_type="ISO3",
-    date_column="date",
-)
-
-```
-
-### Credits
-
-This package relies on data from the following sources:
-
-- OECD DAC: <https://www.oecd.org/dac/> (Official Development
-  assistance data (DAC1), DAC deflators, and exchange rates used by
-  the DAC)
-- IMF World Economic Outlook:
-  <https://www.imf.org/en/Publications/WEO> (GDP and price deflators)
-- World Bank DataBank: <https://databank.worldbank.org/home.aspx>
-  (exchange rates, GDP and price deflators)
-
-This data is provided based on the terms and conditions set by the
-original sources.
+For exchange rates, `pydeflate` uses the exchange rates used and published by the DAC.

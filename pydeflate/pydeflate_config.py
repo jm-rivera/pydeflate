@@ -1,5 +1,5 @@
-from pathlib import Path
 import logging
+from pathlib import Path
 
 
 class PYDEFLATE_PATHS:
@@ -11,24 +11,33 @@ class PYDEFLATE_PATHS:
     test_data = package / "tests" / "test_files"
 
 
-# Create a root logger
-logger = logging.getLogger(__name__)
+def setup_logger(name) -> logging.Logger:
+    """Set up the logger.
 
-# Create two handlers (terminal and file)
-shell_handler = logging.StreamHandler()
+    Args:
+        name (str): The name of the logger.
 
-# Set levels for the logger, shell and file
-logger.setLevel(logging.DEBUG)
-shell_handler.setLevel(logging.DEBUG)
+    Returns:
+        logging.Logger: The logger.
 
-# Format the outputs
-fmt_shell = "%(levelname)s [%(filename)s: %(funcName)s:] %(message)s"
+    """
+    logger_ = logging.getLogger(name)
+    logger_.setLevel(logging.INFO)
 
-# Create formatters
-shell_formatter = logging.Formatter(fmt_shell)
+    # Only add handlers if the logger has none to avoid duplication
+    if not logger_.hasHandlers():
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.INFO)
 
-# Add formatters to handlers
-shell_handler.setFormatter(shell_formatter)
+        formatter = logging.Formatter(
+            "%(asctime)s - %(name)s - %(levelname)s:\n %(message)s"
+        )
+        console_handler.setFormatter(formatter)
 
-# Add handlers to the logger
-logger.addHandler(shell_handler)
+        logger_.addHandler(console_handler)
+        logger_.propagate = False
+
+    return logger_
+
+
+logger = setup_logger("pydeflate")
