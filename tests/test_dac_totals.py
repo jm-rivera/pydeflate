@@ -62,6 +62,18 @@ data_lcu = {
 }
 df_lcu = pd.DataFrame(data_lcu)
 
+usd_to = {
+    "year": [2020, 2021, 2022, 2023],
+    "indicator": ["total_oda_official_definition"] * 4,
+    "donor_code": [5] * 4,
+    "currency": ["USD"] * 4,
+    "prices": ["current"] * 4,
+    "value": [28707.88, 33272.39, 35640.06, 36682.34],
+    "expected_value": [25264, 27392, 31341, 29511],
+}
+
+df_usd_to_gbp = pd.DataFrame(usd_to)
+
 
 def run_constant_test(
     data,
@@ -143,4 +155,10 @@ def test_to_constant_can():
 def test_to_constant_lcu():
     run_constant_test(
         data=df_lcu, source_currency="EUR", target_currency="LCU", tolerance=0.05
+    )
+
+
+def test_to_constant_gbp():
+    run_constant_test(
+        data=df_usd_to_gbp, source_currency="USD", target_currency="GBP", tolerance=0.05
     )
