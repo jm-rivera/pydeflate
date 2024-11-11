@@ -207,6 +207,13 @@ def compute_exchange_deflator(
         exchange: str = "EXCHANGE",
         year: str = "year",
     ) -> pd.DataFrame:
+
+        # if needed, clean exchange name
+        if exchange.endswith("_to") or exchange.endswith("_from"):
+            exchange_name = exchange.rsplit("_", 1)[0]
+        else:
+            exchange_name = exchange
+
         # Identify the base year for the deflator
         if measure is not None:
             base_year = identify_base_year(group, measure=measure, year=year)
@@ -222,7 +229,9 @@ def compute_exchange_deflator(
 
         # If base value is found and valid, calculate the deflator
         if base_value.size > 0 and pd.notna(base_value[0]):
-            group[f"{exchange}_D"] = round(100 * group[exchange] / base_value[0], 6)
+            group[f"{exchange_name}_D"] = round(
+                100 * group[exchange] / base_value[0], 6
+            )
 
         return group
 
