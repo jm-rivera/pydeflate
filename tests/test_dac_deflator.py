@@ -52,6 +52,36 @@ def test_to_constant(tolerance=0.01):
     )
 
 
+def test_to_constant_lcu_USA(tolerance=0.01):
+
+    # Perform the deflation calculation
+    test_df = oecd_dac_deflate(
+        data=df,
+        base_year=2022,
+        source_currency="LCU",
+        target_currency="USA",
+        id_column="donor_code",
+        use_source_codes=True,
+        value_column="N",
+    )
+
+    # Calculate the percentage deviation
+    deviations = abs((test_df["value"] - test_df["D"]) / test_df["D"])
+
+    # Filter out rows where D is NaN to avoid unnecessary comparisons
+    mask = test_df["D"].notna() & (deviations >= tolerance)
+    failing_rows = test_df[mask]
+
+    failing_rows = failing_rows.loc[lambda d: d.donor_code < 20000]
+
+    # Assert that no rows exceed the tolerance
+    assert failing_rows.empty, (
+        f"Deviation exceeded {tolerance*100:.2f}% in the following"
+        f"donors:\n"
+        f"{failing_rows.donor_code.unique()}"
+    )
+
+
 def test_to_current(tolerance=0.01):
 
     # Perform the adjustment to current currency
