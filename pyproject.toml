@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pydeflate"
-version = "2.0.0"
+version = "2.0.1"
 description = "Package to convert current prices figures to constant prices and vice versa"
 authors = ["Jorge Rivera <jorge.rivera@one.org>"]
 license = "MIT"
