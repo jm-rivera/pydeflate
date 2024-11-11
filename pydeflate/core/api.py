@@ -318,9 +318,9 @@ class BaseDeflate:
             pd.Series: Series with combined deflator values.
         """
         return (
-            (10_000 * exchange_rate) / (price_def * exchange_def)
+            (exchange_def * exchange_rate) / price_def
             if self.to_current
-            else (price_def * exchange_def) / (10_000 * exchange_rate)
+            else price_def / (exchange_def * exchange_rate)
         )
 
     def _merge_components(self, df: pd.DataFrame, other: pd.DataFrame):

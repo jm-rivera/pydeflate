@@ -112,16 +112,16 @@ class Exchange:
             pydeflate_EXCHANGE=lambda d: d.pydeflate_EXCHANGE / d.pydeflate_EXCHANGE_to
         )
 
-        # Drop unnecessary columns
-        merged = merged.drop(columns=merged.filter(regex="_to$").columns, axis=1)
-
         # Compute the exchange rate deflator
         merged = compute_exchange_deflator(
             merged,
-            exchange="pydeflate_EXCHANGE",
+            exchange="pydeflate_EXCHANGE_to",
             year="pydeflate_year",
             grouper=["pydeflate_entity_code", "pydeflate_iso3"],
         )
+
+        # Drop unnecessary columns
+        merged = merged.drop(columns=merged.filter(regex="_to$").columns, axis=1)
 
         return merged
 
