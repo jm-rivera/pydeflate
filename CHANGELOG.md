@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.0.2 (2024-16-10)
+Fixes a bug with current USD to non-USD constant figures.
+
 ## v2.0.1 (2024-11-10)
 Fixes a bug with non-USD constant figures.
 
