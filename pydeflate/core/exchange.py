@@ -37,8 +37,6 @@ class Exchange:
             self.exchange_data = self.exchange_rate(
                 self.source_currency, self.target_currency
             )
-            if self.source_currency == "USA":
-                self.exchange_data["pydeflate_EXCHANGE_D"] = 1
 
     def _get_exchange_rate(self, currency):
         """Helper function to fetch exchange rates for a given currency."""

@@ -33,7 +33,7 @@ data_eur = {
     "donor_code": [742] * 4,
     "currency": ["EUR"] * 4,
     "prices": ["current"] * 4,
-    "value": [1974, 2429, 2672, 2986],
+    "value": [1974, 2429, 2672, 2896],
     "expected_value": [1995, 2403, 2619, 2896],
 }
 df_eur = pd.DataFrame(data_eur)
@@ -62,6 +62,30 @@ data_lcu = {
 }
 df_lcu = pd.DataFrame(data_lcu)
 
+data_eui_gbp = {
+    "year": [2020, 2021, 2022, 2023],
+    "indicator": ["total_oda_official_definition"] * 4,
+    "donor_code": [918] * 4,
+    "currency": ["USD"] * 4,
+    "prices": ["current"] * 4,
+    "value": [19568, 19054, 22534, 26926],
+    "expected_value": [16882, 15490, 19693, 21662],
+}
+
+df_eui_gbp = pd.DataFrame(data_eui_gbp)
+
+data_aus_gbp = {
+    "year": [2020, 2021, 2022, 2023],
+    "indicator": ["total_oda_official_definition"] * 4,
+    "donor_code": [801] * 4,
+    "currency": ["USD"] * 4,
+    "prices": ["current"] * 4,
+    "value": [2869, 3546, 3046, 3253],
+    "expected_value": [2629, 2822, 2432, 2617],
+}
+
+df_aus_gbp = pd.DataFrame(data_aus_gbp)
+
 usd_to = {
     "year": [2020, 2021, 2022, 2023],
     "indicator": ["total_oda_official_definition"] * 4,
@@ -73,6 +97,7 @@ usd_to = {
 }
 
 df_usd_to_gbp = pd.DataFrame(usd_to)
+
 
 
 def run_constant_test(
@@ -142,19 +167,31 @@ def test_to_constant_usd():
 
 def test_to_constant_eur():
     run_constant_test(
-        data=df_eur, source_currency="EUR", target_currency="EUR", tolerance=0.05
+        data=df_eur, source_currency="EUR", target_currency="EUR", tolerance=0.02
     )
 
 
 def test_to_constant_can():
     run_constant_test(
-        data=df_can, source_currency="CAN", target_currency="USA", tolerance=0.05
+        data=df_can, source_currency="CAN", target_currency="USA", tolerance=0.02
     )
 
 
 def test_to_constant_lcu():
     run_constant_test(
-        data=df_lcu, source_currency="EUR", target_currency="LCU", tolerance=0.05
+        data=df_lcu, source_currency="EUR", target_currency="LCU", tolerance=0.02
+    )
+
+
+def test_eui_gbp_constant():
+    run_constant_test(
+        data=df_eui_gbp, source_currency="USD", target_currency="GBP", tolerance=0.02
+    )
+
+
+def test_aus_gbp_constant():
+    run_constant_test(
+        data=df_aus_gbp, source_currency="USD", target_currency="GBP", tolerance=0.02
     )
 
 
