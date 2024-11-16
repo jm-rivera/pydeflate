@@ -3,7 +3,7 @@ from functools import wraps
 import pandas as pd
 
 from pydeflate.core.api import BaseExchange
-from pydeflate.core.source import DAC, WorldBank, IMF
+from pydeflate.core.source import DAC, WorldBank, IMF, WorldBankPPP
 
 
 def _generate_docstring(source_name: str) -> str:
@@ -115,6 +115,23 @@ def oecd_dac_exchange(
 
 @_exchange(WorldBank)
 def wb_exchange(
+    data: pd.DataFrame,
+    *,
+    source_currency: str = "USA",
+    target_currency: str = "USA",
+    id_column: str = "iso_code",
+    year_column: str = "year",
+    use_source_codes: bool = False,
+    value_column: str = "value",
+    target_value_column: str = "value",
+    reversed_: bool = False,
+    year_format: str | None = None,
+    update_rates: bool = False,
+) -> pd.DataFrame: ...
+
+
+@_exchange(WorldBankPPP)
+def wb_exchange_ppp(
     data: pd.DataFrame,
     *,
     source_currency: str = "USA",
