@@ -21,6 +21,12 @@ _INDICATORS: dict = {
     "PA.NUS.FCRF": "EXCHANGE",  # Official Exchange Rate
 }
 
+_INDICATORS_PPP: dict = {
+    "NY.GDP.DEFL.ZS": "NGDP_D",  # GDP Deflator (Index)
+    "NY.GDP.DEFL.ZS.AD": "NGDP_DL",  # GDP Deflator linked series
+    "PA.NUS.PPP": "EXCHANGE",  # PPP conversion factor
+}
+
 
 def get_wb_indicator(series: str, value_name: str | None = None) -> pd.DataFrame:
     """Fetch a World Bank indicator and transform it into a cleaned DataFrame.
@@ -126,7 +132,7 @@ def _parallel_download_indicators(indicators: dict) -> list[pd.DataFrame]:
     return dfs
 
 
-def download_wb() -> None:
+def _download_wb(indicators: dict, prefix: str = "wb") -> None:
     """Download multiple World Bank indicators in parallel and save as a parquet file.
 
     This function fetches all indicators defined in _INDICATORS in parallel, concatenates
@@ -134,7 +140,7 @@ def download_wb() -> None:
     """
     logger.info("Downloading the latest World Bank data...")
 
-    indicators_data = _parallel_download_indicators(indicators=_INDICATORS)
+    indicators_data = _parallel_download_indicators(indicators=indicators)
 
     # Concatenate all DataFrames horizontally (by columns)
     df = pd.concat(indicators_data, axis=1).reset_index()
@@ -154,10 +160,20 @@ def download_wb() -> None:
     suffix = today()
 
     # Save the DataFrame as a parquet file
-    output_path = PYDEFLATE_PATHS.data / f"wb_{suffix}.parquet"
+    output_path = PYDEFLATE_PATHS.data / f"{prefix}_{suffix}.parquet"
     df.to_parquet(output_path)
 
-    logger.info(f"Saved World Bank data to wb_{suffix}.parquet")
+    logger.info(f"Saved World Bank data to {prefix}_{suffix}.parquet")
+
+
+def download_wb() -> None:
+    """Download the latest World Bank data."""
+    _download_wb(indicators=_INDICATORS, prefix="wb")
+
+
+def download_wb_ppp() -> None:
+    """Download the latest World Bank data (PPP)."""
+    _download_wb(indicators=_INDICATORS_PPP, prefix="wb_ppp")
 
 
 def _find_wb_files_in_path(path: Path) -> list:
@@ -169,7 +185,19 @@ def _find_wb_files_in_path(path: Path) -> list:
     Returns:
         list: List of WB parquet files found in the directory.
     """
-    return list(path.glob("wb_*.parquet"))
+    return list(path.glob(f"wb_*.parquet"))
+
+
+def _find_wb_ppp_files_in_path(path: Path) -> list:
+    """Find all WB PPP parquet files in the specified directory.
+
+    Args:
+        path (Path): The directory path to search for WB parquet files.
+
+    Returns:
+        list: List of WB parquet files found in the directory.
+    """
+    return list(path.glob(f"wb_ppp_*.parquet"))
 
 
 def read_wb(update: bool = False) -> pd.DataFrame:
@@ -182,5 +210,16 @@ def read_wb(update: bool = False) -> pd.DataFrame:
     )
 
 
+def read_wb_ppp(update: bool = False) -> pd.DataFrame:
+    """Read the latest World Bank data from parquet files or download fresh data."""
+    return read_data(
+        file_finder_func=_find_wb_ppp_files_in_path,
+        download_func=download_wb_ppp,
+        data_name="World Bank",
+        update=update,
+    )
+
+
 if __name__ == "__main__":
-    df = read_wb(True)
+    df = read_wb(False)
+    df_ppp = read_wb_ppp(False)
