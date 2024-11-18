@@ -1,6 +1,7 @@
 from functools import wraps
 
 import pandas as pd
+from frictionless.console.common import source
 
 from pydeflate.core.api import BaseExchange
 from pydeflate.core.source import DAC, WorldBank, IMF, WorldBankPPP
@@ -28,26 +29,33 @@ def _generate_docstring(source_name: str) -> str:
     )
 
 
-def _exchange(exchange_source_cls):
+def _exchange(exchange_source_cls, **fixed_params):
     """Decorator to create exchange wrappers with specific source"""
 
     def decorator(func):
         @wraps(func)
-        def wrapper(
-            data: pd.DataFrame,
-            *,
-            source_currency: str = "USA",
-            target_currency: str = "USA",
-            id_column: str = "iso_code",
-            year_column: str = "year",
-            use_source_codes: bool = False,
-            value_column: str = "value",
-            target_value_column: str = "value",
-            reversed_: bool = False,
-            year_format: str | None = None,
-            update_rates: bool = False,
-        ):
+        def wrapper(data: pd.DataFrame, **kwargs):
             # Validate input parameters
+            for param in fixed_params:
+                if param in kwargs:
+                    raise ValueError(
+                        f"The parameter '{param}' cannot be passed to this function."
+                    )
+            # set fixed parameters
+            kwargs.update(fixed_params)
+
+            # Unpack the parameters
+            source_currency = kwargs.get("source_currency", "USA")
+            target_currency = kwargs.get("target_currency", "USA")
+            id_column = kwargs.get("id_column", "iso_code")
+            year_column = kwargs.get("year_column", "year")
+            use_source_codes = kwargs.get("use_source_codes", False)
+            value_column = kwargs.get("value_column", "value")
+            target_value_column = kwargs.get("target_value_column", "value")
+            reversed_ = kwargs.get("reversed_", False)
+            year_format = kwargs.get("year_format", None)
+            update_rates = kwargs.get("update_rates", False)
+
             if not isinstance(data, pd.DataFrame):
                 raise ValueError("The 'data' parameter must be a pandas DataFrame.")
 
@@ -68,7 +76,14 @@ def _exchange(exchange_source_cls):
             to_exchange = data.copy()
 
             # Initialize the deflator source
-            source = exchange_source_cls(update=update_rates)
+            if exchange_source_cls.__name__ == "WorldBankPPP":
+                source = exchange_source_cls(
+                    update=update_rates,
+                    from_lcu=False if source_currency == "USA" else True,
+                )
+                source_currency = "LCU" if source_currency == "USA" else source_currency
+            else:
+                source = exchange_source_cls(update=update_rates)
 
             # Create a deflator object
             exchange = BaseExchange(
@@ -130,12 +145,11 @@ def wb_exchange(
 ) -> pd.DataFrame: ...
 
 
-@_exchange(WorldBankPPP)
+@_exchange(WorldBankPPP, target_currency="PPP")
 def wb_exchange_ppp(
     data: pd.DataFrame,
     *,
     source_currency: str = "USA",
-    target_currency: str = "USA",
     id_column: str = "iso_code",
     year_column: str = "year",
     use_source_codes: bool = False,
