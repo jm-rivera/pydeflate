@@ -12,7 +12,12 @@ from pydeflate.deflate.deflators import (
 )
 
 from pydeflate.deflate.legacy_deflate import deflate
-from pydeflate.exchange.exchangers import oecd_dac_exchange, wb_exchange, imf_exchange
+from pydeflate.exchange.exchangers import (
+    oecd_dac_exchange,
+    wb_exchange,
+    wb_exchange_ppp,
+    imf_exchange,
+)
 from pydeflate.pydeflate_config import setup_logger
 
 
