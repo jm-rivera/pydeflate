@@ -21,6 +21,18 @@ _INDICATORS: dict = {
     "PA.NUS.FCRF": "EXCHANGE",  # Official Exchange Rate
 }
 
+_INDICATORS_LCU_PPP: dict = {
+    "NY.GDP.DEFL.ZS": "NGDP_D",  # GDP Deflator (Index)
+    "NY.GDP.DEFL.ZS.AD": "NGDP_DL",  # GDP Deflator linked series
+    "PA.NUS.PPP": "EXCHANGE",  # PPP conversion factor
+}
+
+_INDICATORS_USD_PPP: dict = {
+    "NY.GDP.DEFL.ZS": "NGDP_D",  # GDP Deflator (Index)
+    "NY.GDP.DEFL.ZS.AD": "NGDP_DL",  # GDP Deflator linked series
+    "PA.NUS.PPPC.RF": "EXCHANGE",  # PPP conversion factor to market exchange rate
+}
+
 
 def get_wb_indicator(series: str, value_name: str | None = None) -> pd.DataFrame:
     """Fetch a World Bank indicator and transform it into a cleaned DataFrame.
@@ -126,7 +138,28 @@ def _parallel_download_indicators(indicators: dict) -> list[pd.DataFrame]:
     return dfs
 
 
-def download_wb() -> None:
+def _add_ppp_ppp_exchange(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Add the PPP exchange rate to the DataFrame.
+
+    Args:
+        df: pd.DataFrame: The DataFrame containing the World Bank data.
+
+    Returns:
+        pd.DataFrame: The DataFrame with the PPP exchange rates
+
+    """
+    ppp = df.loc[lambda d: d["entity_code"] == "USA"].copy()
+    ppp[["entity_code", "entity", "pydeflate_iso3"]] = "PPP"
+
+    df = pd.concat([df, ppp], ignore_index=True)
+
+    return df
+
+
+def _download_wb(
+    indicators: dict, prefix: str = "wb", add_ppp_exchange: bool = False
+) -> None:
     """Download multiple World Bank indicators in parallel and save as a parquet file.
 
     This function fetches all indicators defined in _INDICATORS in parallel, concatenates
@@ -134,7 +167,7 @@ def download_wb() -> None:
     """
     logger.info("Downloading the latest World Bank data...")
 
-    indicators_data = _parallel_download_indicators(indicators=_INDICATORS)
+    indicators_data = _parallel_download_indicators(indicators=indicators)
 
     # Concatenate all DataFrames horizontally (by columns)
     df = pd.concat(indicators_data, axis=1).reset_index()
@@ -145,7 +178,13 @@ def download_wb() -> None:
         .pipe(compute_exchange_deflator, base_year_measure="NGDP_D")
         .assign(pydeflate_iso3=lambda d: d.entity_code)
         .sort_values(by=["year", "entity_code"])
-        .pipe(prefix_pydeflate_to_columns)
+    )
+
+    if add_ppp_exchange:
+        df = df.pipe(_add_ppp_ppp_exchange)
+
+    df = (
+        df.pipe(prefix_pydeflate_to_columns)
         .pipe(enforce_pyarrow_types)
         .reset_index(drop=True)
     )
@@ -154,10 +193,29 @@ def download_wb() -> None:
     suffix = today()
 
     # Save the DataFrame as a parquet file
-    output_path = PYDEFLATE_PATHS.data / f"wb_{suffix}.parquet"
+    output_path = PYDEFLATE_PATHS.data / f"{prefix}_{suffix}.parquet"
     df.to_parquet(output_path)
 
-    logger.info(f"Saved World Bank data to wb_{suffix}.parquet")
+    logger.info(f"Saved World Bank data to {prefix}_{suffix}.parquet")
+
+
+def download_wb() -> None:
+    """Download the latest World Bank data."""
+    _download_wb(indicators=_INDICATORS, prefix="wb")
+
+
+def download_wb_lcu_ppp() -> None:
+    """Download the latest World Bank data (PPP)."""
+    _download_wb(
+        indicators=_INDICATORS_LCU_PPP, prefix="wb_lcu_ppp", add_ppp_exchange=True
+    )
+
+
+def download_wb_usd_ppp() -> None:
+    """Download the latest World Bank data (PPP)."""
+    _download_wb(
+        indicators=_INDICATORS_USD_PPP, prefix="wb_usd_ppp", add_ppp_exchange=True
+    )
 
 
 def _find_wb_files_in_path(path: Path) -> list:
@@ -169,7 +227,31 @@ def _find_wb_files_in_path(path: Path) -> list:
     Returns:
         list: List of WB parquet files found in the directory.
     """
-    return list(path.glob("wb_*.parquet"))
+    return list(path.glob(f"wb_*.parquet"))
+
+
+def _find_wb_lcu_ppp_files_in_path(path: Path) -> list:
+    """Find all WB PPP parquet files in the specified directory.
+
+    Args:
+        path (Path): The directory path to search for WB parquet files.
+
+    Returns:
+        list: List of WB parquet files found in the directory.
+    """
+    return list(path.glob(f"wb_lcu_ppp_*.parquet"))
+
+
+def _find_wb_usd_ppp_files_in_path(path: Path) -> list:
+    """Find all WB PPP parquet files in the specified directory.
+
+    Args:
+        path (Path): The directory path to search for WB parquet files.
+
+    Returns:
+        list: List of WB parquet files found in the directory.
+    """
+    return list(path.glob(f"wb_usd_ppp_*.parquet"))
 
 
 def read_wb(update: bool = False) -> pd.DataFrame:
@@ -182,5 +264,27 @@ def read_wb(update: bool = False) -> pd.DataFrame:
     )
 
 
+def read_wb_lcu_ppp(update: bool = False) -> pd.DataFrame:
+    """Read the latest World Bank data from parquet files or download fresh data."""
+    return read_data(
+        file_finder_func=_find_wb_lcu_ppp_files_in_path,
+        download_func=download_wb_lcu_ppp,
+        data_name="World Bank",
+        update=update,
+    )
+
+
+def read_wb_usd_ppp(update: bool = False) -> pd.DataFrame:
+    """Read the latest World Bank data from parquet files or download fresh data."""
+    return read_data(
+        file_finder_func=_find_wb_usd_ppp_files_in_path,
+        download_func=download_wb_usd_ppp,
+        data_name="World Bank",
+        update=update,
+    )
+
+
 if __name__ == "__main__":
-    df = read_wb(True)
+    df_wb = read_wb(False)
+    df_usd = read_wb_usd_ppp(False)
+    df_lcu = read_wb_lcu_ppp(False)

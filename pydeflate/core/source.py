@@ -5,7 +5,7 @@ import pandas as pd
 from pydeflate.sources.common import AvailableDeflators
 from pydeflate.sources.dac import read_dac
 from pydeflate.sources.imf import read_weo
-from pydeflate.sources.world_bank import read_wb
+from pydeflate.sources.world_bank import read_wb, read_wb_lcu_ppp, read_wb_usd_ppp
 
 
 @dataclass
@@ -47,6 +47,15 @@ class IMF(Source):
 class WorldBank(Source):
     def __init__(self, update: bool = False):
         super().__init__(name="World Bank", reader=read_wb, update=update)
+
+
+class WorldBankPPP(Source):
+    def __init__(self, update: bool = False, *, from_lcu: bool = True):
+        super().__init__(
+            name="World Bank PPP",
+            reader=read_wb_lcu_ppp if from_lcu else read_wb_usd_ppp,
+            update=update,
+        )
 
 
 class DAC(Source):
