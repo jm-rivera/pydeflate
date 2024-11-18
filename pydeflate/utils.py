@@ -91,8 +91,8 @@ def flag_missing_pydeflate_data(unmatched_data: pd.DataFrame):
 
     missing = (
         unmatched_data.drop_duplicates()
+        .filter(regex="^pydeflate_")
         .dropna(axis=1)
-        .drop(columns="_merge")
         .to_string(index=False)
     )
 
