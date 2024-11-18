@@ -1,5 +1,5 @@
 __author__ = """Jorge Rivera"""
-__version__ = "2.0.2"
+__version__ = "2.1.0"
 
 from pydeflate.deflate.deflators import (
     oecd_dac_deflate,
