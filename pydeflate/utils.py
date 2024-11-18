@@ -35,6 +35,7 @@ def clean_number(number):
 
     return float(number)
 
+
 def create_pydeflate_year(
     data: pd.DataFrame, year_column: str, year_format: str | None = None
 ) -> pd.DataFrame:
@@ -84,17 +85,21 @@ def get_matched_pydeflate_data(
     )
 
 
-def flag_missing_pydeflate_data(unmatched_data: pd.DataFrame):
+def flag_missing_pydeflate_data(
+    unmatched_data: pd.DataFrame, entity_column: str, year_column: str
+):
     """Flag data which is present in the input data but missing in pydeflate's data."""
     if unmatched_data.empty:
         return
-
     missing = (
-        unmatched_data.drop_duplicates()
-        .filter(regex="^pydeflate_")
-        .dropna(axis=1)
-        .to_string(index=False)
+        unmatched_data.filter([entity_column, year_column])
+        .drop_duplicates()
+        .groupby(entity_column)[year_column]
+        .apply(lambda x: ", ".join(map(str, sorted(x))))
+        .to_dict()
     )
 
+    missing_str = "\n".join(f"{entity}: {years}" for entity, years in missing.items())
+
     # log all missing data
-    logger.info(f"Missing exchange data for:\n {missing}")
+    logger.info(f"Missing exchange data for:\n{missing_str}")

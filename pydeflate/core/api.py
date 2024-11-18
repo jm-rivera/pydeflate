@@ -77,7 +77,9 @@ def _base_operation(
     )
 
     # Flag missing data
-    flag_missing_pydeflate_data(base_obj._unmatched_data)
+    flag_missing_pydeflate_data(
+        base_obj._unmatched_data, entity_column=entity_column, year_column=year_column
+    )
     x = base_obj._merged_data[value_column]
     y = base_obj._merged_data[
         "pydeflate_EXCHANGE" if exchange else "pydeflate_deflator"
