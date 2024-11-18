@@ -1,6 +1,11 @@
 # Changelog
 
-## v2.0.2 (2024-16-10)
+## v2.1 (2024-11-18)
+**New feature**: added a tool to convert numbers to current PPP, using
+World Bank data.
+Improved how missing data gets logged.
+
+## v2.0.2 (2024-11-16)
 Fixes a bug with current USD to non-USD constant figures.
 
 ## v2.0.1 (2024-11-10)
