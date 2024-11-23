@@ -83,9 +83,11 @@ def _deflator(deflator_source_cls, price_kind, **fixed_params):
             if deflator_source_cls.__name__ == "WorldBankPPP":
                 source = deflator_source_cls(
                     update=update_deflators,
-                    from_lcu=False if source_currency == "USA" else True,
+                    from_lcu=False if source_currency in ["USA", "USD"] else True,
                 )
-                source_currency = "LCU" if source_currency == "USA" else source_currency
+                source_currency = (
+                    "LCU" if source_currency in ["USA", "USD"] else source_currency
+                )
             else:
                 source = deflator_source_cls(update=update_deflators)
 
