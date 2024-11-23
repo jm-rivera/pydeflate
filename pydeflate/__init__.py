@@ -39,6 +39,7 @@ __all__ = [
     "wb_gdp_deflate",
     "wb_gdp_linked_deflate",
     "wb_exchange",
+    "wb_exchange_ppp",
     "imf_cpi_deflate",
     "imf_gdp_deflate",
     "imf_cpi_e_deflate",
