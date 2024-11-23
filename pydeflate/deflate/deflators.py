@@ -3,7 +3,7 @@ from functools import wraps
 import pandas as pd
 
 from pydeflate.core.api import BaseDeflate
-from pydeflate.core.source import DAC, WorldBank, IMF
+from pydeflate.core.source import DAC, WorldBank, IMF, WorldBankPPP
 
 
 def _generate_docstring(source_name: str, price_kind: str) -> str:
@@ -29,26 +29,35 @@ def _generate_docstring(source_name: str, price_kind: str) -> str:
     )
 
 
-def _deflator(deflator_source_cls, price_kind):
+def _deflator(deflator_source_cls, price_kind, **fixed_params):
     """Decorator to create deflate wrappers with specific deflator source and price kind."""
 
     def decorator(func):
         @wraps(func)
-        def wrapper(
-            data: pd.DataFrame,
-            *,
-            base_year: int,
-            source_currency: str = "USA",
-            target_currency: str = "USA",
-            id_column: str = "iso_code",
-            year_column: str = "year",
-            use_source_codes: bool = False,
-            value_column: str = "value",
-            target_value_column: str = "value",
-            to_current: bool = False,
-            year_format: str | None = None,
-            update_deflators: bool = False,
-        ):
+        def wrapper(data: pd.DataFrame, **kwargs):
+            # Validate input parameters
+            for param in fixed_params:
+                if param in kwargs:
+                    raise ValueError(
+                        f"The parameter '{param}' cannot be passed to this function."
+                    )
+
+            # set fixed parameters
+            kwargs.update(fixed_params)
+
+            # Unpack the parameters
+            base_year = kwargs.get("base_year")
+            source_currency = kwargs.get("source_currency", "USA")
+            target_currency = kwargs.get("target_currency", "USA")
+            id_column = kwargs.get("id_column", "iso_code")
+            year_column = kwargs.get("year_column", "year")
+            use_source_codes = kwargs.get("use_source_codes", False)
+            value_column = kwargs.get("value_column", "value")
+            target_value_column = kwargs.get("target_value_column", "value")
+            to_current = kwargs.get("to_current", False)
+            year_format = kwargs.get("year_format", None)
+            update_deflators = kwargs.get("update_deflators", False)
+
             # Validate input parameters
             if not isinstance(data, pd.DataFrame):
                 raise ValueError("The 'data' parameter must be a pandas DataFrame.")
@@ -71,7 +80,14 @@ def _deflator(deflator_source_cls, price_kind):
             to_deflate = data.copy()
 
             # Initialize the deflator source
-            source = deflator_source_cls(update=update_deflators)
+            if deflator_source_cls.__name__ == "WorldBankPPP":
+                source = deflator_source_cls(
+                    update=update_deflators,
+                    from_lcu=False if source_currency == "USA" else True,
+                )
+                source_currency = "LCU" if source_currency == "USA" else source_currency
+            else:
+                source = deflator_source_cls(update=update_deflators)
 
             # Create a deflator object
             deflator = BaseDeflate(
@@ -145,6 +161,23 @@ def wb_gdp_linked_deflate(
     base_year: int,
     source_currency: str = "USA",
     target_currency: str = "USA",
+    id_column: str = "iso_code",
+    year_column: str = "year",
+    use_source_codes: bool = False,
+    value_column: str = "value",
+    target_value_column: str = "value",
+    to_current: bool = False,
+    year_format: str | None = None,
+    update_deflators: bool = False,
+): ...
+
+
+@_deflator(WorldBankPPP, "NGDP_D", target_currency="PPP")
+def wb_ppp_deflate(
+    data: pd.DataFrame,
+    *,
+    base_year: int,
+    source_currency: str = "USA",
     id_column: str = "iso_code",
     year_column: str = "year",
     use_source_codes: bool = False,
