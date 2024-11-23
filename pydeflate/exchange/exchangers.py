@@ -74,7 +74,7 @@ def _exchange(exchange_source_cls, **fixed_params):
             # Copy the data to avoid modifying the original
             to_exchange = data.copy()
 
-            # Initialize the deflator source
+            # Initialize the source
             if exchange_source_cls.__name__ == "WorldBankPPP":
                 source = exchange_source_cls(
                     update=update_rates,
@@ -84,7 +84,7 @@ def _exchange(exchange_source_cls, **fixed_params):
             else:
                 source = exchange_source_cls(update=update_rates)
 
-            # Create a deflator object
+            # Create an exchange object
             exchange = BaseExchange(
                 exchange_source=source,
                 source_currency=source_currency,
