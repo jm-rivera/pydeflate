@@ -67,6 +67,17 @@ data_usd_to_constant = {
 df_usd_to_constant = pd.DataFrame(data_usd_to_constant)
 
 
+data_nga_usd_to_constant = {
+    "year": [2020, 2021, 2022, 2023],
+    "iso_code": ["NGA"] * 4,
+    "currency": ["USD"] * 4,
+    "value": [1145672541683, 1200097354375, 1326367506668, 1414033302015],
+    "expected_value": [1157867757369, 1200097354375, 1239120696929, 1274562212860],
+}
+
+df_nga_usd_to_constant = pd.DataFrame(data_nga_usd_to_constant)
+
+
 def run_test_to_ppp(
     data,
     source_currency,
@@ -166,4 +177,10 @@ def test_lcu_to_constant_ppp():
 def test_usd_to_constant_ppp():
     run_test_to_constant_ppp(
         data=df_usd_to_constant, source_currency="USD", tolerance=0.01
+    )
+
+
+def test_nga_usd_to_constant_ppp():
+    run_test_to_constant_ppp(
+        data=df_nga_usd_to_constant, source_currency="USD", tolerance=0.01
     )
