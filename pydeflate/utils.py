@@ -51,20 +51,67 @@ def create_pydeflate_year(
     return data
 
 
+def _use_implied_dac_rates(
+    data: pd.DataFrame,
+    pydeflate_data: pd.DataFrame,
+    ix: list[str],
+    entity_column: str,
+    source_codes: bool,
+) -> pd.DataFrame:
+    """When rates are missing for entities in DAC data, the correct behaviour is to use
+    the DAC overall rates"""
+
+    # Assign the DAC code to a temporary column
+    data.loc[
+        lambda d: ~d[f"temp_{entity_column}"].isin(pydeflate_data[ix[-1]].unique()),
+        f"temp_{entity_column}",
+    ] = (
+        20001 if source_codes else "DAC"
+    )
+
+    # Log the fact that implied rates are being used
+    flag_missing_pydeflate_data(
+        unmatched_data=data.loc[
+            lambda d: ~d[f"{entity_column}"].isin(pydeflate_data[ix[-1]].unique())
+        ],
+        entity_column=entity_column,
+        year_column="pydeflate_year",
+        using_implied=True,
+    )
+
+    return data
+
+
 def merge_user_and_pydeflate_data(
     data: pd.DataFrame,
     pydeflate_data: pd.DataFrame,
     entity_column: str,
     ix: list[str],
+    source_codes: bool = True,
+    dac: bool = False,
 ) -> pd.DataFrame:
-    return data.merge(
+
+    data[f"temp_{entity_column}"] = data[entity_column]
+
+    if dac:
+        data = _use_implied_dac_rates(
+            data=data,
+            pydeflate_data=pydeflate_data,
+            ix=ix,
+            entity_column=entity_column,
+            source_codes=source_codes,
+        )
+
+    df_ = data.merge(
         pydeflate_data,
         how="outer",
-        left_on=["pydeflate_year", entity_column],
+        left_on=["pydeflate_year", f"temp_{entity_column}"],
         right_on=ix,
         suffixes=("", "_pydeflate"),
         indicator=True,
     ).pipe(enforce_pyarrow_types)
+
+    return df_.drop(columns=[f"temp_{entity_column}"])
 
 
 def get_unmatched_pydeflate_data(
@@ -86,7 +133,10 @@ def get_matched_pydeflate_data(
 
 
 def flag_missing_pydeflate_data(
-    unmatched_data: pd.DataFrame, entity_column: str, year_column: str
+    unmatched_data: pd.DataFrame,
+    entity_column: str,
+    year_column: str,
+    using_implied: bool = False,
 ):
     """Flag data which is present in the input data but missing in pydeflate's data."""
     if unmatched_data.empty:
@@ -102,4 +152,9 @@ def flag_missing_pydeflate_data(
     missing_str = "\n".join(f"{entity}: {years}" for entity, years in missing.items())
 
     # log all missing data
-    logger.info(f"Missing exchange data for:\n{missing_str}")
+    message = (
+        "Using DAC members' rates (given missing data) for:"
+        if using_implied
+        else "Missing exchange data for:"
+    )
+    logger.info(f"{message}\n{missing_str}")
