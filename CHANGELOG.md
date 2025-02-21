@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.1.1(2025-02-21)
+In DAC statistics, the DAC deflators are used for entities which do not have their
+own DAC deflator. This patch enforces that behaviour.
+
 ## v2.1 (2024-11-18)
 **New feature**: added a tool to convert numbers to current PPP, using
 World Bank data.
