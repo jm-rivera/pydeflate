@@ -176,6 +176,8 @@ class BaseExchange:
             pydeflate_data=self.pydeflate_data,
             entity_column=entity_column,
             ix=self._idx,
+            source_codes=self._idx[-1] == "pydeflate_entity_code",
+            dac=self.exchange_rates.source.name == "DAC",
         )
 
         # store unmatched data
@@ -365,6 +367,9 @@ class BaseDeflate:
             pydeflate_data=self.pydeflate_data,
             entity_column=entity_column,
             ix=self._idx,
+            source_codes=self.use_source_codes,
+            dac=self.exchange_deflator.source.name == "DAC"
+            or self.price_deflator.source.name == "DAC",
         )
 
         # store unmatched data
