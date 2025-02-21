@@ -1,45 +1,29 @@
-[tool.poetry]
+[project]
 name = "pydeflate"
 version = "2.1.1"
 description = "Package to convert current prices figures to constant prices and vice versa"
-authors = ["Jorge Rivera <jorge.rivera@one.org>"]
-license = "MIT"
+authors = [
+    {name = "Jorge Rivera",email = "jorge.rivera@one.org"}
+]
+license = {text = "MIT"}
 readme = "README.md"
-classifiers=[
-    'Development Status :: 5 - Production/Stable',
-    'Intended Audience :: End Users/Desktop',
-    'Intended Audience :: Science/Research',
-    'License :: OSI Approved :: MIT License',
-    'Natural Language :: English',
-    'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.10',
-    'Programming Language :: Python :: 3.11',
-    'Programming Language :: Python :: 3.12',
+requires-python = ">=3.10, <4.0"
+dependencies = [
+    "pandas (>=2.2.3,<3.0.0)",
+    "requests (>=2.32.3,<3.0.0)",
+    "pyarrow (>=14.0)",
+    "imf-reader (>=1.2.0,<2.0.0)",
+    "hdx-python-country (>=3.8,<4.0.0)",
+    "oda-reader (>=1.0.5,<2.0.0)",
+    "wbgapi (>=1.0.12,<2.0.0)",
 ]
 
-packages = [
-    { include = "pydeflate" },
-]
+[tool.poetry]
 
-[tool.poetry.dependencies]
-python = ">=3.10, <4.0"
-pandas = "^2"
-pyarrow = ">14"
-imf-reader = "^1.1.0"
-hdx-python-country = "^3.8.1"
-oda-reader = "^1.0.0"
-wbgapi = "^1.0.12"
-
-
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 bump2version = "^1.0.1"
-black = "^24"
+black = "^25.1.0"
 
-
-
-[tool.poetry-dynamic-versioning]
-enable = true
-vcs = "git"
 [build-system]
-requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
+requires = ["poetry-core>=2.0.0,<3.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
 build-backend = "poetry_dynamic_versioning.backend"
