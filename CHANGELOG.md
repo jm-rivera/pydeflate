@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.1.2(2025-04-21)
+Handles a bug with hdx-python-country which makes certain lists fail
+
 ## v2.1.1(2025-02-21)
 In DAC statistics, the DAC deflators are used for entities which do not have their
 own DAC deflator. This patch enforces that behaviour.

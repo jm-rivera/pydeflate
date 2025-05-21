@@ -59,7 +59,10 @@ def _match_regex_to_iso3(
     matches = {}
 
     for match in to_match:
-        match_ = country.get_iso3_country_code_fuzzy(match)[0]
+        try:
+            match_ = country.get_iso3_country_code_fuzzy(match)[0]
+        except:
+            match_ = None
         matches[match] = match_
         if match_ is None and match not in additional_mapping:
             logger.debug(f"No ISO3 match found for {match}")
