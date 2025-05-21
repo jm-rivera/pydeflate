@@ -1,6 +1,6 @@
 [project]
 name = "pydeflate"
-version = "2.1.1"
+version = "2.1.2"
 description = "Package to convert current prices figures to constant prices and vice versa"
 authors = [
     {name = "Jorge Rivera",email = "jorge.rivera@one.org"}
