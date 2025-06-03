@@ -133,6 +133,7 @@ def add_pydeflate_iso3(
         not_found=fillna,
         additional_mapping={
             "World": "WLD",
+            "European Union": "EUR",
             "EU Institutions": "EUI",
             "DAC countries": "DAC",
             "Kosovo": "XXK",

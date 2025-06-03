@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 from imf_reader import weo
 
@@ -147,6 +148,34 @@ def _compute_exchange(df: pd.DataFrame) -> pd.DataFrame:
     return pd.concat([df, exchange], ignore_index=True)
 
 
+def _create_eur_series(df: pd.DataFrame) -> pd.DataFrame:
+    """Create a EUR series from the exchange rate data.
+
+    This function creates exchange rate data for EUR by using the exchange rate
+    from France starting from 1999.
+
+     Args:
+         df (pd.DataFrame): DataFrame containing exchange rates.
+
+     Returns:
+         pd.DataFrame: DataFrame with the EUR exchange rate.
+    """
+
+    # Get France's exchange rates by year
+    eur = (
+        df.loc[lambda d: d.pydeflate_iso3 == "FRA"]
+        .loc[lambda d: d.year >= 1999]
+        .set_index("year")["EXCHANGE"]
+    )
+
+    # Apply France's exchange rates to rows with entity_code == 998 and matching year
+    df.loc[df.entity_code == 998, "EXCHANGE"] = df.loc[
+        df.entity_code == 998, "year"
+    ].map(eur)
+
+    return df
+
+
 def download_weo() -> None:
     """Download the WEO data, process it, and save it to a parquet file."""
     logger.info("Downloading the latest WEO data...")
@@ -161,6 +190,7 @@ def download_weo() -> None:
         .pipe(_compute_exchange)
         .pipe(add_pydeflate_iso3, column="entity", from_type="regex")
         .pipe(_pivot_concept_code)
+        .pipe(_create_eur_series)
         .pipe(compute_exchange_deflator, base_year_measure="NGDP_D")
         .pipe(prefix_pydeflate_to_columns)
         .pipe(enforce_pyarrow_types)
