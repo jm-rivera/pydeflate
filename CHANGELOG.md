@@ -1,4 +1,6 @@
 # Changelog
+## v2.1.3(2025-06-03)
+Fixes a bug which meant 'EUR' did not work for WB and IMF.
 
 ## v2.1.2(2025-04-21)
 Handles a bug with hdx-python-country which makes certain lists fail

@@ -1,7 +1,6 @@
 from functools import wraps
 
 import pandas as pd
-from frictionless.console.common import source
 
 from pydeflate.core.api import BaseExchange
 from pydeflate.core.source import DAC, WorldBank, IMF, WorldBankPPP
