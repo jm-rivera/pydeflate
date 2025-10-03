@@ -1,4 +1,5 @@
 """Minimal stub of the wbgapi package for tests."""
+
 from types import SimpleNamespace
 
 import pandas as pd

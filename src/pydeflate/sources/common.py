@@ -211,7 +211,6 @@ def compute_exchange_deflator(
         exchange: str = "EXCHANGE",
         year: str = "year",
     ) -> pd.DataFrame:
-
         # if needed, clean exchange name
         if exchange.endswith("_to") or exchange.endswith("_from"):
             exchange_name = exchange.rsplit("_", 1)[0]

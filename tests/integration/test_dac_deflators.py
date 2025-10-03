@@ -6,7 +6,13 @@ from pydeflate.core.api import BaseDeflate
 from pydeflate.core.source import DAC
 
 
-def _base_deflate(*, to_current: bool, source_currency: str, target_currency: str, use_source_codes: bool = False):
+def _base_deflate(
+    *,
+    to_current: bool,
+    source_currency: str,
+    target_currency: str,
+    use_source_codes: bool = False,
+):
     return BaseDeflate(
         base_year=2022,
         deflator_source=DAC(),
@@ -49,7 +55,9 @@ def test_oecd_dac_deflate_with_source_codes(sample_source_frames):
         use_source_codes=True,
     )
 
-    assert result["value"].tolist() == pytest.approx(expected["value"].tolist(), rel=1e-6)
+    assert result["value"].tolist() == pytest.approx(
+        expected["value"].tolist(), rel=1e-6
+    )
 
 
 def test_oecd_dac_deflate_to_current_prices(sample_source_frames):
@@ -81,7 +89,9 @@ def test_oecd_dac_deflate_to_current_prices(sample_source_frames):
         to_current=True,
     )
 
-    assert result["value"].tolist() == pytest.approx(expected["value"].tolist(), rel=1e-6)
+    assert result["value"].tolist() == pytest.approx(
+        expected["value"].tolist(), rel=1e-6
+    )
 
 
 def test_oecd_dac_deflate_cross_currency(sample_source_frames):
@@ -113,4 +123,6 @@ def test_oecd_dac_deflate_cross_currency(sample_source_frames):
         target_currency="USA",
     )
 
-    assert result["value"].tolist() == pytest.approx(expected["value"].tolist(), rel=1e-6)
+    assert result["value"].tolist() == pytest.approx(
+        expected["value"].tolist(), rel=1e-6
+    )

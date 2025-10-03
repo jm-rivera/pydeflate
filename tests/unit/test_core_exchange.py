@@ -47,5 +47,9 @@ def test_exchange_applies_multiplier_to_values():
     expected_rate_2021 = 0.83
     expected_rate_2022 = 0.84
 
-    assert converted.loc[0, "value"] == pytest.approx(100.0 / expected_rate_2021, rel=1e-6)
-    assert converted.loc[1, "value"] == pytest.approx(150.0 / expected_rate_2022, rel=1e-6)
+    assert converted.loc[0, "value"] == pytest.approx(
+        100.0 / expected_rate_2021, rel=1e-6
+    )
+    assert converted.loc[1, "value"] == pytest.approx(
+        150.0 / expected_rate_2022, rel=1e-6
+    )

@@ -48,4 +48,6 @@ def test_legacy_deflate_emits_warning_and_matches_wrapper():
             target_column="value",
         )
 
-    assert result["value"].tolist() == pytest.approx(expected["value"].tolist(), rel=1e-6)
+    assert result["value"].tolist() == pytest.approx(
+        expected["value"].tolist(), rel=1e-6
+    )

@@ -9,8 +9,10 @@ from typing import Callable
 try:
     from platformdirs import user_cache_dir
 except ImportError:  # pragma: no cover - fallback when optional dep missing
+
     def user_cache_dir(appname: str, appauthor: str) -> str:  # type: ignore[override]
         return str(Path.home() / ".cache" / appname)
+
 
 DATA_DIR_ENV = "PYDEFLATE_DATA_DIR"
 

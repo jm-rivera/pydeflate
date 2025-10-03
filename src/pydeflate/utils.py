@@ -65,9 +65,7 @@ def _use_implied_dac_rates(
     data.loc[
         lambda d: ~d[f"temp_{entity_column}"].isin(pydeflate_data[ix[-1]].unique()),
         f"temp_{entity_column}",
-    ] = (
-        20001 if source_codes else "DAC"
-    )
+    ] = 20001 if source_codes else "DAC"
 
     # Log the fact that implied rates are being used
     flag_missing_pydeflate_data(
@@ -90,7 +88,6 @@ def merge_user_and_pydeflate_data(
     source_codes: bool = True,
     dac: bool = False,
 ) -> pd.DataFrame:
-
     data[f"temp_{entity_column}"] = data[entity_column]
 
     if dac:

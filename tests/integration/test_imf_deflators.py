@@ -6,7 +6,13 @@ from pydeflate.core.api import BaseDeflate
 from pydeflate.core.source import IMF
 
 
-def _base_deflate(*, price_kind: str, to_current: bool, source_currency: str = "USA", target_currency: str = "USA"):
+def _base_deflate(
+    *,
+    price_kind: str,
+    to_current: bool,
+    source_currency: str = "USA",
+    target_currency: str = "USA",
+):
     return BaseDeflate(
         base_year=2022,
         deflator_source=IMF(),
@@ -38,7 +44,9 @@ def test_imf_gdp_deflate_returns_constant_prices(sample_source_frames):
 
     result = imf_gdp_deflate(data=data.copy(), base_year=2022, value_column="value")
 
-    assert result["value"].tolist() == pytest.approx(expected["value"].tolist(), rel=1e-6)
+    assert result["value"].tolist() == pytest.approx(
+        expected["value"].tolist(), rel=1e-6
+    )
 
 
 def test_imf_cpi_deflate_to_current_prices(sample_source_frames):
@@ -66,4 +74,6 @@ def test_imf_cpi_deflate_to_current_prices(sample_source_frames):
         to_current=True,
     )
 
-    assert result["value"].tolist() == pytest.approx(expected["value"].tolist(), rel=1e-6)
+    assert result["value"].tolist() == pytest.approx(
+        expected["value"].tolist(), rel=1e-6
+    )

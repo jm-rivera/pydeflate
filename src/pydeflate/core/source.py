@@ -32,7 +32,6 @@ class Source:
         return self.data.filter(self._idx + ["pydeflate_EXCHANGE"])
 
     def price_deflator(self, kind: AvailableDeflators = "NGDP_D") -> pd.DataFrame:
-
         if f"pydeflate_{kind}" not in self.data.columns:
             raise ValueError(f"No deflator data found for {kind} in {self.name} data.")
 

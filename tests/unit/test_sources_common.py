@@ -61,5 +61,9 @@ def test_compute_exchange_deflator_adds_rebased_column():
     )
 
     assert "EXCHANGE_D" in rebased.columns
-    assert rebased.loc[rebased["year"] == 2022, "EXCHANGE_D"].iloc[0] == pytest.approx(100.0)
-    assert rebased.loc[rebased["year"] == 2021, "EXCHANGE_D"].iloc[0] == pytest.approx(110.0)
+    assert rebased.loc[rebased["year"] == 2022, "EXCHANGE_D"].iloc[0] == pytest.approx(
+        100.0
+    )
+    assert rebased.loc[rebased["year"] == 2021, "EXCHANGE_D"].iloc[0] == pytest.approx(
+        110.0
+    )

@@ -11,7 +11,13 @@ from pydeflate.core.api import BaseExchange
 from pydeflate.core.source import DAC, IMF, WorldBank, WorldBankPPP
 
 
-def _base_exchange(source_cls, *, source_currency: str, target_currency: str, use_source_codes: bool = False):
+def _base_exchange(
+    source_cls,
+    *,
+    source_currency: str,
+    target_currency: str,
+    use_source_codes: bool = False,
+):
     return BaseExchange(
         exchange_source=source_cls(),
         source_currency=source_currency,
@@ -40,7 +46,9 @@ def test_imf_exchange_converts_usd_to_eur(sample_source_frames):
         target_value_column="value_eur",
     )
 
-    assert result["value_eur"].tolist() == pytest.approx(expected["value_eur"].tolist(), rel=1e-6)
+    assert result["value_eur"].tolist() == pytest.approx(
+        expected["value_eur"].tolist(), rel=1e-6
+    )
 
 
 def test_wb_exchange_supports_reversed_flow():
@@ -85,7 +93,9 @@ def test_oecd_dac_exchange_uses_source_codes():
         }
     )
 
-    base = _base_exchange(DAC, source_currency="USA", target_currency="CAN", use_source_codes=True)
+    base = _base_exchange(
+        DAC, source_currency="USA", target_currency="CAN", use_source_codes=True
+    )
     expected = base.exchange(
         data=data.copy(),
         entity_column="donor_code",
@@ -118,7 +128,9 @@ def test_wb_exchange_ppp_round_trip():
         }
     )
 
-    base_forward = _base_exchange(WorldBankPPP, source_currency="USA", target_currency="PPP")
+    base_forward = _base_exchange(
+        WorldBankPPP, source_currency="USA", target_currency="PPP"
+    )
     to_ppp_expected = base_forward.exchange(
         data=data.copy(),
         entity_column="iso_code",
