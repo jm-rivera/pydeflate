@@ -6,10 +6,10 @@ from pydeflate.core.source import Source
 from pydeflate.sources.common import AvailableDeflators
 from pydeflate.utils import (
     create_pydeflate_year,
-    merge_user_and_pydeflate_data,
-    get_unmatched_pydeflate_data,
-    get_matched_pydeflate_data,
     flag_missing_pydeflate_data,
+    get_matched_pydeflate_data,
+    get_unmatched_pydeflate_data,
+    merge_user_and_pydeflate_data,
 )
 
 

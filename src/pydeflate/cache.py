@@ -2,28 +2,14 @@ from __future__ import annotations
 
 import json
 import os
-from dataclasses import dataclass, asdict
-from datetime import datetime, timezone, timedelta
+from dataclasses import dataclass
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Callable, Dict, Iterable, Optional
 
-try:  # pragma: no cover - optional dependency
-    from filelock import FileLock  # type: ignore
-except ImportError:  # pragma: no cover - fallback when filelock missing
-
-    class FileLock:
-        def __init__(self, path: str | Path):
-            self.path = Path(path)
-
-        def __enter__(self):
-            return self
-
-        def __exit__(self, exc_type, exc, tb):
-            return False
-
+from filelock import FileLock
 
 from pydeflate.pydeflate_config import get_data_dir
-
 
 ISO_FORMAT = "%Y-%m-%dT%H:%M:%S.%f%z"
 

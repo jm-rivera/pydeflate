@@ -4,7 +4,7 @@ import pandas as pd
 from pandas.util._decorators import deprecate_kwarg
 
 from pydeflate.core.api import BaseDeflate
-from pydeflate.core.source import DAC, WorldBank, IMF
+from pydeflate.core.source import DAC, IMF, WorldBank
 
 
 @deprecate_kwarg(old_arg_name="method", new_arg_name="deflator_method")

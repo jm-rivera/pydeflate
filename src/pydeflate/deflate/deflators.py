@@ -3,7 +3,7 @@ from functools import wraps
 import pandas as pd
 
 from pydeflate.core.api import BaseDeflate
-from pydeflate.core.source import DAC, WorldBank, IMF
+from pydeflate.core.source import DAC, IMF, WorldBank
 
 
 def _generate_docstring(source_name: str, price_kind: str) -> str:
