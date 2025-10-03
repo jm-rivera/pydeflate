@@ -18,17 +18,13 @@ from pydeflate.exchange.exchangers import (
     wb_exchange_ppp,
     imf_exchange,
 )
-from pydeflate.pydeflate_config import setup_logger
+from pydeflate.pydeflate_config import setup_logger, set_data_dir
 
 
 def set_pydeflate_path(path):
-    from pathlib import Path
-    from pydeflate.pydeflate_config import PYDEFLATE_PATHS
+    """Set the path to the pydeflate data cache directory."""
 
-    """Set the path to the data folder."""
-    global PYDEFLATE_PATHS
-
-    PYDEFLATE_PATHS.data = Path(path).resolve()
+    return set_data_dir(path)
 
 
 __all__ = [

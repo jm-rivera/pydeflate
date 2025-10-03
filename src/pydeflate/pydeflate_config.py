@@ -1,14 +1,82 @@
+from __future__ import annotations
+
 import logging
+import os
+from dataclasses import dataclass
 from pathlib import Path
+from typing import Callable
+
+try:
+    from platformdirs import user_cache_dir
+except ImportError:  # pragma: no cover - fallback when optional dep missing
+    def user_cache_dir(appname: str, appauthor: str) -> str:  # type: ignore[override]
+        return str(Path.home() / ".cache" / appname)
+
+DATA_DIR_ENV = "PYDEFLATE_DATA_DIR"
+
+_PACKAGE_ROOT = Path(__file__).resolve().parent.parent
+_SETTINGS_DIR = _PACKAGE_ROOT / "pydeflate" / "settings"
+_TEST_DATA_DIR = _PACKAGE_ROOT / "tests" / "test_files"
+
+_DATA_DIR_OVERRIDE: Path | None = None
 
 
-class PYDEFLATE_PATHS:
-    """Class to store the paths to the data and output folders."""
+def _ensure_dir(path: Path) -> Path:
+    path.mkdir(parents=True, exist_ok=True)
+    return path
 
-    package = Path(__file__).resolve().parent.parent
-    data = package / "pydeflate" / ".pydeflate_data"
-    settings = package / "pydeflate" / "settings"
-    test_data = package / "tests" / "test_files"
+
+def _default_data_dir() -> Path:
+    env_value = os.environ.get(DATA_DIR_ENV)
+    if env_value:
+        return _ensure_dir(Path(env_value).expanduser().resolve())
+    return _ensure_dir(Path(user_cache_dir("pydeflate", "pydeflate")))
+
+
+def get_data_dir() -> Path:
+    """Return the directory where pydeflate caches data files."""
+
+    if _DATA_DIR_OVERRIDE is not None:
+        return _ensure_dir(_DATA_DIR_OVERRIDE)
+    return _default_data_dir()
+
+
+def set_data_dir(path: str | Path) -> Path:
+    """Override the pydeflate data directory for the current process."""
+
+    global _DATA_DIR_OVERRIDE
+    resolved = _ensure_dir(Path(path).expanduser().resolve())
+    _DATA_DIR_OVERRIDE = resolved
+    return resolved
+
+
+def reset_data_dir() -> None:
+    """Reset any process-level overrides and fall back to defaults."""
+
+    global _DATA_DIR_OVERRIDE
+    _DATA_DIR_OVERRIDE = None
+
+
+@dataclass(frozen=True)
+class _Paths:
+    package: Path
+    settings: Path
+    test_data: Path
+
+    @property
+    def data(self) -> Path:
+        return get_data_dir()
+
+    @data.setter  # type: ignore[override]
+    def data(self, value: Path | str) -> None:  # pragma: no cover - simple proxy
+        set_data_dir(value)
+
+
+PYDEFLATE_PATHS = _Paths(
+    package=_PACKAGE_ROOT,
+    settings=_SETTINGS_DIR,
+    test_data=_TEST_DATA_DIR,
+)
 
 
 def setup_logger(name) -> logging.Logger:
@@ -41,3 +109,9 @@ def setup_logger(name) -> logging.Logger:
 
 
 logger = setup_logger("pydeflate")
+
+
+def set_pydeflate_path(path: str | Path) -> Path:
+    """Set the path to the data folder (public API)."""
+
+    return set_data_dir(path)

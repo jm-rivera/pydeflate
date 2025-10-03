@@ -42,7 +42,7 @@ def _import(name, globals=None, locals=None, fromlist=(), level=0):
 importlib.import_module = _import_module
 builtins.__import__ = _import
 
-from pydeflate.pydeflate_config import PYDEFLATE_PATHS
+from pydeflate.pydeflate_config import PYDEFLATE_PATHS, reset_data_dir, set_data_dir
 from pydeflate.sources.common import enforce_pyarrow_types
 
 YEARS = [2021, 2022, 2023]
@@ -96,14 +96,11 @@ def _build_source_frame(entities, column_factories):
 
 
 @pytest.fixture(autouse=True)
-def patch_data_dirs(tmp_path, monkeypatch):
+def patch_data_dirs(tmp_path):
     data_dir = tmp_path / "pydeflate-data"
-    data_dir.mkdir(parents=True, exist_ok=True)
-    monkeypatch.setattr(PYDEFLATE_PATHS, "data", data_dir)
-    monkeypatch.setattr(PYDEFLATE_PATHS, "test_data", data_dir / "tests")
-    PYDEFLATE_PATHS.test_data.mkdir(parents=True, exist_ok=True)
+    set_data_dir(data_dir)
     yield
-    # no explicit cleanup needed; tmp_path handles removal
+    reset_data_dir()
 
 
 @pytest.fixture(scope="session")
