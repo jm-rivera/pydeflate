@@ -18,6 +18,7 @@ dependencies = [
     "requests>=2.32.5",
     "wbgapi>=1.0.12",
     "platformdirs>=3.0.0",
+    "filelock>=3.15.0",
 ]
 
 [dependency-groups]

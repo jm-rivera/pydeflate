@@ -1,15 +1,16 @@
+from __future__ import annotations
+
 from pathlib import Path
 
 import pandas as pd
 from imf_reader import weo
 
-from pydeflate.pydeflate_config import PYDEFLATE_PATHS, logger
+from pydeflate.cache import CacheEntry, cache_manager
+from pydeflate.pydeflate_config import logger
 from pydeflate.sources.common import (
-    today,
     add_pydeflate_iso3,
-    enforce_pyarrow_types,
     compute_exchange_deflator,
-    read_data,
+    enforce_pyarrow_types,
     prefix_pydeflate_to_columns,
 )
 
@@ -93,7 +94,7 @@ def _keep_useful_columns(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def _pivot_concept_code(df: pd.DataFrame) -> pd.DataFrame:
-    """Pivot the concept code column to get a wide format for the data.
+    """Pivot the concept dimension so each indicator becomes a column
 
     Args:
         df (pd.DataFrame): Dataframe with concept code column.
@@ -102,7 +103,7 @@ def _pivot_concept_code(df: pd.DataFrame) -> pd.DataFrame:
         pd.DataFrame: Dataframe with concept code pivoted to columns.
     """
     return df.pivot(
-        index=[c for c in df.columns if c not in ["concept_code", "value"]],
+        index=[c for c in df.columns if c not in {"concept_code", "value"}],
         columns="concept_code",
         values="value",
     ).reset_index()
@@ -171,15 +172,13 @@ def _create_eur_series(df: pd.DataFrame) -> pd.DataFrame:
     df.loc[df.entity_code == 998, "EXCHANGE"] = df.loc[
         df.entity_code == 998, "year"
     ].map(eur)
-
     return df
 
 
-def download_weo() -> None:
-    """Download the WEO data, process it, and save it to a parquet file."""
-    logger.info("Downloading the latest WEO data...")
+def _download_weo(output_path: Path) -> None:
+    """Fetch, transform, and store the latest WEO dataset in Parquet format."""
 
-    # Fetch and process the data through a pipeline of transformations
+    logger.info("Downloading the latest IMF WEO dataset...")
     df = (
         weo.fetch_data()
         .pipe(_filter_indicators)
@@ -195,38 +194,23 @@ def download_weo() -> None:
         .pipe(enforce_pyarrow_types)
         .reset_index(drop=True)
     )
-
-    # Get today's date to use as a file suffix
-    suffix = today()
-
-    # Save the processed dataframe to parquet format
-    df.to_parquet(PYDEFLATE_PATHS.data / f"weo_{suffix}.parquet")
-
-    logger.info(f"Saved WEO data to weo_{suffix}.parquet")
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    df.to_parquet(output_path)
+    logger.info("Saved WEO data to %s", output_path)
 
 
-def _find_weo_files_in_path(path: Path) -> list:
-    """Find all WEO parquet files in the specified directory.
-
-    Args:
-        path (Path): The directory path to search for WEO parquet files.
-
-    Returns:
-        list: List of WEO parquet files found in the directory.
-    """
-    return list(path.glob("weo_*.parquet"))
+_IMF_CACHE_ENTRY = CacheEntry(
+    key="imf_weo",
+    filename="imf_weo.parquet",
+    fetcher=_download_weo,
+    ttl_days=60,
+)
 
 
 def read_weo(update: bool = False) -> pd.DataFrame:
-    """Read the latest WEO data from parquet files or download fresh data."""
-    return read_data(
-        file_finder_func=_find_weo_files_in_path,
-        download_func=download_weo,
-        data_name="WEO",
-        update=update,
-    )
+    path = cache_manager().ensure(_IMF_CACHE_ENTRY, refresh=update)
+    return pd.read_parquet(path)
 
 
-if __name__ == "__main__":
-    # Download the WEO data
-    dfi = read_weo(update=True)
+if __name__ == "__main__":  # pragma: no cover
+    read_weo(update=True)

@@ -1,15 +1,17 @@
+from __future__ import annotations
+
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
+from typing import Callable
 
 import pandas as pd
 import wbgapi as wb
 
-from pydeflate.pydeflate_config import PYDEFLATE_PATHS, logger
+from pydeflate.cache import CacheEntry, cache_manager
+from pydeflate.pydeflate_config import logger
 from pydeflate.sources.common import (
-    enforce_pyarrow_types,
-    today,
     compute_exchange_deflator,
-    read_data,
+    enforce_pyarrow_types,
     prefix_pydeflate_to_columns,
 )
 from pydeflate.utils import emu
@@ -56,8 +58,8 @@ def get_wb_indicator(series: str, value_name: str | None = None) -> pd.DataFrame
             labels=True,
         )
         .reset_index()
-        .sort_values(by=["economy", "Time"])  # Sort for easier reading
-        .drop(columns=["Time"])  # Remove unnecessary column
+        .sort_values(by=["economy", "Time"])
+        .drop(columns=["Time"])
         .rename(
             columns={
                 "economy": "entity_code",
@@ -66,7 +68,7 @@ def get_wb_indicator(series: str, value_name: str | None = None) -> pd.DataFrame
                 series: value_name or series,
             }
         )
-        .reset_index(drop=True)  # Drop the old index after reset
+        .reset_index(drop=True)
     )
 
 
@@ -119,22 +121,17 @@ def _parallel_download_indicators(indicators: dict) -> list[pd.DataFrame]:
 
     # Use ThreadPoolExecutor to fetch indicators in parallel
     with ThreadPoolExecutor() as executor:
-        # Submit all tasks to the executor (downloading indicators in parallel)
         future_to_series = {
             executor.submit(get_wb_indicator, series, value_name): series
             for series, value_name in indicators.items()
         }
-
-        # Collect the results as they complete
         for future in as_completed(future_to_series):
             series = future_to_series[future]
             try:
                 df_ = future.result().set_index(["year", "entity_code", "entity"])
                 dfs.append(df_)
-            except Exception as exc:
-                # Log or handle any errors that occur during the download
-                logger.warning(f"Error downloading series {series}: {exc}")
-
+            except Exception as exc:  # pragma: no cover - defensive logging
+                logger.warning("Error downloading series %s: %s", series, exc)
     return dfs
 
 
@@ -151,140 +148,70 @@ def _add_ppp_ppp_exchange(df: pd.DataFrame) -> pd.DataFrame:
     """
     ppp = df.loc[lambda d: d["entity_code"] == "USA"].copy()
     ppp[["entity_code", "entity", "pydeflate_iso3"]] = "PPP"
-
-    df = pd.concat([df, ppp], ignore_index=True)
-
-    return df
+    return pd.concat([df, ppp], ignore_index=True)
 
 
-def _download_wb(
-    indicators: dict, prefix: str = "wb", add_ppp_exchange: bool = False
+def _download_wb_dataset(
+    indicators: dict, output_path: Path, add_ppp_exchange: bool = False
 ) -> None:
-    """Download multiple World Bank indicators in parallel and save as a parquet file.
+    """Download and materialise a World Bank dataset to ``output_path``."""
 
-    This function fetches all indicators defined in _INDICATORS in parallel, concatenates
-    them into a single DataFrame, and saves the result as a parquet file using today's date as a suffix.
-    """
-    logger.info("Downloading the latest World Bank data...")
-
-    indicators_data = _parallel_download_indicators(indicators=indicators)
-
-    # Concatenate all DataFrames horizontally (by columns)
+    logger.info("Downloading World Bank indicators for %s", output_path.name)
+    indicators_data = _parallel_download_indicators(indicators)
     df = pd.concat(indicators_data, axis=1).reset_index()
-
-    # cleaning
     df = (
         df.pipe(_eur_series_fix)
         .pipe(compute_exchange_deflator, base_year_measure="NGDP_D")
         .assign(pydeflate_iso3=lambda d: d.entity_code)
         .sort_values(by=["year", "entity_code"])
     )
-
     if add_ppp_exchange:
         df = df.pipe(_add_ppp_ppp_exchange)
-
     df = (
         df.pipe(prefix_pydeflate_to_columns)
         .pipe(enforce_pyarrow_types)
         .reset_index(drop=True)
     )
-
-    # Get today's date to use as a file suffix
-    suffix = today()
-
-    # Save the DataFrame as a parquet file
-    output_path = PYDEFLATE_PATHS.data / f"{prefix}_{suffix}.parquet"
+    output_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_parquet(output_path)
-
-    logger.info(f"Saved World Bank data to {prefix}_{suffix}.parquet")
-
-
-def download_wb() -> None:
-    """Download the latest World Bank data."""
-    _download_wb(indicators=_INDICATORS, prefix="wb")
+    logger.info("Saved World Bank data to %s", output_path)
 
 
-def download_wb_lcu_ppp() -> None:
-    """Download the latest World Bank data (PPP)."""
-    _download_wb(
-        indicators=_INDICATORS_LCU_PPP, prefix="wb_lcu_ppp", add_ppp_exchange=True
-    )
+def _entry(
+    key: str, filename: str, fetcher: Callable[[Path], None], ttl_days: int = 30
+) -> CacheEntry:
+    return CacheEntry(key=key, filename=filename, fetcher=fetcher, ttl_days=ttl_days)
 
 
-def download_wb_usd_ppp() -> None:
-    """Download the latest World Bank data (PPP)."""
-    _download_wb(
-        indicators=_INDICATORS_USD_PPP, prefix="wb_usd_ppp", add_ppp_exchange=True
-    )
-
-
-def _find_wb_files_in_path(path: Path) -> list:
-    """Find all WB parquet files in the specified directory.
-
-    Args:
-        path (Path): The directory path to search for WB parquet files.
-
-    Returns:
-        list: List of WB parquet files found in the directory.
-    """
-    return list(path.glob(f"wb_*.parquet"))
-
-
-def _find_wb_lcu_ppp_files_in_path(path: Path) -> list:
-    """Find all WB PPP parquet files in the specified directory.
-
-    Args:
-        path (Path): The directory path to search for WB parquet files.
-
-    Returns:
-        list: List of WB parquet files found in the directory.
-    """
-    return list(path.glob(f"wb_lcu_ppp_*.parquet"))
-
-
-def _find_wb_usd_ppp_files_in_path(path: Path) -> list:
-    """Find all WB PPP parquet files in the specified directory.
-
-    Args:
-        path (Path): The directory path to search for WB parquet files.
-
-    Returns:
-        list: List of WB parquet files found in the directory.
-    """
-    return list(path.glob(f"wb_usd_ppp_*.parquet"))
+_WB_ENTRY = _entry(
+    "world_bank", "wb.parquet", lambda p: _download_wb_dataset(_INDICATORS, p)
+)
+_WB_LCU_PPP_ENTRY = _entry(
+    "world_bank_lcu_ppp",
+    "wb_lcu_ppp.parquet",
+    lambda p: _download_wb_dataset(_INDICATORS_LCU_PPP, p, add_ppp_exchange=True),
+)
+_WB_USD_PPP_ENTRY = _entry(
+    "world_bank_usd_ppp",
+    "wb_usd_ppp.parquet",
+    lambda p: _download_wb_dataset(_INDICATORS_USD_PPP, p, add_ppp_exchange=True),
+)
 
 
 def read_wb(update: bool = False) -> pd.DataFrame:
-    """Read the latest World Bank data from parquet files or download fresh data."""
-    return read_data(
-        file_finder_func=_find_wb_files_in_path,
-        download_func=download_wb,
-        data_name="World Bank",
-        update=update,
-    )
+    path = cache_manager().ensure(_WB_ENTRY, refresh=update)
+    return pd.read_parquet(path)
 
 
 def read_wb_lcu_ppp(update: bool = False) -> pd.DataFrame:
-    """Read the latest World Bank data from parquet files or download fresh data."""
-    return read_data(
-        file_finder_func=_find_wb_lcu_ppp_files_in_path,
-        download_func=download_wb_lcu_ppp,
-        data_name="World Bank",
-        update=update,
-    )
+    path = cache_manager().ensure(_WB_LCU_PPP_ENTRY, refresh=update)
+    return pd.read_parquet(path)
 
 
 def read_wb_usd_ppp(update: bool = False) -> pd.DataFrame:
-    """Read the latest World Bank data from parquet files or download fresh data."""
-    return read_data(
-        file_finder_func=_find_wb_usd_ppp_files_in_path,
-        download_func=download_wb_usd_ppp,
-        data_name="World Bank",
-        update=update,
-    )
+    path = cache_manager().ensure(_WB_USD_PPP_ENTRY, refresh=update)
+    return pd.read_parquet(path)
 
 
-if __name__ == "__main__":
-    df_wb = read_wb(False)
-    df_usd = read_wb_usd_ppp(False)
-    df_lcu = read_wb_lcu_ppp(False)
+if __name__ == "__main__":  # pragma: no cover
+    read_wb(update=True)

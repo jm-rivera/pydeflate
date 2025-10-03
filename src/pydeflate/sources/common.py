@@ -1,41 +1,19 @@
-from datetime import datetime
-from pathlib import Path
+from __future__ import annotations
+
 from typing import Any, Literal
 
 import pandas as pd
 from hdx.location.country import Country
 
-from pydeflate.pydeflate_config import PYDEFLATE_PATHS, logger
+from pydeflate.pydeflate_config import logger
 
 AvailableDeflators = Literal["NGDP_D", "NGDP_DL", "CPI", "PCPI", "PCPIE"]
 
 
-def check_file_age(file: Path) -> int:
-    """Check the age of a WEO file in days.
-
-    Args:
-        file (Path): The WEO parquet file to check.
-
-    Returns:
-        int: The number of days since the file was created.
-    """
-    current_date = datetime.today()
-    # Extract date from the filename (format: weo_YYYY-MM-DD.parquet)
-    file_date = datetime.strptime(file.stem.split("_")[-1], "%Y-%m-%d")
-
-    # Return the difference in days between today and the file's date
-    return (current_date - file_date).days
-
-
 def enforce_pyarrow_types(df: pd.DataFrame) -> pd.DataFrame:
-    """Ensures that a DataFrame uses pyarrow dtypes."""
+    """Ensure that a DataFrame uses pyarrow-backed dtypes."""
+
     return df.convert_dtypes(dtype_backend="pyarrow")
-
-
-def today() -> str:
-    from datetime import datetime
-
-    return datetime.today().strftime("%Y-%m-%d")
 
 
 def _match_regex_to_iso3(
@@ -52,20 +30,17 @@ def _match_regex_to_iso3(
     if additional_mapping is None:
         additional_mapping = {}
 
-    # Create a Country object
     country = Country()
-
-    # Match the regex strings to ISO3 country codes
-    matches = {}
+    matches: dict[str, str | None] = {}
 
     for match in to_match:
         try:
             match_ = country.get_iso3_country_code_fuzzy(match)[0]
-        except:
+        except Exception:  # pragma: no cover - defensive logging
             match_ = None
         matches[match] = match_
         if match_ is None and match not in additional_mapping:
-            logger.debug(f"No ISO3 match found for {match}")
+            logger.debug("No ISO3 match found for %s", match)
 
     return matches | additional_mapping
 
@@ -76,7 +51,7 @@ def convert_id(
     to_type: str = "ISO3",
     not_found: Any = None,
     *,
-    additional_mapping: dict = None,
+    additional_mapping: dict | None = None,
 ) -> pd.Series:
     """Takes a Pandas' series with country IDs and converts them into the desired type.
 
@@ -93,7 +68,6 @@ def convert_id(
             the same datatype as the target type.
     """
 
-    # if from and to are the same, return without changing anything
     if from_type == to_type:
         return series
 
@@ -107,7 +81,6 @@ def convert_id(
     mapping = mapping_functions[from_type](
         to_match=s_unique, additional_mapping=additional_mapping
     )
-
     return series.map(mapping).fillna(series if not_found is None else not_found)
 
 
@@ -141,7 +114,6 @@ def add_pydeflate_iso3(
             "Sub-Sahara Africa": "SSA",
         },
     )
-
     return df
 
 
@@ -160,7 +132,6 @@ def prefix_pydeflate_to_columns(
     df.columns = [
         f"{prefix}{col}" if not col.startswith(prefix) else col for col in df.columns
     ]
-
     return df
 
 
@@ -187,7 +158,7 @@ def compute_exchange_deflator(
     base_year_measure: str | None = None,
     exchange: str = "EXCHANGE",
     year: str = "year",
-    grouper: list[str] = None,
+    grouper: list[str] | None = None,
 ) -> pd.DataFrame:
     """Compute the exchange rate deflator for each group of entities.
 
@@ -211,17 +182,15 @@ def compute_exchange_deflator(
         exchange: str = "EXCHANGE",
         year: str = "year",
     ) -> pd.DataFrame:
-        # if needed, clean exchange name
         if exchange.endswith("_to") or exchange.endswith("_from"):
             exchange_name = exchange.rsplit("_", 1)[0]
         else:
             exchange_name = exchange
 
-        # Identify the base year for the deflator
         if measure is not None:
             base_year = identify_base_year(group, measure=measure, year=year)
         else:
-            base_year = group.dropna(subset=exchange)[year].max()
+            base_year = group.dropna(subset=[exchange])[year].max()
 
         # If no base year is found, return the group unchanged
         if base_year is None or pd.isna(base_year):
@@ -235,56 +204,11 @@ def compute_exchange_deflator(
             group[f"{exchange_name}_D"] = round(
                 100 * group[exchange] / base_value[0], 6
             )
-
         return group
 
     if grouper is None:
         grouper = ["entity", "entity_code"]
 
-    # Apply the deflator computation for each group of 'entity' and 'entity_code'
     return df.groupby(grouper, group_keys=False).apply(
         _add_deflator, measure=base_year_measure, exchange=exchange, year=year
     )
-
-
-def read_data(
-    file_finder_func: callable,
-    download_func: callable,
-    data_name: str,
-    update: bool = False,
-) -> pd.DataFrame:
-    """Generic function to read data from parquet files or download fresh data.
-
-    Args:
-        file_finder_func (function): Function to find existing data files in the path.
-        download_func (function): Function to download fresh data if no files are
-        found or an update is needed.
-        data_name (str): Name of the dataset for logging purposes (e.g., "WEO", "DAC").
-        update (bool): If True, forces downloading of new data even if files exist.
-
-    Returns:
-        pd.DataFrame: The latest available data.
-    """
-    # Find existing files using the provided file finder function
-    files = file_finder_func(PYDEFLATE_PATHS.data)
-
-    # If no files are found or update is requested, download new data
-    if len(files) == 0 or update:
-        download_func()
-        files = file_finder_func(PYDEFLATE_PATHS.data)
-
-    # If files are found, sort them by age and load the most recent one
-    if len(files) > 0:
-        files = sorted(files, key=check_file_age)
-        latest_file = files[0]
-
-        # Check if the latest file is older than 120 days and log a warning
-        if check_file_age(latest_file) > 120:
-            logger.warn(
-                f"The latest {data_name} data is more than 120 days old.\n"
-                f"Consider updating by setting update=True in the function call."
-            )
-
-        # Read and return the latest parquet file as a DataFrame
-        logger.info(f"Reading {data_name} data from {latest_file}")
-        return pd.read_parquet(latest_file)
