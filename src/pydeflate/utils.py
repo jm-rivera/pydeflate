@@ -1,4 +1,5 @@
 import json
+import re
 
 import numpy as np
 import pandas as pd
@@ -22,18 +23,25 @@ def emu() -> list:
 
 
 def clean_number(number):
-    """Clean a number and return as float"""
-    import re
+    """Clean a number-like value and return it as a float.
+
+    Preserves leading signs and scientific notation while stripping
+    formatting artifacts such as commas or surrounding text.
+    """
 
     if not isinstance(number, str):
         number = str(number)
 
-    number = re.sub(r"[^\d.]", "", number)
+    normalized = number.replace(",", "").strip()
+    match = re.search(r"[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?", normalized)
 
-    if number == "":
+    if not match:
         return np.nan
 
-    return float(number)
+    try:
+        return float(match.group())
+    except ValueError:
+        return np.nan
 
 
 def create_pydeflate_year(

@@ -1,8 +1,11 @@
 import logging
+
+import numpy as np
 import pandas as pd
 import pytest
 
 from pydeflate.utils import (
+    clean_number,
     create_pydeflate_year,
     flag_missing_pydeflate_data,
     get_matched_pydeflate_data,
@@ -10,6 +13,18 @@ from pydeflate.utils import (
     merge_user_and_pydeflate_data,
 )
 from pydeflate.pydeflate_config import logger as pydeflate_logger
+
+
+def test_clean_number_preserves_sign_and_decimal():
+    assert clean_number("-1,234.56") == pytest.approx(-1234.56)
+
+
+def test_clean_number_supports_scientific_notation():
+    assert clean_number("1e-3") == pytest.approx(0.001)
+
+
+def test_clean_number_returns_nan_when_no_numeric_content():
+    assert np.isnan(clean_number("not a number"))
 
 
 def test_create_pydeflate_year_handles_string_dates():
