@@ -27,18 +27,11 @@ theme:
     text: Inter
     code: Fira Code
   features:
-    - announce.dismiss
-    - content.action.edit
-    - content.action.view
     - content.code.annotate
     - content.code.copy
     - content.tabs.link
-    - content.tooltips
-    - navigation.footer
     - navigation.indexes
     - navigation.instant
-    - navigation.instant.progress
-    - navigation.path
     - navigation.sections
     - navigation.tabs
     - navigation.tabs.sticky
@@ -90,7 +83,7 @@ nav:
   - Home: index.md
   - Getting Started: getting-started.md
   - User Guide:
-      - Deflation: deflation.md
+      - Deflation: deflate.md
       - Currency Exchange: exchange.md
       - Data Sources: data-sources.md
   - Advanced:
@@ -100,6 +93,8 @@ nav:
       - Schema Validation: advanced/validation.md
   - Migration Guide: migration.md
   - FAQ: faq.md
+
+strict: true
 
 extra:
   version:

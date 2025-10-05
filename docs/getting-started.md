@@ -259,7 +259,7 @@ result = imf_gdp_deflate(
 
 Now that you understand the basics, explore specific use cases:
 
-- [**Deflation Guide**](deflation.md) - Detailed examples for all deflation methods
+- [**Deflation Guide**](deflate.md) - Detailed examples for all deflation methods
 - [**Currency Exchange**](exchange.md) - Currency conversion without deflation
 - [**Data Sources**](data-sources.md) - Choosing between IMF, World Bank, and OECD DAC
 

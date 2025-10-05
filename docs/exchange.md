@@ -10,7 +10,7 @@ Use exchange functions when you need to:
 - Apply yearly average exchange rates
 - Work with historical exchange rates from authoritative sources
 
-For combined currency conversion + deflation, see the [Deflation Guide](deflation.md).
+For combined currency conversion + deflation, see the [Deflation Guide](deflate.md).
 
 ## IMF Exchange Rates
 
@@ -513,6 +513,6 @@ print(f"£{my_value_gbp_2021} in 2021 = ${value_usd:.2f}")
 
 ## Next Steps
 
-- [**Deflation Guide**](deflation.md) - Combine exchange with deflation
+- [**Deflation Guide**](deflate.md) - Combine exchange with deflation
 - [**Data Sources**](data-sources.md) - Detailed source comparison
 - [**Advanced Topics**](advanced/context.md) - Parallel processing and caching

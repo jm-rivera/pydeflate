@@ -425,11 +425,11 @@ with warnings.catch_warnings():
 If you encounter issues during migration:
 
 1. Check the [FAQ](faq.md) for common problems
-2. Review [examples in the documentation](deflation.md)
+2. Review [examples in the documentation](deflate.md)
 3. Open an issue on [GitHub](https://github.com/jm-rivera/pydeflate/issues)
 
 ## Next Steps
 
 - [**Getting Started**](getting-started.md) - Learn v2.x basics
-- [**Deflation Guide**](deflation.md) - Explore all deflation functions
+- [**Deflation Guide**](deflate.md) - Explore all deflation functions
 - [**Advanced Features**](advanced/exceptions.md) - Error handling, contexts, plugins
