@@ -4,6 +4,44 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [2.2.0] - 2025-10-05
+### Added
+- **Plugin Architecture**: Register custom data sources without modifying pydeflate code via `register_source()`, `get_source()`, `list_sources()`, and `is_source_registered()`.
+- **Context Management**: New `PydeflateContext` class and context managers (`pydeflate_session()`, `temporary_context()`) for dependency injection, enabling multiple independent cache directories and thread-safe parallel operations.
+- **Exception Hierarchy**: Comprehensive custom exceptions including `PydeflateError` (base), `NetworkError`, `ConfigurationError`, `DataSourceError`, `CacheError`, `MissingDataError`, `SchemaValidationError`, and `PluginError` for fine-grained error handling.
+- **Protocol Definitions**: Explicit `SourceProtocol`, `DeflatorProtocol`, and `ExchangeProtocol` interfaces in `protocols.py` for better type safety and extensibility.
+- **Schema Validation**: Optional Pandera-based validation for IMF, World Bank, and OECD DAC data sources to catch data quality issues early (enable via `PYDEFLATE_ENABLE_VALIDATION` environment variable or context).
+- **Property-Based Testing**: Hypothesis tests verifying mathematical properties (deflation reversibility, exchange rate transitivity, rebasing invariants).
+- **Constants Module**: Centralized constants in `constants.py` eliminating magic strings (`PydeflateColumns`, `CurrencyCodes`, `DataSources`, etc.).
+- **Enhanced Caching**: New `CacheManager` class with thread-safe file locking via `filelock` and platform-appropriate cache directories via `platformdirs`.
+- New dependency: `pandera>=0.20.0` for schema validation.
+- New dependency: `platformdirs>=3.0.0` for cross-platform cache directories.
+- New dependency: `filelock>=3.15.0` for thread-safe cache operations.
+- New dev dependency: `hypothesis>=6.122.3` for property-based testing.
+
+### Fixed
+- Corrected `to_current=True` parameter behavior which was resulted in incorrect calculations
+in certain edge cases.
+
+### Changed
+- **Build System**: Migrated from Poetry to uv for faster dependency resolution and builds.
+- **Project Structure**: Adopted src-based layout (`src/pydeflate/` instead of `pydeflate/`) following modern Python packaging best practices.
+- **Python Version**: Minimum required version increased from 3.10 to 3.11.
+- **Core Architecture**: Rewrote `core/source.py` with cleaner abstractions and improved `Source` class implementation.
+- **Source Modules**: Enhanced `sources/common.py`, `sources/dac.py`, `sources/imf.py`, and `sources/world_bank.py` with better error handling and validation.
+- **Configuration**: Expanded `pydeflate_config.py` with `set_data_dir()` function; `set_pydeflate_path()` now wraps `set_data_dir()` for backward compatibility.
+
+### Improved
+- **Testing Infrastructure**: Reorganized tests into `unit/`, `integration/`, `regression/`, and `property/` directories with comprehensive fixtures in `conftest.py`.
+- **Type Safety**: Added type hints throughout the codebase and protocol definitions for better IDE support and static analysis.
+- **Error Messages**: More descriptive error messages with source context and actionable guidance.
+- **Documentation**: Added advanced usage examples in README covering error handling, plugin system, and context management.
+- **Code Quality**: Consistent code formatting and linting with Ruff.
+
+### Removed
+- Poetry configuration files (`poetry.lock`, `poetry.toml`).
+- Obsolete test files (`tests/test_dac_deflator.py`, `tests/test_dac_totals.py`, `tests/test_wb_ppp_exchange.py`), replaced by improved test suite.
+
 ## [2.1.3] - 2025-06-03
 ### Fixed
 - Accept the `EUR` convenience mapping for IMF and World Bank sources.
