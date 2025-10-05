@@ -1,6 +1,6 @@
 [project]
 name = "pydeflate"
-version = "2.2.0"
+version = "2.3.0"
 description = "Package to convert current prices figures to constant prices and vice versa"
 readme = "README.md"
 requires-python = ">=3.11"

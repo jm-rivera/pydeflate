@@ -12,7 +12,7 @@ pydeflate uses [Material for MkDocs](https://squidfunk.github.io/mkdocs-material
 docs/
 ├── index.md                    # Homepage
 ├── getting-started.md          # Setup and basic usage
-├── deflation.md               # Deflation examples
+├── deflate.md                 # Deflation examples
 ├── exchange.md                # Currency exchange examples
 ├── data-sources.md            # IMF, World Bank, OECD comparison
 ├── migration.md               # v1 to v2 migration guide
@@ -124,8 +124,8 @@ result = imf_gdp_deflate(df, base_year=2015)
 ### Internal Links
 
 ```markdown
-[Link to another page](deflation.md)
-[Link to section](deflation.md#gdp-deflator)
+[Link to another page](deflate.md)
+[Link to section](deflate.md#gdp-deflator)
 ```
 
 ## Deployment

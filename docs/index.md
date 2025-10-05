@@ -174,7 +174,7 @@ Most money series mix price changes with quantities. To measure real change, con
 ## Next Steps
 
 - [Getting Started](getting-started.md) - Detailed setup and DataFrame requirements
-- [Deflation Guide](deflation.md) - All deflation methods with examples
+- [Deflation Guide](deflate.md) - All deflation methods with examples
 - [Currency Exchange](exchange.md) - Currency conversion examples
 - [Data Sources](data-sources.md) - When to use IMF vs World Bank vs OECD DAC
 

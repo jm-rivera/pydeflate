@@ -327,6 +327,6 @@ This data is provided based on the terms and conditions set by the original sour
 
 ## Next Steps
 
-- [**Deflation Guide**](deflation.md) - Apply deflators from each source
+- [**Deflation Guide**](deflate.md) - Apply deflators from each source
 - [**Currency Exchange**](exchange.md) - Use exchange rates from each source
 - [**Advanced Topics**](advanced/plugins.md) - Register custom data sources

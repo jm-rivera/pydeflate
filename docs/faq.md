@@ -477,5 +477,5 @@ comparison = df.merge(
 ## Next Steps
 
 - [**Getting Started**](getting-started.md) - Basic setup and usage
-- [**Deflation Guide**](deflation.md) - Comprehensive deflation examples
+- [**Deflation Guide**](deflate.md) - Comprehensive deflation examples
 - [**Advanced Topics**](advanced/exceptions.md) - Error handling, contexts, plugins

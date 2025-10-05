@@ -1,8 +1,8 @@
-# Deflation Guide
+# Usage Guide
 
 This guide covers all deflation methods in pydeflate with practical examples. Deflation converts between current and constant prices, adjusting for inflation and exchange rate changes.
 
-## Understanding Deflation
+## Understanding price conversion
 
 **Current prices** reflect the value at the time of measurement, including inflation.
 
@@ -387,6 +387,112 @@ result = result.sort_values(['donor', 'year'])
 result['growth'] = result.groupby('donor')['oda_2018_usd'].pct_change() * 100
 
 print(result[['donor', 'year', 'oda_current_usd', 'oda_2018_usd', 'growth']])
+```
+
+## Getting Deflators Directly
+
+**New in v2.3.0**: You can retrieve deflator data as DataFrames without providing your own data. This is useful for:
+
+- Inspecting deflator values
+- Analyzing deflator trends
+- Pre-computing deflators for manual calculations
+- Understanding how deflators change over time
+
+### Basic Usage
+
+```python
+from pydeflate import get_imf_gdp_deflators, set_pydeflate_path
+
+set_pydeflate_path("./data")
+
+# Get deflators for specific countries and years
+deflators = get_imf_gdp_deflators(
+    base_year=2015,
+    source_currency="USA",
+    target_currency="EUR",
+    countries=["USA", "FRA", "GBR"],  # Optional filter
+    years=range(2010, 2024),  # Optional filter
+)
+
+# Returns DataFrame with: iso_code, year, deflator
+print(deflators)
+```
+
+### Available Functions
+
+All deflator functions have corresponding "get" versions:
+
+- `get_imf_gdp_deflators()` - IMF GDP deflators
+- `get_imf_cpi_deflators()` - IMF CPI deflators
+- `get_imf_cpi_e_deflators()` - IMF end-of-period CPI deflators
+- `get_wb_gdp_deflators()` - World Bank GDP deflators
+- `get_wb_gdp_linked_deflators()` - World Bank linked GDP deflators
+- `get_wb_cpi_deflators()` - World Bank CPI deflators
+- `get_oecd_dac_deflators()` - OECD DAC deflators
+
+### Inspecting Components
+
+Use `include_components=True` to see how deflators are calculated:
+
+```python
+deflators = get_imf_gdp_deflators(
+    base_year=2015,
+    source_currency="USA",
+    target_currency="EUR",
+    countries=["USA"],
+    include_components=True,  # Add component columns
+)
+
+# Returns: iso_code, year, deflator, price_deflator, exchange_deflator, exchange_rate
+print(deflators)
+```
+
+The deflator is calculated as: `price_deflator / (exchange_deflator * exchange_rate)`
+
+### Example: Analyzing Deflator Trends
+
+```python
+import matplotlib.pyplot as plt
+from pydeflate import get_imf_gdp_deflators
+
+# Get deflators for USA over time
+deflators = get_imf_gdp_deflators(
+    base_year=2015,
+    countries=["USA"],
+    years=range(2000, 2024)
+)
+
+# Plot the trend
+plt.figure(figsize=(10, 6))
+plt.plot(deflators["year"], deflators["deflator"], marker='o')
+plt.title("US GDP Deflator Trend (Base Year 2015)")
+plt.xlabel("Year")
+plt.ylabel("Deflator")
+plt.grid(True)
+plt.show()
+```
+
+### Example: Manual Calculation
+
+```python
+from pydeflate import get_imf_gdp_deflators
+
+# Get deflators
+deflators = get_imf_gdp_deflators(
+    base_year=2020,
+    source_currency="USA",
+    target_currency="USA"
+)
+
+# Manual deflation
+my_value_2021 = 100  # USD in 2021
+deflator_2021 = deflators[
+    (deflators["iso_code"] == "USA") &
+    (deflators["year"] == 2021)
+]["deflator"].iloc[0]
+
+constant_value = my_value_2021 / deflator_2021
+print(f"${my_value_2021} in 2021 = ${constant_value:.2f} in constant 2020 USD")
 ```
 
 ## Next Steps
