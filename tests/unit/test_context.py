@@ -80,7 +80,9 @@ class TestDefaultContext:
 
     def test_set_default_context_changes_default(self, tmp_path):
         """set_default_context changes the default for the thread."""
-        custom_ctx = PydeflateContext.create(data_dir=tmp_path, log_level=logging.WARNING)
+        custom_ctx = PydeflateContext.create(
+            data_dir=tmp_path, log_level=logging.WARNING
+        )
         set_default_context(custom_ctx)
 
         retrieved = get_default_context()

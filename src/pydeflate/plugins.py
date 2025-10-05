@@ -272,7 +272,9 @@ def _register_builtin_sources():
 
     _global_registry.register("IMF", source_class=IMF, override=True)
     _global_registry.register("World Bank", source_class=WorldBank, override=True)
-    _global_registry.register("World Bank PPP", source_class=WorldBankPPP, override=True)
+    _global_registry.register(
+        "World Bank PPP", source_class=WorldBankPPP, override=True
+    )
     _global_registry.register("DAC", source_class=DAC, override=True)
 
     # Aliases for convenience

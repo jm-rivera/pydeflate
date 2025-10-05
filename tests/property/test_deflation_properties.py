@@ -65,7 +65,11 @@ class TestDeflatorRebasing:
             def __init__(self, data):
                 self.name = "Test"
                 self.data = data
-                self._idx = ["pydeflate_year", "pydeflate_entity_code", "pydeflate_iso3"]
+                self._idx = [
+                    "pydeflate_year",
+                    "pydeflate_entity_code",
+                    "pydeflate_iso3",
+                ]
 
             def price_deflator(self, kind):
                 return self.data
@@ -111,7 +115,11 @@ class TestDeflatorRebasing:
             def __init__(self, data):
                 self.name = "Test"
                 self.data = data
-                self._idx = ["pydeflate_year", "pydeflate_entity_code", "pydeflate_iso3"]
+                self._idx = [
+                    "pydeflate_year",
+                    "pydeflate_entity_code",
+                    "pydeflate_iso3",
+                ]
 
             def price_deflator(self, kind):
                 return self.data

@@ -85,7 +85,6 @@ def _base_operation(
         "pydeflate_EXCHANGE" if exchange else "pydeflate_deflator"
     ]
 
-    # Apply the correct operation based on `exchange` and `reversed`
     if (exchange and not reversed_) or (not exchange and reversed_):
         base_obj._merged_data[target_value_column] = (x * y).round(6)
     else:
@@ -299,33 +298,56 @@ class BaseDeflate:
         # drop where necessary data is missing
         data = data.set_index(self._idx).dropna(how="any").reset_index()
 
+        # For to_current=True, we need the base year exchange rate
+        # Extract base year exchange rates and merge them
+        if self.to_current:
+            entity_col = self._idx[1]  # pydeflate_iso3 or pydeflate_entity_code
+            base_year_rates = (
+                data[data["pydeflate_year"] == self.price_deflator.base_year]
+                .filter([entity_col, "pydeflate_EXCHANGE"])
+                .rename(columns={"pydeflate_EXCHANGE": "pydeflate_EXCHANGE_BASE"})
+            )
+            data = data.merge(base_year_rates, on=entity_col, how="left")
+
         # Calculate price-exchange deflator
         data["pydeflate_deflator"] = self._calculate_deflator_value(
             data[f"pydeflate_{self.price_deflator.price_kind}"],
             data["pydeflate_EXCHANGE_D"],
             data[f"pydeflate_EXCHANGE"],
+            data.get("pydeflate_EXCHANGE_BASE", data[f"pydeflate_EXCHANGE"]),
         )
 
         self.pydeflate_data = data
 
     def _calculate_deflator_value(
-        self, price_def: pd.Series, exchange_def: pd.Series, exchange_rate: pd.Series
+        self,
+        price_def: pd.Series,
+        exchange_def: pd.Series,
+        exchange_rate: pd.Series,
+        exchange_rate_base: pd.Series,
     ):
         """Compute the combined deflator value using price deflator, exchange deflator, and rates.
 
         Args:
             price_def (pd.Series): Series of price deflator values.
             exchange_def (pd.Series): Series of exchange deflator values.
-            exchange_rate (pd.Series): Series of exchange rates.
+            exchange_rate (pd.Series): Series of exchange rates for each year.
+            exchange_rate_base (pd.Series): Series of exchange rates at base year.
 
         Returns:
             pd.Series: Series with combined deflator values.
         """
-        return (
-            (exchange_def * exchange_rate) / price_def
-            if self.to_current
-            else price_def / (exchange_def * exchange_rate)
-        )
+        # Calculate deflator based on direction of conversion
+        if self.to_current:
+            # For constant -> current: deflator = 100 / (exchange_rate_base * price_def)
+            # Use BASE YEAR exchange rate (not year's rate) because:
+            # - We start with constant values at base year prices
+            # - The base year exchange rate converts between currencies at base year
+            # - The price_def adjusts for price level changes from base year to target year
+            return 100 / (exchange_rate_base * price_def)
+        else:
+            # For current -> constant: standard formula
+            return price_def / (exchange_def * exchange_rate)
 
     def _merge_components(self, df: pd.DataFrame, other: pd.DataFrame):
         """Combine data components, merging deflator and exchange rate information.
