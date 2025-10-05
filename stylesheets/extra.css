@@ -1,0 +1,195 @@
+/* Custom pydeflate documentation styles */
+
+:root {
+  /* Custom color palette */
+  --md-primary-fg-color: #1e3a8a;
+  --md-primary-fg-color--light: #3b82f6;
+  --md-primary-fg-color--dark: #1e40af;
+  --md-accent-fg-color: #f97316;
+}
+
+/* Dark mode colors */
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #1e40af;
+  --md-primary-fg-color--light: #1e3a8a;
+  --md-primary-fg-color--dark: #2563eb;
+  --md-accent-fg-color: #fb923c;
+}
+
+/* Hero section styling */
+.md-typeset h1:first-child {
+  font-weight: 700;
+  font-size: 3em;
+  background: linear-gradient(135deg, var(--md-primary-fg-color), var(--md-accent-fg-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.5em;
+}
+
+/* Improve code blocks */
+.md-typeset code {
+  background-color: rgba(59, 130, 246, 0.1);
+  border-radius: 4px;
+  padding: 0.15em 0.4em;
+  font-size: 0.85em;
+}
+
+.md-typeset pre > code {
+  background-color: transparent;
+  padding: 0;
+}
+
+/* Better badges */
+.md-typeset img[src*="shields.io"],
+.md-typeset img[src*="pepy.tech"] {
+  margin: 0.2em 0.2em 0 0;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+
+/* Better admonitions */
+.md-typeset .admonition {
+  border-radius: 8px;
+  border-left-width: 4px;
+}
+
+.md-typeset .admonition.tip {
+  border-left-color: #10b981;
+}
+
+.md-typeset .admonition.warning {
+  border-left-color: #f59e0b;
+}
+
+.md-typeset .admonition.note {
+  border-left-color: #3b82f6;
+}
+
+.md-typeset .admonition.danger {
+  border-left-color: #ef4444;
+}
+
+/* Code block headers */
+.md-typeset .highlight > pre {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Tables */
+.md-typeset table:not([class]) {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.md-typeset table:not([class]) th {
+  background: var(--md-primary-fg-color);
+  color: white;
+  font-weight: 600;
+  text-align: left;
+}
+
+.md-typeset table:not([class]) tr:hover {
+  background-color: rgba(59, 130, 246, 0.05);
+}
+
+/* Button styling */
+.md-typeset .md-button {
+  border-radius: 6px;
+  font-weight: 600;
+  padding: 0.625em 2em;
+  transition: all 0.2s;
+}
+
+.md-typeset .md-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.md-typeset .md-button--primary {
+  background: linear-gradient(135deg, var(--md-primary-fg-color), var(--md-primary-fg-color--dark));
+  border: none;
+}
+
+/* Footer improvements */
+.md-footer-meta {
+  background-color: var(--md-default-bg-color);
+}
+
+/* Navigation breadcrumbs */
+.md-path {
+  color: var(--md-default-fg-color--light);
+}
+
+/* Improve inline code in headers */
+.md-typeset h1 code,
+.md-typeset h2 code,
+.md-typeset h3 code {
+  background-color: rgba(59, 130, 246, 0.15);
+  font-size: 0.9em;
+}
+
+
+/* Status badges container */
+.badges {
+  margin: 1.5rem 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* Quick links section */
+.quick-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.quick-link {
+  display: block;
+  padding: 1rem;
+  background: linear-gradient(135deg, var(--md-primary-fg-color), var(--md-primary-fg-color--dark));
+  color: white !important;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.quick-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+  text-decoration: none;
+}
+
+
+/* Improve scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--md-default-bg-color);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--md-primary-fg-color);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--md-primary-fg-color--dark);
+}
+
+/* Responsive improvements */
+@media screen and (max-width: 76.1875em) {
+  .md-typeset h1:first-child {
+    font-size: 2em;
+  }
+}
