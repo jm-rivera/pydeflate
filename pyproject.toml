@@ -30,6 +30,11 @@ dev = [
     "pytest-cov>=7.0.0",
     "ruff>=0.13.3",
 ]
+docs = [
+    "mkdocs-material>=9.5.0",
+    "mkdocs-minify-plugin>=0.8.0",
+    "mkdocstrings[python]>=0.26.0",
+]
 
 [project.urls]
 Homepage = "https://github.com/jm-rivera/pydeflate"

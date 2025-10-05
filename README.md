@@ -3,6 +3,7 @@
 [![pypi](https://img.shields.io/pypi/v/pydeflate.svg)](https://pypi.python.org/pypi/pydeflate)
 [![black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Downloads](https://pepy.tech/badge/pydeflate/month)](https://pepy.tech/project/pydeflate)
+[![Documentation](https://img.shields.io/badge/docs-mkdocs-blue)](https://jm-rivera.github.io/pydeflate/)
 
 **pydeflate** is a Python package to:
 - Convert current price data to constant prices.
@@ -10,6 +11,8 @@
 - Convert data from one currency to another (in both current and constant prices).
 
 When converting to or from constant prices, it takes into account changes in prices and exchange rates over time. This allows for accurate comparisons across years, countries, and currencies.
+
+📚 **[Read the full documentation →](https://jm-rivera.github.io/pydeflate/)**
 
 ## Important Note
 
