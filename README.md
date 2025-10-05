@@ -361,3 +361,22 @@ This is useful for:
 - Customizing logging verbosity
 - Testing with temporary cache directories
 
+## Documentation
+
+For comprehensive documentation including detailed examples, advanced features, and troubleshooting:
+
+**[📚 Full Documentation](https://jm-rivera.github.io/pydeflate/)**
+
+The documentation includes:
+- [Getting Started Guide](https://jm-rivera.github.io/pydeflate/getting-started/) - Setup and DataFrame requirements
+- [Deflation Guide](https://jm-rivera.github.io/pydeflate/deflation/) - All deflation methods with examples
+- [Currency Exchange](https://jm-rivera.github.io/pydeflate/exchange/) - Currency conversion examples
+- [Data Sources](https://jm-rivera.github.io/pydeflate/data-sources/) - IMF, World Bank, and OECD DAC comparison
+- [Advanced Topics](https://jm-rivera.github.io/pydeflate/advanced/exceptions/) - Error handling, contexts, plugins, validation
+- [Migration Guide](https://jm-rivera.github.io/pydeflate/migration/) - v1 to v2 migration
+- [FAQ](https://jm-rivera.github.io/pydeflate/faq/) - Common questions and troubleshooting
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request or open an issue on [GitHub](https://github.com/jm-rivera/pydeflate).
+
