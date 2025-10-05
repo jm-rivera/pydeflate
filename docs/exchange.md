@@ -383,6 +383,134 @@ comparison['imf_dac_diff'] = comparison['usd_imf'] - comparison['usd_dac']
 print(comparison[['year', 'imf_wb_diff', 'imf_dac_diff']])
 ```
 
+## Getting Exchange Rates Directly
+
+**New in v2.3.0**: You can retrieve exchange rate data as DataFrames without providing your own data. This is useful for:
+
+- Inspecting exchange rates between currencies
+- Analyzing exchange rate trends
+- Pre-computing rates for manual calculations
+- Comparing rates across sources
+
+### Basic Usage
+
+```python
+from pydeflate import get_imf_exchange_rates, set_pydeflate_path
+
+set_pydeflate_path("./data")
+
+# Get exchange rates for specific currency pairs
+rates = get_imf_exchange_rates(
+    source_currency="USD",
+    target_currency="EUR",
+    countries=["USA", "FRA", "GBR"],  # Optional filter
+    years=range(2010, 2024),  # Optional filter
+)
+
+# Returns DataFrame with: iso_code, year, exchange_rate
+print(rates)
+```
+
+### Available Functions
+
+All exchange functions have corresponding "get" versions:
+
+- `get_imf_exchange_rates()` - IMF exchange rates
+- `get_wb_exchange_rates()` - World Bank exchange rates
+- `get_wb_ppp_rates()` - World Bank PPP conversion rates
+- `get_oecd_dac_exchange_rates()` - OECD DAC exchange rates
+
+### Example: Analyzing Exchange Rate Trends
+
+```python
+import matplotlib.pyplot as plt
+from pydeflate import get_imf_exchange_rates
+
+# Get EUR/USD rates over time
+rates = get_imf_exchange_rates(
+    source_currency="EUR",
+    target_currency="USD",
+    years=range(2000, 2024)
+)
+
+# Filter for a specific country (e.g., France for EUR)
+fra_rates = rates[rates["iso_code"] == "FRA"]
+
+# Plot the trend
+plt.figure(figsize=(10, 6))
+plt.plot(fra_rates["year"], fra_rates["exchange_rate"], marker='o')
+plt.title("EUR/USD Exchange Rate (IMF)")
+plt.xlabel("Year")
+plt.ylabel("Exchange Rate")
+plt.grid(True)
+plt.show()
+```
+
+### Example: Comparing Sources
+
+```python
+from pydeflate import (
+    get_imf_exchange_rates,
+    get_wb_exchange_rates,
+    get_oecd_dac_exchange_rates
+)
+
+# Get GBP to USD rates from different sources
+imf_rates = get_imf_exchange_rates(
+    source_currency="GBR",
+    target_currency="USA",
+    countries=["GBR"],
+    years=[2020, 2021, 2022]
+)
+
+wb_rates = get_wb_exchange_rates(
+    source_currency="GBR",
+    target_currency="USA",
+    countries=["GBR"],
+    years=[2020, 2021, 2022]
+)
+
+dac_rates = get_oecd_dac_exchange_rates(
+    source_currency="GBR",
+    target_currency="USA",
+    countries=["GBR"],
+    years=[2020, 2021, 2022]
+)
+
+# Compare
+import pandas as pd
+comparison = pd.DataFrame({
+    'year': imf_rates['year'],
+    'imf_rate': imf_rates['exchange_rate'],
+    'wb_rate': wb_rates['exchange_rate'],
+    'dac_rate': dac_rates['exchange_rate']
+})
+
+print(comparison)
+```
+
+### Example: Manual Currency Conversion
+
+```python
+from pydeflate import get_imf_exchange_rates
+
+# Get rates
+rates = get_imf_exchange_rates(
+    source_currency="GBP",
+    target_currency="USD"
+)
+
+# Manual conversion
+my_value_gbp_2021 = 100  # GBP in 2021
+rate_2021 = rates[
+    (rates["iso_code"] == "GBR") &
+    (rates["year"] == 2021)
+]["exchange_rate"].iloc[0]
+
+value_usd = my_value_gbp_2021 * rate_2021
+print(f"£{my_value_gbp_2021} in 2021 = ${value_usd:.2f}")
+```
+
 ## Next Steps
 
 - [**Deflation Guide**](deflation.md) - Combine exchange with deflation

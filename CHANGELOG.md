@@ -4,6 +4,29 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [2.3.0] - 2025-10-05
+### Added
+- **Get Deflators Functions**: New functions to retrieve deflator data directly as DataFrames without requiring user data:
+  - `get_imf_gdp_deflators()`, `get_imf_cpi_deflators()`, `get_imf_cpi_e_deflators()`
+  - `get_wb_gdp_deflators()`, `get_wb_gdp_linked_deflators()`, `get_wb_cpi_deflators()`
+  - `get_oecd_dac_deflators()`
+- **Get Exchange Rates Functions**: New functions to retrieve exchange rate data directly as DataFrames:
+  - `get_imf_exchange_rates()`, `get_wb_exchange_rates()`
+  - `get_wb_ppp_rates()`, `get_oecd_dac_exchange_rates()`
+- **Flexible Filtering**: All new functions support optional filtering by countries and years via `countries` and `years` parameters.
+- **Component Breakdown**: `include_components=True` parameter for deflator functions to retrieve price deflator, exchange deflator, and exchange rate components separately for analysis.
+
+### Changed
+- Documentation: Updated README.md with extensive examples of the new get deflator and exchange rate functions.
+- Documentation: Added new section "Getting Deflators and Exchange Rates Directly" with common use cases.
+
+### Use Cases
+The new functions enable:
+- Inspecting and analyzing deflator trends over time
+- Pre-computing deflators for custom calculations
+- Understanding the components that make up deflators
+- Retrieving exchange rates for analysis without converting data
+
 ## [2.2.0] - 2025-10-05
 ### Added
 - **Plugin Architecture**: Register custom data sources without modifying pydeflate code via `register_source()`, `get_source()`, `list_sources()`, and `is_source_registered()`.

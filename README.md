@@ -36,6 +36,11 @@ When converting to or from constant prices, it takes into account changes in pri
 - [Currency Conversion](#currency-conversion)
   - [Example](#example-currency-conversion)
 
+- [Getting Deflators and Exchange Rates Directly](#getting-deflators-and-exchange-rates-directly)
+  - [Getting Deflators](#getting-deflators)
+  - [Getting Exchange Rates](#getting-exchange-rates)
+  - [Common Use Cases](#common-use-cases)
+
 - [Example: Using Source-Specific Codes](#example-using-source-specific-codes)
 
 - [Data Sources and Method Options](#data-sources-and-method-options)
@@ -158,6 +163,111 @@ df_can = oecd_dac_exchange(
     value_column="value", # Column to be converted
     target_value_column="value_can" # It could also be the same as value_column
 )
+```
+
+## Getting Deflators and Exchange Rates Directly
+
+**New in v2.3.0**: You can now retrieve deflator and exchange rate data directly as DataFrames, without needing to provide your own data. This is useful for inspecting deflators, analyzing trends, or pre-computing values for later use.
+
+### Getting Deflators
+
+```python
+from pydeflate import get_imf_gdp_deflators, set_pydeflate_path
+
+# Specify the path where deflator data will be saved
+set_pydeflate_path("path/to/data/folder")
+
+# Get deflators for specific countries and years
+deflators = get_imf_gdp_deflators(
+    base_year=2015,
+    source_currency="USA",
+    target_currency="EUR",
+    countries=["USA", "FRA", "GBR"],  # Optional: filter specific countries
+    years=range(2010, 2024),  # Optional: filter specific years
+)
+
+# Returns a DataFrame with columns: iso_code, year, deflator
+print(deflators.head())
+```
+
+You can also get the individual components that make up the deflator:
+
+```python
+# Include price deflator, exchange deflator, and exchange rate components
+deflators_detailed = get_imf_gdp_deflators(
+    base_year=2015,
+    source_currency="USA",
+    target_currency="EUR",
+    include_components=True,  # Adds price_deflator, exchange_deflator, exchange_rate columns
+)
+```
+
+### Available Get Deflator Functions
+
+- `get_imf_gdp_deflators`: Get IMF GDP deflators
+- `get_imf_cpi_deflators`: Get IMF CPI deflators
+- `get_imf_cpi_e_deflators`: Get IMF end-of-period CPI deflators
+- `get_wb_gdp_deflators`: Get World Bank GDP deflators
+- `get_wb_gdp_linked_deflators`: Get World Bank linked GDP deflators
+- `get_wb_cpi_deflators`: Get World Bank CPI deflators
+- `get_oecd_dac_deflators`: Get OECD DAC deflators
+
+### Getting Exchange Rates
+
+```python
+from pydeflate import get_imf_exchange_rates
+
+# Get exchange rates for specific currency pairs
+rates = get_imf_exchange_rates(
+    source_currency="USD",
+    target_currency="EUR",
+    countries=["USA", "FRA", "GBR"],  # Optional: filter specific countries
+    years=range(2010, 2024),  # Optional: filter specific years
+)
+
+# Returns a DataFrame with columns: iso_code, year, exchange_rate
+print(rates.head())
+```
+
+### Available Get Exchange Rate Functions
+
+- `get_imf_exchange_rates`: Get IMF exchange rates
+- `get_wb_exchange_rates`: Get World Bank exchange rates
+- `get_wb_ppp_rates`: Get World Bank PPP conversion rates
+- `get_oecd_dac_exchange_rates`: Get OECD DAC exchange rates
+
+### Common Use Cases
+
+**Analyzing deflator trends:**
+```python
+import matplotlib.pyplot as plt
+
+# Get US GDP deflators over time
+deflators = get_imf_gdp_deflators(
+    base_year=2015,
+    countries=["USA"],
+    years=range(2000, 2024)
+)
+
+plt.plot(deflators["year"], deflators["deflator"])
+plt.title("US GDP Deflator (Base Year 2015)")
+plt.show()
+```
+
+**Pre-computing deflators for manual calculations:**
+```python
+# Get deflators
+deflators = get_imf_gdp_deflators(
+    base_year=2020,
+    source_currency="USA",
+    target_currency="EUR"
+)
+
+# Use in your own calculations
+my_value_2021 = 100  # USD in 2021
+deflator_2021 = deflators[(deflators["iso_code"] == "USA") &
+                          (deflators["year"] == 2021)]["deflator"].iloc[0]
+constant_value = my_value_2021 / deflator_2021
 ```
 
 ## Example: Using Source-Specific Codes
