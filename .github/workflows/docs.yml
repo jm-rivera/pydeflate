@@ -1,13 +1,8 @@
 name: Deploy Documentation
 
 on:
-  push:
-    branches:
-      - main
-      - mkdocs
-  pull_request:
-    branches:
-      - main
+  release:
+    types: [published]
   workflow_dispatch:
 
 permissions:
@@ -46,6 +41,5 @@ jobs:
           uv run mkdocs build --clean --strict
 
       - name: Deploy to GitHub Pages
-        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/mkdocs')
         run: |
           uv run mkdocs gh-deploy --force
