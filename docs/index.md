@@ -10,7 +10,7 @@
 
 <div class="quick-links">
   <a href="getting-started/" class="quick-link">Get Started</a>
-  <a href="deflation/" class="quick-link">Deflation Guide</a>
+  <a href="deflate/" class="quick-link">Usage Guide</a>
   <a href="data-sources/" class="quick-link">Data Sources</a>
   <a href="faq/" class="quick-link">FAQ</a>
 </div>
