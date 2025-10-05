@@ -257,4 +257,104 @@ Pydeflate relies on data from external sources. If there are missing values in t
 
 Pydeflate periodically updates its underlying data from the World Bank, IMF, and OECD. If the data on your system is older than 50 days, pydeflate will display a warning upon import.
 
+## Advanced Features
+
+### Error Handling
+
+Pydeflate v2.1.3+ provides specific exception types for better error handling:
+
+```python
+from pydeflate import imf_gdp_deflate
+from pydeflate.exceptions import NetworkError, ConfigurationError, MissingDataError
+
+try:
+    result = imf_gdp_deflate(df, base_year=2015, source_currency="USA", target_currency="EUR")
+except NetworkError as e:
+    # Handle network failures (retry, fallback to cached data, etc.)
+    print(f"Network error: {e}")
+    # Implement retry logic
+except ConfigurationError as e:
+    # Handle invalid parameters (wrong currency codes, missing columns, etc.)
+    print(f"Configuration error: {e}")
+    raise
+except MissingDataError as e:
+    # Handle missing deflator/exchange data for specific country-year combinations
+    print(f"Missing data: {e}")
+    # Use alternative source or fill gaps
+```
+
+Available exception types:
+- `PydeflateError`: Base exception for all pydeflate errors
+- `NetworkError`: Network-related failures
+- `ConfigurationError`: Invalid parameters or configuration
+- `DataSourceError`: Issues loading or parsing data from sources
+- `CacheError`: Cache operation failures
+- `MissingDataError`: Required deflator/exchange data unavailable
+- `SchemaValidationError`: Data validation failures
+
+### Custom Data Sources (Plugin System)
+
+You can register custom data sources without modifying pydeflate's code:
+
+```python
+from pydeflate.plugins import register_source, list_sources
+
+# Define your custom source
+@register_source("my_central_bank")
+class MyCentralBankSource:
+    def __init__(self, update: bool = False):
+        self.name = "my_central_bank"
+        self.data = self.load_my_data(update)  # Your data loading logic
+        self._idx = ["pydeflate_year", "pydeflate_entity_code", "pydeflate_iso3"]
+
+    def lcu_usd_exchange(self):
+        # Return exchange rate data
+        return self.data.filter(self._idx + ["pydeflate_EXCHANGE"])
+
+    def price_deflator(self, kind="NGDP_D"):
+        # Return deflator data
+        return self.data.filter(self._idx + [f"pydeflate_{kind}"])
+
+    def validate(self):
+        # Validate data format
+        if self.data.empty:
+            raise ValueError("No data loaded")
+
+# List all available sources
+print(list_sources())  # ['DAC', 'IMF', 'World Bank', 'my_central_bank', ...]
+
+# Your custom source is now available for use with pydeflate
+```
+
+### Advanced Configuration
+
+For advanced use cases, you can use context managers to customize pydeflate's behavior:
+
+```python
+from pydeflate.context import pydeflate_session
+import logging
+
+# Use a custom cache directory and logging level
+with pydeflate_session(data_dir="/tmp/my_cache", log_level=logging.DEBUG) as ctx:
+    result = imf_gdp_deflate(df, base_year=2015, ...)
+    # Data is cached in /tmp/my_cache
+    # Debug logging is enabled
+
+# Or set a default context for your entire application
+from pydeflate.context import PydeflateContext, set_default_context
+
+ctx = PydeflateContext.create(
+    data_dir="/app/data/pydeflate_cache",
+    log_level=logging.INFO
+)
+set_default_context(ctx)
+
+# All subsequent pydeflate operations use this configuration
+```
+
+This is useful for:
+- Using different cache directories for different projects
+- Running multiple pydeflate operations in parallel without cache conflicts
+- Customizing logging verbosity
+- Testing with temporary cache directories
 

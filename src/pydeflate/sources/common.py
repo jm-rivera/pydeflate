@@ -176,39 +176,68 @@ def compute_exchange_deflator(
         pd.DataFrame: DataFrame with an additional column for the exchange rate deflator.
     """
 
-    def _add_deflator(
+    def _compute_deflator_for_group(
         group: pd.DataFrame,
-        measure: str | None = "NGDPD_D",
-        exchange: str = "EXCHANGE",
-        year: str = "year",
+        measure: str | None,
+        exchange_col: str,
+        year_col: str,
+        deflator_col: str,
     ) -> pd.DataFrame:
-        if exchange.endswith("_to") or exchange.endswith("_from"):
-            exchange_name = exchange.rsplit("_", 1)[0]
-        else:
-            exchange_name = exchange
-
+        """Compute deflator for a single group and add it as a column."""
+        # Identify base year
         if measure is not None:
-            base_year = identify_base_year(group, measure=measure, year=year)
+            base_year = identify_base_year(group, measure=measure, year=year_col)
         else:
-            base_year = group.dropna(subset=[exchange])[year].max()
+            valid_rows = group.dropna(subset=[exchange_col])
+            base_year = valid_rows[year_col].max() if not valid_rows.empty else None
 
-        # If no base year is found, return the group unchanged
+        # If no base year found, return group without deflator column
         if base_year is None or pd.isna(base_year):
             return group
 
         # Extract the exchange rate value for the base year
-        base_value = group.loc[group[year] == base_year, exchange].values
+        base_value_rows = group.loc[group[year_col] == base_year, exchange_col]
 
-        # If base value is found and valid, calculate the deflator
-        if base_value.size > 0 and pd.notna(base_value[0]):
-            group[f"{exchange_name}_D"] = round(
-                100 * group[exchange] / base_value[0], 6
-            )
+        # If no valid base value, return group without deflator column
+        if base_value_rows.empty or pd.isna(base_value_rows.iloc[0]):
+            return group
+
+        # Calculate and add deflator column
+        base_value = base_value_rows.iloc[0]
+        group = group.copy()
+        group[deflator_col] = round(100 * group[exchange_col] / base_value, 6)
+
         return group
 
     if grouper is None:
         grouper = ["entity", "entity_code"]
 
-    return df.groupby(grouper, group_keys=False).apply(
-        _add_deflator, measure=base_year_measure, exchange=exchange, year=year
-    )
+    # Determine the exchange column name for the deflator
+    if exchange.endswith("_to") or exchange.endswith("_from"):
+        exchange_name = exchange.rsplit("_", 1)[0]
+    else:
+        exchange_name = exchange
+
+    deflator_col = f"{exchange_name}_D"
+
+    # Process each group and concatenate results
+    # This approach avoids the FutureWarning from groupby().apply() operating on grouping columns
+    processed_groups = []
+    for name, group in df.groupby(grouper, sort=False):
+        processed_group = _compute_deflator_for_group(
+            group=group,
+            measure=base_year_measure,
+            exchange_col=exchange,
+            year_col=year,
+            deflator_col=deflator_col,
+        )
+        processed_groups.append(processed_group)
+
+    # Concatenate all processed groups and restore original row order
+    result = pd.concat(processed_groups, ignore_index=False)
+
+    # Sort by index to restore original row order
+    # (groupby may have changed the order when grouping rows together)
+    result = result.sort_index()
+
+    return result
