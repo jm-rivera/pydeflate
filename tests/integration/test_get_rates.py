@@ -75,9 +75,9 @@ def test_get_exchange_rates_consistency_with_exchange(sample_source_frames):
     )
 
     # Get the exchange rate value
-    rate_value = rates[
-        (rates["iso_code"] == "FRA") & (rates["year"] == 2021)
-    ]["exchange_rate"].iloc[0]
+    rate_value = rates[(rates["iso_code"] == "FRA") & (rates["year"] == 2021)][
+        "exchange_rate"
+    ].iloc[0]
 
     # The exchanged value should equal original * rate
     expected = 100.0 * rate_value

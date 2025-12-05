@@ -66,7 +66,9 @@ def _get_exchange_rates(exchange_source_cls, **fixed_params):
             data = exchange.pydeflate_data.copy()
 
             # Determine the entity column based on use_source_codes
-            entity_col = "pydeflate_entity_code" if use_source_codes else "pydeflate_iso3"
+            entity_col = (
+                "pydeflate_entity_code" if use_source_codes else "pydeflate_iso3"
+            )
 
             # Filter by countries if specified
             if countries is not None:

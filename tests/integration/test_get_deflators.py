@@ -104,9 +104,7 @@ def test_get_deflators_consistency_with_deflate(sample_source_frames):
     )
 
     # Create test data
-    test_data = pd.DataFrame(
-        {"iso_code": ["USA"], "year": [2021], "value": [100.0]}
-    )
+    test_data = pd.DataFrame({"iso_code": ["USA"], "year": [2021], "value": [100.0]})
 
     # Deflate using the regular function
     deflated = imf_gdp_deflate(data=test_data, base_year=2022, value_column="value")
