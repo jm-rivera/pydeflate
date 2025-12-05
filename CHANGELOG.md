@@ -4,6 +4,10 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [2.3.1] - 2025-12-05
+### Changed
+- Increased minimum `imf-reader` version to 1.4.1 to support the new IMF SDMX API for fetching latest data.
+
 ## [2.3.0] - 2025-10-05
 ### Added
 - **Get Deflators Functions**: New functions to retrieve deflator data directly as DataFrames without requiring user data:
