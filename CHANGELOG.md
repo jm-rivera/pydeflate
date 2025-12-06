@@ -2,7 +2,11 @@
 
 All notable changes to this project are documented in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+
+## [2.3.2] - 2025-12-06
+### Fixed
+- Fixed "Euro area" entity name not mapping to EUR ISO3 code, which caused `ValueError: No currency exchange data for to_='EUR'` when using IMF data with EUR currency conversions.
+- Added additional entity name mappings for DAC data variants ("DAC Countries, Total", "Total DAC") to ensure consistent ISO3 code resolution.
 
 ## [2.3.1] - 2025-12-05
 ### Changed
