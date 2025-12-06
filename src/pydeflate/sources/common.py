@@ -107,8 +107,11 @@ def add_pydeflate_iso3(
         additional_mapping={
             "World": "WLD",
             "European Union": "EUR",
+            "Euro area": "EUR",
             "EU Institutions": "EUI",
             "DAC countries": "DAC",
+            "DAC Countries, Total": "DAC",
+            "Total DAC": "DAC",
             "Kosovo": "XXK",
             "G7": "G7C",
             "Sub-Sahara Africa": "SSA",
