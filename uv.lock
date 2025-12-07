@@ -1334,7 +1334,7 @@ wheels = [
 
 [[package]]
 name = "pydeflate"
-version = "2.3.0.post0"
+version = "2.3.3"
 source = { editable = "." }
 dependencies = [
     { name = "filelock" },
