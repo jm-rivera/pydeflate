@@ -168,10 +168,10 @@ def _create_eur_series(df: pd.DataFrame) -> pd.DataFrame:
         .set_index("year")["EXCHANGE"]
     )
 
-    # Apply France's exchange rates to rows with entity_code == 998 and matching year
-    df.loc[df.entity_code == 998, "EXCHANGE"] = df.loc[
-        df.entity_code == 998, "year"
-    ].map(eur)
+    # Apply France's exchange rates to Euro Area rows (entity_code G163) with matching year
+    # Note: IMF WEO uses "G163" as the entity code for "Euro Area (EA)"
+    euro_area_mask = df.entity_code == "G163"
+    df.loc[euro_area_mask, "EXCHANGE"] = df.loc[euro_area_mask, "year"].map(eur)
     return df
 
 
@@ -204,6 +204,7 @@ _IMF_CACHE_ENTRY = CacheEntry(
     filename="imf_weo.parquet",
     fetcher=_download_weo,
     ttl_days=60,
+    version="2",  # Bump version to invalidate cache when EUR mapping fix is applied
 )
 
 

@@ -3,6 +3,14 @@
 All notable changes to this project are documented in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [2.3.3] - 2025-12-07
+### Fixed
+- Fixed EUR currency conversions with IMF data that were still failing after v2.3.2 due to:
+  - Entity name mismatch: IMF uses "Euro Area (EA)" and "European Union (EU)" (with parentheses), not "Euro area" and "European Union".
+  - Entity code mismatch: The Euro Area entity code is "G163" (string), not 998 (integer).
+- Added cache version to IMF data to force cache invalidation on upgrade, ensuring users get correctly processed EUR data without manual cache clearing.
+- Added "Kosovo, Republic of" entity name mapping to XXK ISO3 code.
+
 ## [2.3.2] - 2025-12-06
 ### Fixed
 - Fixed "Euro area" entity name not mapping to EUR ISO3 code, which caused `ValueError: No currency exchange data for to_='EUR'` when using IMF data with EUR currency conversions.
