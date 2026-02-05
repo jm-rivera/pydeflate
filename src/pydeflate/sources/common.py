@@ -118,6 +118,8 @@ def add_pydeflate_iso3(
             "Kosovo, Republic of": "XXK",
             "G7": "G7C",
             "Sub-Sahara Africa": "SSA",
+            "Hong Kong Special Administrative Region, People's Republic of China": "HKG",
+            "Macao Special Administrative Region, People's Republic of China": "MAC",
         },
     )
     return df

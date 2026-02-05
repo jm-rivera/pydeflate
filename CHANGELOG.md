@@ -3,6 +3,10 @@
 All notable changes to this project are documented in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [2.3.4] - 2026-02-05
+### Fixed
+- Fixed IMF exchange rates for Hong Kong and Macao SARs being fuzzy-matched to CHN instead of HKG/MAC, which caused duplicate rows for China in exchange rate and deflator outputs (#38).
+
 ## [2.3.3] - 2025-12-07
 ### Fixed
 - Fixed EUR currency conversions with IMF data that were still failing after v2.3.2 due to:
