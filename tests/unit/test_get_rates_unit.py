@@ -1,5 +1,4 @@
 import pandas as pd
-import pytest
 
 from pydeflate import (
     get_imf_exchange_rates,

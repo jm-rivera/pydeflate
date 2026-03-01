@@ -24,7 +24,7 @@ Example:
 
 from __future__ import annotations
 
-from typing import Any, Callable, TypeVar
+from typing import Callable, TypeVar
 
 from pydeflate.exceptions import PluginError
 from pydeflate.protocols import SourceProtocol
@@ -83,7 +83,7 @@ class SourceRegistry:
         if source_class is not None:
             if not self._check_protocol_conformance(source_class):
                 raise PluginError(
-                    f"Source class must implement SourceProtocol",
+                    "Source class must implement SourceProtocol",
                     plugin_name=name,
                 )
             self._sources[name] = source_class

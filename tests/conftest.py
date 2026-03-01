@@ -7,42 +7,18 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-
 STUB_PATH = (Path(__file__).parent / "stubs").resolve()
 if str(STUB_PATH) not in sys.path:
     sys.path.insert(0, str(STUB_PATH))
 
-
+# Inject a lightweight wbgapi stub into sys.modules so that real wbgapi is
+# never imported (avoids network access and heavy dependencies in tests).
 stub = types.ModuleType("wbgapi")
 stub.data = types.SimpleNamespace(DataFrame=lambda *args, **kwargs: pd.DataFrame())
 stub.__spec__ = importlib.machinery.ModuleSpec(name="wbgapi", loader=None)
 sys.modules.setdefault("wbgapi", stub)
 
-
-import builtins
-import importlib
-
-
-_real_import_module = importlib.import_module
-_real_import = builtins.__import__
-
-
-def _import_module(name, package=None):
-    if name == "wbgapi":
-        return sys.modules["wbgapi"]
-    return _real_import_module(name, package)
-
-
-def _import(name, globals=None, locals=None, fromlist=(), level=0):
-    if name == "wbgapi":
-        return sys.modules["wbgapi"]
-    return _real_import(name, globals, locals, fromlist, level)
-
-
-importlib.import_module = _import_module
-builtins.__import__ = _import
-
-from pydeflate.pydeflate_config import PYDEFLATE_PATHS, reset_data_dir, set_data_dir
+from pydeflate.pydeflate_config import reset_data_dir, set_data_dir
 from pydeflate.sources.common import enforce_pyarrow_types
 
 YEARS = [2021, 2022, 2023]
