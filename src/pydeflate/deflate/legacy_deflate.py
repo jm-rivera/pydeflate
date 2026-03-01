@@ -1,17 +1,45 @@
+import functools
 import warnings
+from typing import Callable
 
 import pandas as pd
-from pandas.util._decorators import deprecate_kwarg
 
 from pydeflate.core.api import BaseDeflate
 from pydeflate.core.source import DAC, IMF, WorldBank
 
+_RENAMED_KWARGS: dict[str, str] = {
+    "method": "deflator_method",
+    "source": "deflator_source",
+    "iso_column": "id_column",
+    "source_col": "source_column",
+    "target_col": "target_column",
+}
 
-@deprecate_kwarg(old_arg_name="method", new_arg_name="deflator_method")
-@deprecate_kwarg(old_arg_name="source", new_arg_name="deflator_source")
-@deprecate_kwarg(old_arg_name="iso_column", new_arg_name="id_column")
-@deprecate_kwarg(old_arg_name="source_col", new_arg_name="source_column")
-@deprecate_kwarg(old_arg_name="target_col", new_arg_name="target_column")
+
+def _remap_deprecated_kwargs(func: Callable) -> Callable:
+    """Emit deprecation warnings for renamed keyword arguments and forward them."""
+
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        for old_name, new_name in _RENAMED_KWARGS.items():
+            if old_name in kwargs:
+                if new_name in kwargs:
+                    raise TypeError(
+                        f"Cannot specify both '{old_name}' and '{new_name}'."
+                    )
+                warnings.warn(
+                    f"The '{old_name}' keyword argument is deprecated. "
+                    f"Use '{new_name}' instead.",
+                    FutureWarning,
+                    stacklevel=2,
+                )
+                kwargs[new_name] = kwargs.pop(old_name)
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
+@_remap_deprecated_kwargs
 def deflate(
     df: pd.DataFrame,
     base_year: int,

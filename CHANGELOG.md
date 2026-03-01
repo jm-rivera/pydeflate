@@ -3,6 +3,13 @@
 All notable changes to this project are documented in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [2.3.5] - 2026-03-01
+### Fixed
+- Added pandas 3.0 compatibility (#42):
+  - Replaced internal `pandas.util._decorators.deprecate_kwarg` import (removed in pandas 3.0) with a local decorator preserving the same behaviour for the legacy `deflate()` function.
+  - Removed redundant `axis=1` from `DataFrame.drop(columns=..., axis=1)` calls that pandas 3.0 rejects.
+  - Fixed DAC aggregate fallback (`use_source_codes=True`) assigning an integer to a string-typed column; the fallback now respects the column dtype, which also fixes a latent bug where the DAC aggregate rates were never matched for unknown entity codes.
+
 ## [2.3.4] - 2026-02-05
 ### Fixed
 - Fixed IMF exchange rates for Hong Kong and Macao SARs being fuzzy-matched to CHN instead of HKG/MAC, which caused duplicate rows for China in exchange rate and deflator outputs (#38).

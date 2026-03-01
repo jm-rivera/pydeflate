@@ -360,7 +360,7 @@ class BaseDeflate:
             pd.DataFrame: Merged DataFrame without duplicate columns.
         """
         merged = df.merge(other, how="outer", on=self._idx, suffixes=("", "_ex"))
-        return merged.drop(columns=merged.filter(regex=f"_ex$").columns, axis=1)
+        return merged.drop(columns=merged.filter(regex=f"_ex$").columns)
 
     def _merge_pydeflate_data(
         self,

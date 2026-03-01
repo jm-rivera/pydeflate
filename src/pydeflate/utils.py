@@ -69,11 +69,15 @@ def _use_implied_dac_rates(
     """When rates are missing for entities in DAC data, the correct behaviour is to use
     the DAC overall rates"""
 
-    # Assign the DAC code to a temporary column
+    # Assign the DAC code to a temporary column, matching the dtype of the column
+    col = f"temp_{entity_column}"
+    dac_code: int | str = 20001 if source_codes else "DAC"
+    if pd.api.types.is_string_dtype(data[col]):
+        dac_code = str(dac_code)
     data.loc[
-        lambda d: ~d[f"temp_{entity_column}"].isin(pydeflate_data[ix[-1]].unique()),
-        f"temp_{entity_column}",
-    ] = 20001 if source_codes else "DAC"
+        lambda d: ~d[col].isin(pydeflate_data[ix[-1]].unique()),
+        col,
+    ] = dac_code
 
     # Log the fact that implied rates are being used
     flag_missing_pydeflate_data(
