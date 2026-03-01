@@ -5,7 +5,7 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [2.3.5] - 2026-03-01
 ### Fixed
-- Added pandas 3.0 compatibility (#42):
+- Added pandas 3.0 compatibility (#40):
   - Replaced internal `pandas.util._decorators.deprecate_kwarg` import (removed in pandas 3.0) with a local decorator preserving the same behaviour for the legacy `deflate()` function.
   - Removed redundant `axis=1` from `DataFrame.drop(columns=..., axis=1)` calls that pandas 3.0 rejects.
   - Fixed DAC aggregate fallback (`use_source_codes=True`) assigning an integer to a string-typed column; the fallback now respects the column dtype, which also fixes a latent bug where the DAC aggregate rates were never matched for unknown entity codes.
