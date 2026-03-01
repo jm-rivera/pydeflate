@@ -43,7 +43,7 @@ class Source:
             SchemaValidationError: If data doesn't match expected schema
         """
         if self.data.empty:
-            raise DataSourceError(f"No data found", source=self.name)
+            raise DataSourceError("No data found", source=self.name)
 
         # Check all columns start with pydeflate_
         invalid_cols = [

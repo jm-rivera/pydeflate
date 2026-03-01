@@ -287,7 +287,6 @@ class TestDeflationOperations:
     )
     def test_deflation_preserves_sums(self, values, deflator):
         """Property: Deflating sum = sum of deflated values."""
-        import numpy as np
 
         # Deflate sum
         total = sum(values)

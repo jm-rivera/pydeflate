@@ -81,7 +81,7 @@ class Exchange:
             pydeflate_EXCHANGE=lambda d: d.pydeflate_EXCHANGE / d.pydeflate_EXCHANGE_to,
         )
 
-        return merged.drop(columns=merged.filter(regex="_to$").columns, axis=1)
+        return merged.drop(columns=merged.filter(regex="_to$").columns)
 
     def exchange_rate(self, from_currency: str, to_currency: str):
         """Calculates the exchange rates between the source and target currencies.
@@ -119,7 +119,7 @@ class Exchange:
         )
 
         # Drop unnecessary columns
-        merged = merged.drop(columns=merged.filter(regex="_to$").columns, axis=1)
+        merged = merged.drop(columns=merged.filter(regex="_to$").columns)
 
         return merged
 

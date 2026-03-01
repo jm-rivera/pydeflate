@@ -313,8 +313,8 @@ class BaseDeflate:
         data["pydeflate_deflator"] = self._calculate_deflator_value(
             data[f"pydeflate_{self.price_deflator.price_kind}"],
             data["pydeflate_EXCHANGE_D"],
-            data[f"pydeflate_EXCHANGE"],
-            data.get("pydeflate_EXCHANGE_BASE", data[f"pydeflate_EXCHANGE"]),
+            data["pydeflate_EXCHANGE"],
+            data.get("pydeflate_EXCHANGE_BASE", data["pydeflate_EXCHANGE"]),
         )
 
         self.pydeflate_data = data
@@ -360,7 +360,7 @@ class BaseDeflate:
             pd.DataFrame: Merged DataFrame without duplicate columns.
         """
         merged = df.merge(other, how="outer", on=self._idx, suffixes=("", "_ex"))
-        return merged.drop(columns=merged.filter(regex=f"_ex$").columns, axis=1)
+        return merged.drop(columns=merged.filter(regex="_ex$").columns)
 
     def _merge_pydeflate_data(
         self,

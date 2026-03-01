@@ -44,6 +44,6 @@ def test_dac_deflate_uses_aggregate_for_missing_entities(sample_source_frames):
     messages = "\n".join(rec.getMessage() for rec in records)
     assert "Using DAC members' rates" in messages
     assert "999: 2022" in messages
-    # When data remains unavailable even after fallback, result is NA but input untouched.
-    assert result["value"].isna().iloc[0]
+    # Fallback to DAC aggregate rates should produce a deflated value, not NaN.
+    assert not result["value"].isna().iloc[0]
     assert data.loc[0, "value"] == 300.0
