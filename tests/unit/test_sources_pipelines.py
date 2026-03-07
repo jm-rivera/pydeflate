@@ -1,24 +1,9 @@
 from pathlib import Path
 
 import pandas as pd
-import pytest
 
 from pydeflate.sources import dac, imf, world_bank
 
-
-@pytest.fixture(autouse=True)
-def stub_country(monkeypatch):
-    mapping = {
-        "United States": ("USA",),
-        "Canada": ("CAN",),
-        "Donor": ("DON",),
-    }
-
-    class DummyCountry:
-        def get_iso3_country_code_fuzzy(self, value):
-            return mapping.get(value, (value[:3].upper(),))
-
-    monkeypatch.setattr("pydeflate.sources.common.Country", lambda: DummyCountry())
 
 
 def _imf_sample_frame():

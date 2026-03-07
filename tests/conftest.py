@@ -28,7 +28,7 @@ ENTITY_INFO = {
     "DEU": {"iso": "DEU", "code": "134"},
     "GBR": {"iso": "GBR", "code": "826"},
     "CAN": {"iso": "CAN", "code": "124"},
-    "EUR": {"iso": "EUR", "code": "978"},
+    "EMU": {"iso": "EMU", "code": "978"},
     "PPP": {"iso": "PPP", "code": "PPP"},
     "EUI": {"iso": "EUI", "code": "918"},
     "DAC": {"iso": "DAC", "code": "20001"},
@@ -85,7 +85,7 @@ def sample_source_frames():
     common_exchange_def = _uniform([96.0, 100.0, 104.0])
 
     imf_frames = _build_source_frame(
-        ["USA", "FRA", "DEU", "GBR", "CAN", "EUR"],
+        ["USA", "FRA", "DEU", "GBR", "CAN", "EMU"],
         {
             "pydeflate_NGDP_D": _series(
                 {
@@ -94,7 +94,7 @@ def sample_source_frames():
                     "DEU": [96.0, 100.0, 106.0],
                     "GBR": [96.0, 100.0, 105.0],
                     "CAN": [97.0, 100.0, 104.0],
-                    "EUR": [95.5, 100.0, 107.5],
+                    "EMU": [95.5, 100.0, 107.5],
                 }
             ),
             "pydeflate_PCPI": _series(
@@ -104,7 +104,7 @@ def sample_source_frames():
                     "DEU": [97.0, 100.0, 105.0],
                     "GBR": [97.0, 100.0, 104.0],
                     "CAN": [98.0, 100.0, 103.0],
-                    "EUR": [96.5, 100.0, 107.5],
+                    "EMU": [96.5, 100.0, 107.5],
                 }
             ),
             "pydeflate_PCPIE": _series(
@@ -114,7 +114,7 @@ def sample_source_frames():
                     "DEU": [97.5, 100.0, 106.5],
                     "GBR": [97.5, 100.0, 104.5],
                     "CAN": [98.5, 100.0, 103.5],
-                    "EUR": [97.0, 100.0, 108.0],
+                    "EMU": [97.0, 100.0, 108.0],
                 }
             ),
             "pydeflate_EXCHANGE": _series(
@@ -124,7 +124,7 @@ def sample_source_frames():
                     "DEU": [0.84, 0.85, 0.86],
                     "GBR": [0.73, 0.74, 0.75],
                     "CAN": [1.26, 1.27, 1.28],
-                    "EUR": [0.9, 0.91, 0.92],
+                    "EMU": [0.9, 0.91, 0.92],
                 }
             ),
             "pydeflate_EXCHANGE_D": common_exchange_def,
@@ -135,14 +135,14 @@ def sample_source_frames():
                     "DEU": [4000.0, 4200.0, 4400.0],
                     "GBR": [3000.0, 3200.0, 3400.0],
                     "CAN": [1800.0, 2000.0, 2200.0],
-                    "EUR": [14000.0, 15000.0, 16000.0],
+                    "EMU": [14000.0, 15000.0, 16000.0],
                 }
             ),
         },
     )
 
     wb_frames = _build_source_frame(
-        ["USA", "FRA", "GBR", "CAN", "EUR"],
+        ["USA", "FRA", "GBR", "CAN", "EMU"],
         {
             "pydeflate_NGDP_D": _series(
                 {
@@ -150,7 +150,7 @@ def sample_source_frames():
                     "FRA": [94.0, 100.0, 107.0],
                     "GBR": [95.0, 100.0, 106.0],
                     "CAN": [96.0, 100.0, 105.0],
-                    "EUR": [94.5, 100.0, 107.5],
+                    "EMU": [94.5, 100.0, 107.5],
                 }
             ),
             "pydeflate_NGDP_DL": _series(
@@ -159,7 +159,7 @@ def sample_source_frames():
                     "FRA": [93.0, 100.0, 108.0],
                     "GBR": [94.0, 100.0, 107.0],
                     "CAN": [95.0, 100.0, 106.0],
-                    "EUR": [93.5, 100.0, 108.5],
+                    "EMU": [93.5, 100.0, 108.5],
                 }
             ),
             "pydeflate_CPI": _series(
@@ -168,7 +168,7 @@ def sample_source_frames():
                     "FRA": [95.0, 100.0, 106.0],
                     "GBR": [96.0, 100.0, 105.0],
                     "CAN": [97.0, 100.0, 104.0],
-                    "EUR": [95.5, 100.0, 106.5],
+                    "EMU": [95.5, 100.0, 106.5],
                 }
             ),
             "pydeflate_EXCHANGE": _series(
@@ -177,7 +177,7 @@ def sample_source_frames():
                     "FRA": [0.83, 0.84, 0.85],
                     "GBR": [0.72, 0.73, 0.74],
                     "CAN": [1.25, 1.26, 1.27],
-                    "EUR": [0.9, 0.91, 0.92],
+                    "EMU": [0.9, 0.91, 0.92],
                 }
             ),
             "pydeflate_EXCHANGE_D": common_exchange_def,

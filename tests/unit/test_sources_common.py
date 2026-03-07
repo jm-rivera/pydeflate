@@ -1,5 +1,3 @@
-from unittest.mock import Mock
-
 import pandas as pd
 import pytest
 
@@ -19,12 +17,8 @@ def test_prefix_pydeflate_to_columns_adds_prefix_once():
     assert list(renamed.columns) == ["pydeflate_foo", "pydeflate_bar"]
 
 
-def test_convert_id_uses_additional_mapping(monkeypatch):
+def test_convert_id_uses_additional_mapping():
     series = pd.Series(["European Union", "Custom"], name="region")
-
-    mocked = Mock()
-    mocked.get_iso3_country_code_fuzzy.return_value = ["EUR", None]
-    monkeypatch.setattr("pydeflate.sources.common.Country", lambda: mocked)
 
     converted = convert_id(
         series,
@@ -33,7 +27,7 @@ def test_convert_id_uses_additional_mapping(monkeypatch):
         additional_mapping={"Custom": "CUS"},
     )
 
-    assert list(converted) == ["EUR", "CUS"]
+    assert list(converted) == ["EU", "CUS"]
 
 
 def test_identify_base_year_returns_first_match():

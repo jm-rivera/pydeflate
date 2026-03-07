@@ -15,7 +15,7 @@ class DummyBase:
 
 def test_resolve_common_currencies_handles_dac_eur_override():
     assert resolve_common_currencies("EUR", "DAC") == "EUI"
-    assert resolve_common_currencies("EUR", "World Bank") == "EUR"
+    assert resolve_common_currencies("EUR", "World Bank") == "EMU"
     assert resolve_common_currencies("CHF", "DAC") == "CHF"
 
 
