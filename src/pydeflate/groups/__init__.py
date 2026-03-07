@@ -6,15 +6,15 @@ Manages how pydeflate treats aggregate rows for country groups
 Usage:
     from pydeflate.groups import _registry
 
-    # Check if a currency code is a known group
-    _registry.is_group("EUR")  # True
+    # Check if a currency maps to a known group
+    _registry.find_by_iso3("EUR")  # GroupDefinition(key="EMU", ...)
 
-    # Get group definition
-    group = _registry.get("EUR")
+    # Get group definition by key
+    group = _registry.get("EMU")
     group.get_members(2023)  # ['AUT', 'BEL', ..., 'HRV']
 
     # Configure treatment
-    _registry.configure("EUR", treatment="fixed", members_year=2019)
+    _registry.configure("EMU", treatment="fixed", members_year=2019)
 """
 
 from __future__ import annotations
@@ -47,11 +47,13 @@ class GroupDefinition:
     """A country group recognized in source data.
 
     Attributes:
-        iso3: ISO3 code used for this group in pydeflate (e.g., "EUR").
+        key: User-facing identifier for this group (e.g., "EMU").
+        iso3: ISO3 code used for this group in source data (e.g., "EUR").
         name: Human-readable name (e.g., "Euro Area (EMU)").
         get_members: Function returning member ISO3 codes for a given year.
     """
 
+    key: str
     iso3: str
     name: str
     get_members: Callable[[int], list[str]]
@@ -68,48 +70,56 @@ class GroupConfig:
 class GroupRegistry:
     """Registry of known country groups and their treatment configs.
 
+    Groups are registered by ``key`` (e.g., "EMU") and looked up either by
+    key (public API) or by ``iso3`` (internal currency-to-group resolution).
+
     Note: This registry uses module-level state and is not thread-safe.
     For thread-isolated configuration, use ``pydeflate_session``.
     """
 
     def __init__(self) -> None:
         self._groups: dict[str, GroupDefinition] = {}
+        self._iso3_to_key: dict[str, str] = {}
         self._configs: dict[str, GroupConfig] = {}
         self._default_treatment: GroupTreatment = GroupTreatment.SOURCE
 
     def register(self, group: GroupDefinition) -> None:
         """Register a country group."""
-        self._groups[group.iso3] = group
+        self._groups[group.key] = group
+        self._iso3_to_key[group.iso3] = group.key
 
-    def is_group(self, iso3: str) -> bool:
-        """Check if an ISO3 code is a registered group."""
-        return iso3 in self._groups
+    def get(self, key: str) -> GroupDefinition | None:
+        """Get group definition by key (e.g., "EMU")."""
+        return self._groups.get(key)
 
-    def get(self, iso3: str) -> GroupDefinition | None:
-        """Get group definition by ISO3 code."""
-        return self._groups.get(iso3)
+    def find_by_iso3(self, iso3: str) -> GroupDefinition | None:
+        """Find group by its source-data ISO3 code (e.g., "EUR")."""
+        key = self._iso3_to_key.get(iso3)
+        if key is None:
+            return None
+        return self._groups.get(key)
 
     def configure(
         self,
-        iso3: str,
+        key: str,
         *,
         treatment: str | GroupTreatment,
         members_year: int | None = None,
     ) -> None:
         """Set per-group configuration."""
-        if iso3 not in self._groups:
+        if key not in self._groups:
             raise ValueError(
-                f"Unknown group '{iso3}'. Registered groups: {self.list_groups()}"
+                f"Unknown group '{key}'. Registered groups: {self.list_groups()}"
             )
-        self._configs[iso3] = GroupConfig(
+        self._configs[key] = GroupConfig(
             treatment=GroupTreatment(treatment),
             members_year=members_year,
         )
 
-    def get_config(self, iso3: str) -> GroupConfig:
+    def get_config(self, key: str) -> GroupConfig:
         """Get effective config (per-group override or global default)."""
-        if iso3 in self._configs:
-            return self._configs[iso3]
+        if key in self._configs:
+            return self._configs[key]
         return GroupConfig(treatment=self._default_treatment)
 
     @property
@@ -123,7 +133,7 @@ class GroupRegistry:
         self._default_treatment = GroupTreatment(value)
 
     def list_groups(self) -> list[str]:
-        """List all registered group ISO3 codes."""
+        """List all registered group keys."""
         return sorted(self._groups.keys())
 
     def snapshot(self) -> tuple[GroupTreatment, dict[str, GroupConfig]]:
@@ -150,6 +160,7 @@ def _register_builtin_groups() -> None:
 
     _registry.register(
         GroupDefinition(
+            key="EMU",
             iso3="EUR",
             name="Euro Area (EMU)",
             get_members=members_for_year,

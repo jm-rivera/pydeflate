@@ -30,7 +30,7 @@ class TestGroupRegistryIntegration:
 
     def test_configure_group_with_members_year(self, eur_df):
         """Per-group config with membership pinning."""
-        _registry.configure("EUR", treatment="fixed", members_year=2019)
+        _registry.configure("EMU", treatment="fixed", members_year=2019)
         result = imf_gdp_deflate(
             data=eur_df,
             base_year=2022,

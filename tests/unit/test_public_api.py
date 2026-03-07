@@ -18,14 +18,14 @@ class TestPublicGroupAPI:
         assert _registry.default_treatment == GroupTreatment.FIXED
 
     def test_configure_group(self):
-        configure_group("EUR", treatment="fixed", members_year=2019)
-        config = _registry.get_config("EUR")
+        configure_group("EMU", treatment="fixed", members_year=2019)
+        config = _registry.get_config("EMU")
         assert config.treatment == GroupTreatment.FIXED
         assert config.members_year == 2019
 
     def test_reset_group_config(self):
         set_group_treatment("dynamic")
-        configure_group("EUR", treatment="fixed")
+        configure_group("EMU", treatment="fixed")
         reset_group_config()
         assert _registry.default_treatment == GroupTreatment.SOURCE
 

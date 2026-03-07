@@ -111,7 +111,7 @@ def set_group_treatment(treatment: str) -> None:
 
 
 def configure_group(
-    iso3: str,
+    group: str,
     *,
     treatment: str,
     members_year: int | None = None,
@@ -119,16 +119,16 @@ def configure_group(
     """Configure how a specific group's deflators are computed.
 
     Args:
-        iso3: Group ISO3 code (e.g., "EUR")
+        group: Group key (e.g., "EMU"). See ``list_groups()`` for available groups.
         treatment: "source", "fixed", or "dynamic"
         members_year: Pin membership to a specific year (optional)
 
     Example:
-        >>> pydeflate.configure_group("EUR", treatment="fixed", members_year=2019)
+        >>> pydeflate.configure_group("EMU", treatment="fixed", members_year=2019)
     """
     from pydeflate.groups import _registry
 
-    _registry.configure(iso3, treatment=treatment, members_year=members_year)
+    _registry.configure(group, treatment=treatment, members_year=members_year)
 
 
 def reset_group_config() -> None:

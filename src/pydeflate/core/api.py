@@ -40,14 +40,13 @@ def _maybe_apply_group_deflator(
     Uses copy.copy so the original source (which may also be used as
     exchange_source) is not mutated.
     """
-    if not _registry.is_group(currency_iso3):
+    group = _registry.find_by_iso3(currency_iso3)
+    if group is None:
         return source
 
-    config = _registry.get_config(currency_iso3)
+    config = _registry.get_config(group.key)
     if config.treatment == GroupTreatment.SOURCE:
         return source
-
-    group = _registry.get(currency_iso3)
 
     modified = copy.copy(source)
     modified.data = compute_group_deflator(

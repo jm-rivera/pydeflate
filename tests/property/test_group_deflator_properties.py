@@ -348,17 +348,17 @@ class TestRegistryProperties:
     def test_snapshot_restore_is_identity(self):
         """Property: snapshot then restore leaves registry unchanged."""
         _registry.default_treatment = "fixed"
-        _registry.configure("EUR", treatment="dynamic", members_year=2019)
+        _registry.configure("EMU", treatment="dynamic", members_year=2019)
 
         state = _registry.snapshot()
         # Mutate
         _registry.default_treatment = "source"
-        _registry.configure("EUR", treatment="source")
+        _registry.configure("EMU", treatment="source")
         # Restore
         _registry.restore(state)
 
         assert _registry.default_treatment == GroupTreatment.FIXED
-        config = _registry.get_config("EUR")
+        config = _registry.get_config("EMU")
         assert config.treatment == GroupTreatment.DYNAMIC
         assert config.members_year == 2019
 

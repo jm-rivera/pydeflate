@@ -24,9 +24,9 @@ class TestGroupTreatmentContext:
 
     def test_session_restores_per_group_configs(self):
         with pydeflate_session(group_treatment="fixed"):
-            _registry.configure("EUR", treatment="dynamic", members_year=2019)
-            config = _registry.get_config("EUR")
+            _registry.configure("EMU", treatment="dynamic", members_year=2019)
+            config = _registry.get_config("EMU")
             assert config.members_year == 2019
         # After context, per-group config should be restored
-        config = _registry.get_config("EUR")
+        config = _registry.get_config("EMU")
         assert config.members_year is None

@@ -82,7 +82,7 @@ class TestIMFGDPDeflation:
         assert result["value"].notna().all()
 
     def test_configure_group_with_pinning(self, eur_gbr_df):
-        configure_group("EUR", treatment="fixed", members_year=2019)
+        configure_group("EMU", treatment="fixed", members_year=2019)
         result = imf_gdp_deflate(
             data=eur_gbr_df,
             base_year=2022,
