@@ -161,7 +161,7 @@ def _register_builtin_groups() -> None:
     _registry.register(
         GroupDefinition(
             key="EMU",
-            iso3="EUR",
+            iso3="EMU",
             name="Euro Area (EMU)",
             get_members=members_for_year,
         )

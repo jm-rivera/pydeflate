@@ -20,7 +20,7 @@ from pydeflate.utils import (
 def resolve_common_currencies(currency: str, source: str) -> str:
     mapping = {
         "USD": "USA",
-        "EUR": "EUR",
+        "EUR": "EMU",
         "GBP": "GBR",
         "JPY": "JPN",
         "CAD": "CAN",

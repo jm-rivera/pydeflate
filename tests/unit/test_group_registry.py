@@ -28,7 +28,7 @@ class TestGroupRegistry:
     def test_emu_definition(self):
         group = _registry.get("EMU")
         assert group.key == "EMU"
-        assert group.iso3 == "EUR"
+        assert group.iso3 == "EMU"
         assert group.name == "Euro Area (EMU)"
 
     def test_emu_members_callable(self):
@@ -38,7 +38,7 @@ class TestGroupRegistry:
         assert len(members) == 20
 
     def test_find_by_iso3(self):
-        group = _registry.find_by_iso3("EUR")
+        group = _registry.find_by_iso3("EMU")
         assert group is not None
         assert group.key == "EMU"
 

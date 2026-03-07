@@ -57,7 +57,6 @@ df = pd.DataFrame(data)
     If your data uses different country identifiers (names, ISO2 codes, etc.), convert them to ISO3 before using pydeflate. Recommended libraries:
 
     - [`bblocks-place`](https://github.com/ONEcampaign/bblocks-places)
-    - [`hdx-python-country`](https://github.com/OCHA-DAP/hdx-python-country)
 
 #### Using Source-Specific Codes
 

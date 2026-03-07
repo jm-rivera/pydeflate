@@ -49,7 +49,7 @@ class CurrencyCodes:
 
     # ISO3 to common codes
     USD = "USA"
-    EUR = "EUR"  # For most sources
+    EUR = "EMU"  # Euro Area (EMU) for most sources
     EUR_DAC = "EUI"  # For DAC source
     GBP = "GBR"
     JPY = "JPN"

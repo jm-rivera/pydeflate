@@ -1336,11 +1336,10 @@ wheels = [
 
 [[package]]
 name = "pydeflate"
-version = "2.3.5"
+version = "2.4.0"
 source = { editable = "." }
 dependencies = [
     { name = "filelock" },
-    { name = "hdx-python-country" },
     { name = "imf-reader" },
     { name = "oda-reader" },
     { name = "pandas" },
@@ -1353,6 +1352,7 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "hdx-python-country" },
     { name = "hypothesis" },
     { name = "pandas-stubs" },
     { name = "pytest" },
@@ -1368,9 +1368,8 @@ docs = [
 [package.metadata]
 requires-dist = [
     { name = "filelock", specifier = ">=3.15.0" },
-    { name = "hdx-python-country", specifier = ">=3.9.8" },
     { name = "imf-reader", specifier = ">=1.4.1" },
-    { name = "oda-reader", specifier = ">=1.3.0" },
+    { name = "oda-reader", specifier = ">=1.4.2" },
     { name = "pandas", specifier = ">=2.0" },
     { name = "pandera", specifier = ">=0.20.0" },
     { name = "platformdirs", specifier = ">=3.0.0" },
@@ -1381,6 +1380,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "hdx-python-country", specifier = ">=3.9.8" },
     { name = "hypothesis", specifier = ">=6.122.3" },
     { name = "pandas-stubs", specifier = ">=2.3.2.250926" },
     { name = "pytest", specifier = ">=8.4.2" },

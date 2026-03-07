@@ -161,7 +161,7 @@ pydeflate.configure_group("ASEAN", treatment="fixed")
 ```
 
 !!! warning
-    Custom groups only work if the source data contains an aggregate row with a matching `pydeflate_iso3` code. The built-in IMF, World Bank, and OECD sources include Euro Area aggregates (`EUR`) but may not include other groupings.
+    Custom groups only work if the source data contains an aggregate row with a matching `pydeflate_iso3` code. The built-in IMF, World Bank, and OECD sources include Euro Area aggregates (`EMU`) but may not include other groupings.
 
 ## API Reference
 

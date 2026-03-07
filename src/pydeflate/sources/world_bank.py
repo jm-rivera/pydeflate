@@ -85,13 +85,10 @@ def _eur_series_fix(df: pd.DataFrame) -> pd.DataFrame:
         pd.DataFrame: The DataFrame with the fixed exchange rates for the Euro area countries.
 
     """
-    # Handle cases where EUR is represented differently in the World Bank data
-    df["entity_code"] = df["entity_code"].replace({"EMU": "EUR"})
-
-    # Find the "Euro" data. This is done given that some countries are missing
+    # Find the Euro area data. This is done given that some countries are missing
     # exchange rates, but they are part of the Euro area.
     eur = (
-        df.loc[lambda d: d["entity_code"] == "EUR"]
+        df.loc[lambda d: d["entity_code"] == "EMU"]
         .dropna(subset=["EXCHANGE"])
         .set_index("year")["EXCHANGE"]
         .to_dict()
