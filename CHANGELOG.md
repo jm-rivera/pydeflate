@@ -3,6 +3,24 @@
 All notable changes to this project are documented in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [2.4.0] - 2026-03-07
+### Added
+- **Country Group Deflators**: Configurable GDP-weighted deflator computation for country groups like the Euro Area (EMU), addressing [#27](https://github.com/jm-rivera/pydeflate/issues/27).
+  - Three treatment modes via `set_group_treatment()`:
+    - `"source"` (default): Use the data source's own published aggregate (backward-compatible).
+    - `"fixed"`: GDP-weighted average of member countries' deflators using all-time membership.
+    - `"dynamic"`: GDP-weighted average using actual membership per year.
+  - Per-group configuration via `configure_group("EMU", treatment="fixed", members_year=2019)` to pin membership to a specific year for counterfactual analysis.
+  - Context manager integration: `pydeflate_session(group_treatment="fixed")` for scoped configuration.
+  - `emu_members(year)` function to query Euro Area membership for any year.
+- **Group Registry**: Extensible `GroupRegistry` with plugin-friendly `GroupDefinition` for registering custom country groups beyond EMU.
+- **EMU Membership Tracking**: Complete accession history for all 20 eurozone members (1999–2023), replacing the static `emu.json` file.
+
+### Changed
+- IMF source pipeline now preserves `NGDPD` (nominal GDP in USD) for GDP-weighted group deflator computation. Cache version bumped to `"3"`.
+- Removed `src/pydeflate/settings/emu.json` in favour of `src/pydeflate/groups/emu.py` with per-country accession years.
+- Removed the `emu()` helper from `utils.py`; the single caller in `world_bank.py` now imports directly from `groups.emu`.
+
 ## [2.3.5] - 2026-03-01
 ### Fixed
 - Added pandas 3.0 compatibility (#40):

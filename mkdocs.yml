@@ -87,6 +87,7 @@ nav:
       - Currency Exchange: exchange.md
       - Data Sources: data-sources.md
   - Advanced:
+      - Country Group Deflators: advanced/groups.md
       - Error Handling: advanced/exceptions.md
       - Context Management: advanced/context.md
       - Plugin System: advanced/plugins.md

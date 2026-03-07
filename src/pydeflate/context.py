@@ -126,6 +126,7 @@ def pydeflate_session(
     data_dir: str | Path | None = None,
     log_level: int = logging.INFO,
     enable_validation: bool = True,
+    group_treatment: str | None = None,
     **config,
 ) -> Generator[PydeflateContext, None, None]:
     """Context manager for pydeflate operations with custom configuration.
@@ -143,6 +144,7 @@ def pydeflate_session(
         data_dir: Path to cache directory
         log_level: Logging level
         enable_validation: Enable schema validation
+        group_treatment: How to treat country groups ('source', 'fixed', 'dynamic')
         **config: Additional configuration
 
     Yields:
@@ -158,11 +160,20 @@ def pydeflate_session(
     # Save previous default context
     previous_context = getattr(_thread_local, "context", None)
 
+    # Save and restore group registry state
+    from pydeflate.groups import GroupTreatment as GT, _registry
+
+    previous_state = _registry.snapshot()
+
     try:
+        if group_treatment is not None:
+            _registry.default_treatment = GT(group_treatment)
         # Set as default for this thread
         set_default_context(context)
         yield context
     finally:
+        # Restore group registry state
+        _registry.restore(previous_state)
         # Restore previous context
         if previous_context is not None:
             set_default_context(previous_context)

@@ -128,6 +128,19 @@ with pydeflate_session(enable_validation=True) as ctx:
 
 See [Schema Validation](validation.md) for details.
 
+### Group Treatment
+
+Control how country group deflators (e.g., Euro Area) are computed within a session:
+
+```python
+with pydeflate_session(group_treatment="fixed") as ctx:
+    # GDP-weighted EMU deflators inside this block
+    result = imf_gdp_deflate(df, base_year=2015, source_currency="EUR", ...)
+# Reverts to "source" (default) outside the block
+```
+
+See [Country Group Deflators](groups.md) for details on treatment modes.
+
 ### Combined Configuration
 
 ```python
@@ -136,7 +149,8 @@ import logging
 with pydeflate_session(
     data_dir="./cache",
     log_level=logging.INFO,
-    enable_validation=True
+    enable_validation=True,
+    group_treatment="fixed"
 ) as ctx:
     result = imf_gdp_deflate(df, context=ctx, ...)
 ```

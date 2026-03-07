@@ -1,8 +1,12 @@
+import copy
+
 import pandas as pd
 
 from pydeflate.core.deflator import ExchangeDeflator, PriceDeflator
 from pydeflate.core.exchange import Exchange
+from pydeflate.core.group_deflator import compute_group_deflator
 from pydeflate.core.source import Source
+from pydeflate.groups import GroupTreatment, _registry
 from pydeflate.sources.common import AvailableDeflators
 from pydeflate.utils import (
     create_pydeflate_year,
@@ -26,6 +30,34 @@ def resolve_common_currencies(currency: str, source: str) -> str:
         mapping["EUR"] = "EUI"
 
     return mapping.get(currency, currency)
+
+
+def _maybe_apply_group_deflator(
+    source: Source, price_kind: str, currency_iso3: str
+) -> Source:
+    """Check if currency maps to a registered group and apply treatment if needed.
+
+    Uses copy.copy so the original source (which may also be used as
+    exchange_source) is not mutated.
+    """
+    group = _registry.find_by_iso3(currency_iso3)
+    if group is None:
+        return source
+
+    config = _registry.get_config(group.key)
+    if config.treatment == GroupTreatment.SOURCE:
+        return source
+
+    modified = copy.copy(source)
+    modified.data = compute_group_deflator(
+        modified.data,
+        price_kind=price_kind,
+        group_iso3=group.iso3,
+        get_members=group.get_members,
+        dynamic=(config.treatment == GroupTreatment.DYNAMIC),
+        pin_year=config.members_year,
+    )
+    return modified
 
 
 def _base_operation(
@@ -262,6 +294,17 @@ class BaseDeflate:
         target_currency = resolve_common_currencies(
             target_currency, deflator_source.name
         )
+
+        # Apply group deflator treatment if configured.
+        # copy.copy ensures exchange_source (which may be the same object) is unaffected.
+        deflator_source = _maybe_apply_group_deflator(
+            deflator_source, price_kind, source_currency
+        )
+        if target_currency != source_currency:
+            deflator_source = _maybe_apply_group_deflator(
+                deflator_source, price_kind, target_currency
+            )
+
         self.exchange_rates = Exchange(
             source=exchange_source,
             source_currency=source_currency,

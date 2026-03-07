@@ -15,13 +15,6 @@ def oecd_codes() -> dict:
     return {int(k): v for k, v in updates.items()}
 
 
-def emu() -> list:
-    with open(PYDEFLATE_PATHS.settings / "emu.json") as file:
-        emu = json.load(file)
-
-    return emu
-
-
 def clean_number(number):
     """Clean a number-like value and return it as a float.
 

@@ -89,6 +89,7 @@ wb_cpi_deflate(df, base_year=2020, source_currency="LCU", target_currency="USD",
 
 ### Advanced Features
 
+- **Country Group Deflators**: GDP-weighted deflators for groups like the Euro Area, with fixed or dynamic membership
 - **Plugin System**: Register custom data sources
 - **Context Management**: Multiple independent cache directories
 - **Schema Validation**: Optional data quality checks
