@@ -62,11 +62,11 @@ class CurrencyCodes:
 
     # Mapping for user convenience
     COMMON_ALIASES = {
-        "USD": USA,
-        "EUR": EUR,
-        "GBP": GBR,
-        "JPY": JPN,
-        "CAD": CAN,
+        "USD": "USA",
+        "EUR": "EMU",
+        "GBP": "GBR",
+        "JPY": "JPN",
+        "CAD": "CAN",
     }
 
     @classmethod

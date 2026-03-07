@@ -12,7 +12,11 @@ Example:
     ...     def __init__(self, update: bool = False):
     ...         self.name = "my_custom_source"
     ...         self.data = load_my_data(update)
-    ...         self._idx = ["pydeflate_year", "pydeflate_entity_code", "pydeflate_iso3"]
+    ...         self._idx = [
+    ...             "pydeflate_year",
+    ...             "pydeflate_entity_code",
+    ...             "pydeflate_iso3",
+    ...         ]
     ...
     ...     def lcu_usd_exchange(self): ...
     ...     def price_deflator(self, kind): ...
@@ -24,7 +28,8 @@ Example:
 
 from __future__ import annotations
 
-from typing import Callable, TypeVar
+from collections.abc import Callable
+from typing import TypeVar
 
 from pydeflate.exceptions import PluginError
 from pydeflate.protocols import SourceProtocol
@@ -101,7 +106,6 @@ class SourceRegistry:
             True if class implements the protocol
         """
         required_methods = ["lcu_usd_exchange", "price_deflator", "validate"]
-        required_attrs = ["name", "data", "_idx"]
 
         for method in required_methods:
             if not hasattr(source_class, method):

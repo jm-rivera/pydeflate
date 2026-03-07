@@ -15,7 +15,8 @@ class Exchange:
 
     Attributes:
         source (Source): An instance of the Source class to fetch exchange rate data.
-        source_currency (str): The source currency code (default is 'LCU' - Local Currency Unit).
+        source_currency (str): The source currency code
+            (default is 'LCU' - Local Currency Unit).
         target_currency (str): The target currency code (default is 'USA' - US Dollar).
         exchange_data (pd.DataFrame): DataFrame holding the exchange rate data.
     """
@@ -56,7 +57,8 @@ class Exchange:
             to_ (str): The target currency code.
 
         Returns:
-            pd.DataFrame: A DataFrame with the adjusted exchange rates for the target currency.
+            pd.DataFrame: A DataFrame with the adjusted
+                exchange rates for the target currency.
 
         Raises:
             ValueError: If no exchange rate data is available for the target currency.
@@ -132,7 +134,7 @@ class Exchange:
         year_format: str = "%Y",
         use_source_codes: bool = False,
     ) -> pd.DataFrame:
-        """Apply the exchange rate to the given data to convert it to the target currency.
+        """Apply the exchange rate to convert to the target currency.
 
         Args:
             data (pd.DataFrame): The input DataFrame containing values to be exchanged.

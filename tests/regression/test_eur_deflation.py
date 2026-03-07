@@ -4,12 +4,15 @@ Bug: Using EUR as source/target currency with IMF data caused:
     ValueError: No currency exchange data for to_='EUR'
 
 The issue had two parts:
-1. Entity name mappings didn't match actual IMF data format ("Euro Area (EA)" vs "Euro area")
-2. The _create_eur_series function used wrong entity code (998 vs "G163")
+1. Entity name mappings didn't match actual IMF data format
+   ("Euro Area (EA)" vs "Euro area")
+2. The _create_eur_series function used wrong entity code
+   (998 vs "G163")
 
 This test ensures EUR currency deflation works correctly with IMF source.
 
-Note: Tests use base_year=2022 and year=2023 to match the test fixture data (years 2021-2023).
+Note: Tests use base_year=2022 and year=2023 to match the
+test fixture data (years 2021-2023).
 """
 
 import pandas as pd
@@ -114,5 +117,6 @@ class TestEURDeflation:
 
         # Value should be deflated (not NaN)
         assert result["value"].notna().all()
-        # Deflated value should be different from original (assuming inflation/deflation)
+        # Deflated value should differ from original
+        # (assuming inflation/deflation)
         assert not (result["value"] == 1000.0).all()

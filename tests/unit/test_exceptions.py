@@ -34,7 +34,7 @@ class TestExceptionHierarchy:
             assert issubclass(exc_class, Exception)
 
     def test_data_source_error_subclasses(self):
-        """NetworkError and SchemaValidationError should inherit from DataSourceError."""
+        """NetworkError and SchemaValidationError inherit from DataSourceError."""
         assert issubclass(NetworkError, DataSourceError)
         assert issubclass(SchemaValidationError, DataSourceError)
 

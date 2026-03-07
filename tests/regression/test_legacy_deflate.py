@@ -1,9 +1,9 @@
 import pandas as pd
 import pytest
 
-from pydeflate.deflate.legacy_deflate import deflate as legacy_deflate
 from pydeflate.core.api import BaseDeflate
 from pydeflate.core.source import WorldBank
+from pydeflate.deflate.legacy_deflate import deflate as legacy_deflate
 
 
 def test_legacy_deflate_emits_warning_and_matches_wrapper():

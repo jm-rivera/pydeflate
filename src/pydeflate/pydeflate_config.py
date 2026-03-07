@@ -5,9 +5,7 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 
-
 from platformdirs import user_cache_dir
-
 
 DATA_DIR_ENV = "PYDEFLATE_DATA_DIR"
 

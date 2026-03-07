@@ -1,6 +1,13 @@
 __author__ = """Jorge Rivera"""
 __version__ = "2.4.0"
 
+from pydeflate.context import (
+    PydeflateContext,
+    get_default_context,
+    pydeflate_session,
+    set_default_context,
+    temporary_context,
+)
 from pydeflate.deflate.deflators import (
     imf_cpi_deflate,
     imf_cpi_e_deflate,
@@ -20,6 +27,16 @@ from pydeflate.deflate.get_deflators import (
     get_wb_gdp_linked_deflators,
 )
 from pydeflate.deflate.legacy_deflate import deflate
+from pydeflate.exceptions import (
+    CacheError,
+    ConfigurationError,
+    DataSourceError,
+    MissingDataError,
+    NetworkError,
+    PluginError,
+    PydeflateError,
+    SchemaValidationError,
+)
 from pydeflate.exchange.exchangers import (
     imf_exchange,
     oecd_dac_exchange,
@@ -32,29 +49,12 @@ from pydeflate.exchange.get_rates import (
     get_wb_exchange_rates,
     get_wb_ppp_rates,
 )
-from pydeflate.pydeflate_config import set_data_dir, setup_logger
-
-from pydeflate.context import (
-    PydeflateContext,
-    get_default_context,
-    pydeflate_session,
-    set_default_context,
-    temporary_context,
-)
 from pydeflate.groups import GroupTreatment
 from pydeflate.groups.emu import (
     all_members as _all_members,
-    members_for_year as _members_for_year,
 )
-from pydeflate.exceptions import (
-    CacheError,
-    ConfigurationError,
-    DataSourceError,
-    MissingDataError,
-    NetworkError,
-    PluginError,
-    PydeflateError,
-    SchemaValidationError,
+from pydeflate.groups.emu import (
+    members_for_year as _members_for_year,
 )
 from pydeflate.plugins import (
     get_source,
@@ -62,6 +62,7 @@ from pydeflate.plugins import (
     list_sources,
     register_source,
 )
+from pydeflate.pydeflate_config import set_data_dir, setup_logger
 
 
 def set_pydeflate_path(path):
@@ -103,9 +104,12 @@ def set_group_treatment(treatment: str) -> None:
     Example:
         >>> import pydeflate
         >>> pydeflate.set_group_treatment("fixed")
-        >>> result = pydeflate.imf_gdp_deflate(df, base_year=2015, source_currency="EUR", ...)
+        >>> result = pydeflate.imf_gdp_deflate(
+        ...     df, base_year=2015, source_currency="EUR",
+        ... )
     """
-    from pydeflate.groups import GroupTreatment as GT, _registry
+    from pydeflate.groups import GroupTreatment as GT
+    from pydeflate.groups import _registry
 
     _registry.default_treatment = GT(treatment)
 

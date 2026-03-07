@@ -9,20 +9,37 @@ from pydeflate.core.source import DAC, IMF, WorldBank, WorldBankPPP
 def _generate_get_rates_docstring(source_name: str) -> str:
     """Generate docstring for each get exchange rates function."""
     return (
-        f"Get exchange rate data from {source_name} without requiring user data.\n\n"
-        f"This function returns a DataFrame containing exchange rates for the specified parameters.\n\n"
+        "Get exchange rate data from "
+        f"{source_name} without requiring "
+        "user data.\n\n"
+        "This function returns a DataFrame containing "
+        "exchange rates for the specified "
+        "parameters.\n\n"
         "Args:\n"
-        "    source_currency (str, optional): The source currency code. Defaults to 'USA'.\n"
-        "    target_currency (str, optional): The target currency code. Defaults to 'USA'.\n"
-        "    countries (list[str] | None, optional): List of country codes to include. If None, returns all. Defaults to None.\n"
-        "    years (list[int] | range | None, optional): List or range of years to include. If None, returns all. Defaults to None.\n"
-        "    use_source_codes (bool, optional): Use source-specific entity codes. Defaults to False.\n"
-        "    update_rates (bool, optional): Update the exchange rate data before retrieval. Defaults to False.\n\n"
+        "    source_currency (str, optional): The source "
+        "currency code. Defaults to 'USA'.\n"
+        "    target_currency (str, optional): The target "
+        "currency code. Defaults to 'USA'.\n"
+        "    countries (list[str] | None, optional): List "
+        "of country codes to include. If None, "
+        "returns all. Defaults to None.\n"
+        "    years (list[int] | range | None, optional): "
+        "List or range of years to include. If None, "
+        "returns all. Defaults to None.\n"
+        "    use_source_codes (bool, optional): Use "
+        "source-specific entity codes. "
+        "Defaults to False.\n"
+        "    update_rates (bool, optional): Update the "
+        "exchange rate data before retrieval. "
+        "Defaults to False.\n\n"
         "Returns:\n"
         "    pd.DataFrame: DataFrame with columns:\n"
-        "        - iso_code (or entity_code if use_source_codes=True): Country/entity identifier\n"
+        "        - iso_code (or entity_code if "
+        "use_source_codes=True): "
+        "Country/entity identifier\n"
         "        - year: Year\n"
-        "        - exchange_rate: Exchange rate from source to target currency\n"
+        "        - exchange_rate: Exchange rate from "
+        "source to target currency\n"
     )
 
 
@@ -40,7 +57,7 @@ def _get_exchange_rates(exchange_source_cls, **fixed_params):
             use_source_codes: bool = False,
             update_rates: bool = False,
         ):
-            # Apply fixed parameters - no validation needed since these are internally set
+            # Apply fixed parameters (internally set, no validation needed)
             if "target_currency" in fixed_params:
                 target_currency = fixed_params["target_currency"]
 
@@ -48,7 +65,7 @@ def _get_exchange_rates(exchange_source_cls, **fixed_params):
             if exchange_source_cls.__name__ == "WorldBankPPP":
                 source = exchange_source_cls(
                     update=update_rates,
-                    from_lcu=False if source_currency == "USA" else True,
+                    from_lcu=source_currency != "USA",
                 )
                 source_currency = "LCU" if source_currency == "USA" else source_currency
             else:
@@ -133,27 +150,39 @@ def get_wb_ppp_rates(
     use_source_codes: bool = False,
     update_rates: bool = False,
 ) -> pd.DataFrame:
-    """Get PPP exchange rate data from WorldBankPPP without requiring user data.
+    """Get PPP exchange rate data from WorldBankPPP.
 
-    This function returns a DataFrame containing PPP exchange rates for the specified parameters.
+    This function returns a DataFrame containing PPP
+    exchange rates for the specified parameters.
 
     Args:
-        source_currency (str, optional): The source currency code. Defaults to 'USA'.
-        countries (list[str] | None, optional): List of country codes to include. If None, returns all. Defaults to None.
-        years (list[int] | range | None, optional): List or range of years to include. If None, returns all. Defaults to None.
-        use_source_codes (bool, optional): Use source-specific entity codes. Defaults to False.
-        update_rates (bool, optional): Update the exchange rate data before retrieval. Defaults to False.
+        source_currency (str, optional): The source
+            currency code. Defaults to 'USA'.
+        countries (list[str] | None, optional): List
+            of country codes to include. If None,
+            returns all. Defaults to None.
+        years (list[int] | range | None, optional):
+            List or range of years to include.
+            If None, returns all. Defaults to None.
+        use_source_codes (bool, optional): Use
+            source-specific entity codes.
+            Defaults to False.
+        update_rates (bool, optional): Update the
+            exchange rate data before retrieval.
+            Defaults to False.
 
     Returns:
         pd.DataFrame: DataFrame with columns:
-            - iso_code (or entity_code if use_source_codes=True): Country/entity identifier
+            - iso_code (or entity_code if
+              use_source_codes=True):
+              Country/entity identifier
             - year: Year
             - exchange_rate: PPP exchange rate
     """
     # Initialize the exchange source
     source = WorldBankPPP(
         update=update_rates,
-        from_lcu=False if source_currency == "USA" else True,
+        from_lcu=source_currency != "USA",
     )
     source_currency_internal = "LCU" if source_currency == "USA" else source_currency
 

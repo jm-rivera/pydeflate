@@ -1,7 +1,7 @@
 # pydeflate
 
 [![pypi](https://img.shields.io/pypi/v/pydeflate.svg)](https://pypi.python.org/pypi/pydeflate)
-[![black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![Downloads](https://pepy.tech/badge/pydeflate/month)](https://pepy.tech/project/pydeflate)
 [![Documentation](https://img.shields.io/badge/docs-mkdocs-blue)](https://jm-rivera.github.io/pydeflate/)
 

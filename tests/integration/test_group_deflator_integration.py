@@ -13,8 +13,8 @@ from pydeflate import (
     configure_group,
     emu_members,
     imf_cpi_deflate,
-    imf_gdp_deflate,
     imf_exchange,
+    imf_gdp_deflate,
     pydeflate_session,
     set_group_treatment,
 )

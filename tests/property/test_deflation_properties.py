@@ -9,7 +9,8 @@ from __future__ import annotations
 
 import pandas as pd
 import pytest
-from hypothesis import given, settings, strategies as st
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 # Configure Hypothesis for reasonable test times
 settings.register_profile("default", max_examples=100, deadline=None)

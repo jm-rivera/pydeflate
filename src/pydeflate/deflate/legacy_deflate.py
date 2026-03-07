@@ -1,6 +1,6 @@
 import functools
 import warnings
-from typing import Callable
+from collections.abc import Callable
 
 import pandas as pd
 
@@ -84,6 +84,7 @@ def deflate(
         "The `deflate` function is deprecated and will be removed in future versions. "
         "Please check the latest documentation for updated methods.",
         DeprecationWarning,
+        stacklevel=2,
     )
 
     if id_type != "ISO3":

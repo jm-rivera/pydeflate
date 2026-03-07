@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import json
 import os
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Callable, Dict, Iterable, Optional
 
 from filelock import FileLock
 
@@ -46,7 +46,7 @@ class CacheManager:
         self.base_dir.mkdir(parents=True, exist_ok=True)
         self.manifest_path = self.base_dir / "manifest.json"
         self._lock = FileLock(str(self.base_dir / ".cache.lock"))
-        self._manifest: Dict[str, dict] = self._load_manifest()
+        self._manifest: dict[str, dict] = self._load_manifest()
 
     # ------------------------------------------------------------------
     def ensure(self, entry: CacheEntry, *, refresh: bool = False) -> Path:
@@ -56,9 +56,13 @@ class CacheManager:
             record = self._manifest.get(entry.key)
             path = self.base_dir / entry.filename
 
-            if not refresh and record and path.exists():
-                if not self._is_stale(record, entry):
-                    return path
+            if (
+                not refresh
+                and record
+                and path.exists()
+                and not self._is_stale(record, entry)
+            ):
+                return path
 
             path.parent.mkdir(parents=True, exist_ok=True)
             tmp_path = Path(f"{path}.tmp-{os.getpid()}")
@@ -71,7 +75,7 @@ class CacheManager:
 
             self._manifest[entry.key] = {
                 "filename": entry.filename,
-                "downloaded_at": datetime.now(timezone.utc).strftime(ISO_FORMAT),
+                "downloaded_at": datetime.now(UTC).strftime(ISO_FORMAT),
                 "ttl_days": entry.ttl_days,
                 "version": entry.version,
             }
@@ -109,12 +113,12 @@ class CacheManager:
             "version"
         )
         downloaded = datetime.strptime(record["downloaded_at"], ISO_FORMAT)
-        age = datetime.now(timezone.utc) - downloaded
+        age = datetime.now(UTC) - downloaded
         ttl = timedelta(days=entry.ttl_days)
         return version_changed or age > ttl
 
     # ------------------------------------------------------------------
-    def _load_manifest(self) -> Dict[str, dict]:
+    def _load_manifest(self) -> dict[str, dict]:
         if not self.manifest_path.exists():
             return {}
         try:
@@ -128,7 +132,7 @@ class CacheManager:
         self.manifest_path.write_text(payload)
 
 
-_CACHE_MANAGER: Optional[CacheManager] = None
+_CACHE_MANAGER: CacheManager | None = None
 
 
 def cache_manager() -> CacheManager:

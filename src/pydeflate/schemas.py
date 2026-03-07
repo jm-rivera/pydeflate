@@ -241,7 +241,7 @@ class UserInputSchema:
         except Exception as e:
             raise SchemaValidationError(
                 f"Column '{year_column}' cannot be interpreted as dates: {e}"
-            )
+            ) from e
 
 
 # Registry of schemas by source name

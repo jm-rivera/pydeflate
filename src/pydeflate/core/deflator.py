@@ -30,7 +30,8 @@ class Deflator:
         the appropriate deflator data from the source.
 
         Raises:
-            ValueError: If the combination of `deflator_type` and `price_kind` is invalid.
+            ValueError: If the combination of `deflator_type`
+                and `price_kind` is invalid.
         """
 
         # If price deflator, fetch the price deflator data
@@ -91,7 +92,9 @@ class Deflator:
         Adjusts the deflator values so that the base year values are set to 100.
 
         Raises:
-            ValueError: If `deflator_data` is empty, has an invalid format, or lacks data for the base year.
+            ValueError: If `deflator_data` is empty, has an
+                invalid format, or lacks data for the
+                base year.
         """
 
         # Check if deflator data is empty
@@ -148,12 +151,14 @@ class ExchangeDeflator(Deflator):
 class PriceDeflator(Deflator):
     """Manages and processes price deflators data.
 
-    It fetches price deflator data from the provided source and normalizes it to a specified
-    base year, allowing for inflation-adjusted comparisons over time.
+    It fetches price deflator data from the provided source and
+    normalizes it to a specified base year, allowing for
+    inflation-adjusted comparisons over time.
 
     Args:
         source (Source): The source from which to fetch price deflator data.
-        kind (AvailableDeflators): The type of price deflator to apply (e.g., GDP deflator or CPI).
+        kind (AvailableDeflators): The type of price deflator
+            to apply (e.g., GDP deflator or CPI).
         base_year (int): The base year to rebase the deflator data.
     """
 

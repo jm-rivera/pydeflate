@@ -5,7 +5,6 @@ import pandas as pd
 from pydeflate.sources import dac, imf, world_bank
 
 
-
 def _imf_sample_frame():
     rows = []
     for concept, values in {
@@ -15,7 +14,7 @@ def _imf_sample_frame():
         "PCPI": [99.0, 101.0],
         "PCPIE": [100.0, 102.0],
     }.items():
-        for year, value in zip([2021, 2022], values):
+        for year, value in zip([2021, 2022], values, strict=False):
             rows.append(
                 {
                     "CONCEPT_CODE": concept,

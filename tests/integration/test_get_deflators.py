@@ -9,8 +9,8 @@ from pydeflate import (
     get_wb_cpi_deflators,
     get_wb_gdp_deflators,
     get_wb_gdp_linked_deflators,
+    imf_gdp_deflate,
 )
-from pydeflate import imf_gdp_deflate
 
 
 def test_get_imf_gdp_deflators_full_workflow(sample_source_frames):

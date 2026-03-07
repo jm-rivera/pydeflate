@@ -1,9 +1,8 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import pytest
 
-from pydeflate.cache import CacheEntry, CacheManager, cache_manager
-from pydeflate.cache import ISO_FORMAT
+from pydeflate.cache import ISO_FORMAT, CacheEntry, CacheManager, cache_manager
 from pydeflate.pydeflate_config import reset_data_dir, set_data_dir
 
 
@@ -46,7 +45,7 @@ def test_cache_refresh_on_ttl(tmp_path):
 
     # Age the entry beyond TTL
     record = mgr._manifest[entry.key]
-    stale_time = datetime.now(timezone.utc) - timedelta(days=2)
+    stale_time = datetime.now(UTC) - timedelta(days=2)
     record["downloaded_at"] = stale_time.strftime(ISO_FORMAT)
     mgr._save_manifest()
 

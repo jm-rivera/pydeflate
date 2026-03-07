@@ -6,7 +6,7 @@ and a group ISO3 code. Specific group data lives in pydeflate.groups.*.
 
 from __future__ import annotations
 
-from typing import Callable
+from collections.abc import Callable
 
 import pandas as pd
 
@@ -95,9 +95,7 @@ def _select_member_rows(
     return pd.concat(parts) if parts else data.iloc[0:0]
 
 
-def _weighted_mean(
-    group: pd.DataFrame, deflator_col: str, group_iso3: str
-) -> float:
+def _weighted_mean(group: pd.DataFrame, deflator_col: str, group_iso3: str) -> float:
     """GDP-weighted mean of a deflator column, falling back to equal weights."""
     deflators = group[deflator_col].dropna()
     if deflators.empty:

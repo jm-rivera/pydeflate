@@ -61,10 +61,13 @@ def convert_id(
         to_type: the target classification type. Same options as from_type
         not_found: what to do if the value is not found. Can pass a string or None.
             If None, the original value is passed through.
-        additional_mapping: Optionally, a dictionary with additional mappings can be used.
-            The keys are the values to be converted and the values are the converted values.
-            The keys follow the same datatype as the original values. The values must follow
-            the same datatype as the target type.
+        additional_mapping: Optionally, a dictionary with
+            additional mappings can be used. The keys are
+            the values to be converted and the values are
+            the converted values. The keys follow the same
+            datatype as the original values. The values
+            must follow the same datatype as the target
+            type.
     """
 
     if from_type == to_type:
@@ -117,7 +120,8 @@ def add_pydeflate_iso3(
             "Kosovo, Republic of": "XXK",
             "G7": "G7C",
             "Sub-Sahara Africa": "SSA",
-            "Hong Kong Special Administrative Region, People's Republic of China": "HKG",
+            "Hong Kong Special Administrative Region, "
+            "People's Republic of China": "HKG",
             "Macao Special Administrative Region, People's Republic of China": "MAC",
         },
     )
@@ -146,7 +150,8 @@ def identify_base_year(df: pd.DataFrame, measure: str, year: str = "year") -> in
     """Identify the base year for a given measure where the value is equal to 100.
 
     Args:
-        df (pd.DataFrame): DataFrame containing the deflator data with 'year' and the given measure.
+        df (pd.DataFrame): DataFrame containing the deflator
+            data with 'year' and the given measure.
         measure (str): The column name for the measure to find the base year for.
         year (str): The column name for the year.
 
@@ -169,18 +174,23 @@ def compute_exchange_deflator(
 ) -> pd.DataFrame:
     """Compute the exchange rate deflator for each group of entities.
 
-    This function calculates a deflator for the exchange rate by identifying a base year
-    where the base_year_measure is 100, then normalizing exchange values to that base year.
+    This function calculates a deflator for the exchange
+    rate by identifying a base year where the
+    base_year_measure is 100, then normalizing exchange
+    values to that base year.
 
     Args:
-        df (pd.DataFrame): Input DataFrame containing columns 'year', and 'EXCHANGE'.
-        base_year_measure (str): The column name for the measure to find the base year for.
+        df (pd.DataFrame): Input DataFrame containing
+            columns 'year', and 'EXCHANGE'.
+        base_year_measure (str): The column name for the
+            measure to find the base year for.
         exchange (str): The column name for the exchange rate.
         year (str): The column name for the year.
         grouper (list): List of columns to group by before applying the deflator.
 
     Returns:
-        pd.DataFrame: DataFrame with an additional column for the exchange rate deflator.
+        pd.DataFrame: DataFrame with an additional column
+            for the exchange rate deflator.
     """
 
     def _compute_deflator_for_group(
@@ -220,17 +230,19 @@ def compute_exchange_deflator(
         grouper = ["entity", "entity_code"]
 
     # Determine the exchange column name for the deflator
-    if exchange.endswith("_to") or exchange.endswith("_from"):
-        exchange_name = exchange.rsplit("_", 1)[0]
-    else:
-        exchange_name = exchange
+    exchange_name = (
+        exchange.rsplit("_", 1)[0]
+        if exchange.endswith("_to") or exchange.endswith("_from")
+        else exchange
+    )
 
     deflator_col = f"{exchange_name}_D"
 
     # Process each group and concatenate results
-    # This approach avoids the FutureWarning from groupby().apply() operating on grouping columns
+    # Avoids the FutureWarning from groupby().apply()
+    # operating on grouping columns
     processed_groups = []
-    for name, group in df.groupby(grouper, sort=False):
+    for _name, group in df.groupby(grouper, sort=False):
         processed_group = _compute_deflator_for_group(
             group=group,
             measure=base_year_measure,

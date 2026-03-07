@@ -6,11 +6,13 @@ to current prices works correctly.
 Bug description:
 - When converting from constant USD to current EUR with to_current=True
 - The operation was dividing by the deflator instead of multiplying
-- This resulted in incorrect values (too high by approximately the square of the exchange rate)
+- This resulted in incorrect values (too high by approximately
+  the square of the exchange rate)
 
 Expected behavior:
 - For base year, constant prices should equal current prices in the source currency
-- Converting constant USD to current EUR should simply apply the exchange rate for base year
+- Converting constant USD to current EUR should simply apply
+  the exchange rate for base year
 - For non-base years, it should account for both price changes and exchange rate changes
 """
 
@@ -68,7 +70,8 @@ class TestToCurrentBug:
         # This test will fail with current bug and pass after fix
         assert actual < 1000.0, (
             f"Base year conversion seems incorrect. Got {actual}, expected < 1000 "
-            f"(since 1 USD < 1 EUR historically). This suggests division instead of multiplication."
+            f"(since 1 USD < 1 EUR historically). "
+            f"This suggests division instead of multiplication."
         )
 
     def test_to_current_full_example(self):
@@ -96,12 +99,13 @@ class TestToCurrentBug:
 
         # For all years, values should be less than source value
         # since EUR < USD historically
-        for idx, row in result.iterrows():
+        for _idx, row in result.iterrows():
             year = row["year"]
             actual = row["current_eur"]
 
             assert actual < 1000.0, (
-                f"Year {year} conversion seems incorrect. Got {actual}, expected < 1000. "
+                f"Year {year} conversion seems incorrect. "
+                f"Got {actual}, expected < 1000. "
                 f"This suggests division instead of multiplication by exchange rate."
             )
 
@@ -118,7 +122,8 @@ class TestToCurrentBug:
             }
         )
 
-        # Step 1: Convert constant USD to current USD (should be identity for same currency)
+        # Step 1: Convert constant USD to current USD
+        # (should be identity for same currency)
         current = oecd_dac_deflate(
             data=data,
             base_year=2023,
@@ -152,5 +157,7 @@ class TestToCurrentBug:
 
             # Allow 0.1% tolerance for rounding errors
             assert abs(roundtrip_val - original) / original < 0.001, (
-                f"Year {year} roundtrip failed. Original: {original}, Roundtrip: {roundtrip_val}"
+                f"Year {year} roundtrip failed. "
+                f"Original: {original}, "
+                f"Roundtrip: {roundtrip_val}"
             )

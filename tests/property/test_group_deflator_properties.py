@@ -10,7 +10,8 @@ from __future__ import annotations
 
 import pandas as pd
 import pytest
-from hypothesis import given, settings, strategies as st
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 from pydeflate.core.group_deflator import compute_group_deflator
 from pydeflate.groups import GroupTreatment, _registry
@@ -121,9 +122,7 @@ class TestWeightedAverageProperties:
         gdp_a=gdp_value,
         gdp_b=gdp_value,
     )
-    def test_weighted_average_bounded_by_inputs(
-        self, defl_a, defl_b, gdp_a, gdp_b
-    ):
+    def test_weighted_average_bounded_by_inputs(self, defl_a, defl_b, gdp_a, gdp_b):
         """Property: weighted average is between min and max of inputs."""
         data = _make_two_country_data(defl_a, defl_b, gdp_a, gdp_b)
         result = compute_group_deflator(
@@ -296,10 +295,13 @@ class TestTreatmentModeProperties:
         eur_fixed = result_fixed[result_fixed["pydeflate_iso3"] == "EUR"]
         eur_dynamic = result_dynamic[result_dynamic["pydeflate_iso3"] == "EUR"]
 
-        assert abs(
-            eur_fixed["pydeflate_NGDP_D"].iloc[0]
-            - eur_dynamic["pydeflate_NGDP_D"].iloc[0]
-        ) < 0.01
+        assert (
+            abs(
+                eur_fixed["pydeflate_NGDP_D"].iloc[0]
+                - eur_dynamic["pydeflate_NGDP_D"].iloc[0]
+            )
+            < 0.01
+        )
 
     @given(
         defl_a=deflator_value,
@@ -308,9 +310,7 @@ class TestTreatmentModeProperties:
         gdp_b=gdp_value,
         pin_year=st.integers(min_value=2000, max_value=2030),
     )
-    def test_pin_year_is_idempotent(
-        self, defl_a, defl_b, gdp_a, gdp_b, pin_year
-    ):
+    def test_pin_year_is_idempotent(self, defl_a, defl_b, gdp_a, gdp_b, pin_year):
         """Property: applying pin_year twice gives the same result."""
         data = _make_two_country_data(defl_a, defl_b, gdp_a, gdp_b)
 

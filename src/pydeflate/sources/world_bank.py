@@ -1,20 +1,20 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
-from typing import Callable
 
 import pandas as pd
 import wbgapi as wb
 
 from pydeflate.cache import CacheEntry, cache_manager
+from pydeflate.groups.emu import all_members as emu
 from pydeflate.pydeflate_config import logger
 from pydeflate.sources.common import (
     compute_exchange_deflator,
     enforce_pyarrow_types,
     prefix_pydeflate_to_columns,
 )
-from pydeflate.groups.emu import all_members as emu
 
 _INDICATORS: dict = {
     "NY.GDP.DEFL.ZS": "NGDP_D",  # GDP Deflator (Index)
@@ -42,10 +42,12 @@ def get_wb_indicator(series: str, value_name: str | None = None) -> pd.DataFrame
     Args:
         series (str): The World Bank indicator series code.
         value_name (str | None): The column name to assign to the series values.
-                                 If None, the series code will be used as the column name.
+            If None, the series code will be used as the
+            column name.
 
     Returns:
-        pd.DataFrame: DataFrame with entity code, entity name, year, and the indicator values.
+        pd.DataFrame: DataFrame with entity code, entity name,
+            year, and the indicator values.
     """
     # Fetch the indicator data from World Bank API, clean and structure it
     return (
@@ -82,7 +84,8 @@ def _eur_series_fix(df: pd.DataFrame) -> pd.DataFrame:
         df: pd.DataFrame: The DataFrame containing the World Bank data.
 
     Returns:
-        pd.DataFrame: The DataFrame with the fixed exchange rates for the Euro area countries.
+        pd.DataFrame: The DataFrame with the fixed exchange
+            rates for the Euro area countries.
 
     """
     # Find the Euro area data. This is done given that some countries are missing

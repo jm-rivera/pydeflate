@@ -8,10 +8,12 @@ enables better testability and parallel execution.
 from __future__ import annotations
 
 import logging
+import threading
+from collections.abc import Generator
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Generator
+from typing import Any
 
 from pydeflate.cache import CacheManager
 from pydeflate.pydeflate_config import get_data_dir
@@ -80,10 +82,11 @@ class PydeflateContext:
         Returns:
             New PydeflateContext instance
         """
-        if data_dir is None:
-            data_dir = get_data_dir()
-        else:
-            data_dir = Path(data_dir).expanduser().resolve()
+        data_dir = (
+            get_data_dir()
+            if data_dir is None
+            else Path(data_dir).expanduser().resolve()
+        )
 
         return cls(
             data_dir=data_dir,
@@ -94,8 +97,6 @@ class PydeflateContext:
 
 
 # Thread-local storage for default context
-import threading
-
 _thread_local = threading.local()
 
 
@@ -161,7 +162,8 @@ def pydeflate_session(
     previous_context = getattr(_thread_local, "context", None)
 
     # Save and restore group registry state
-    from pydeflate.groups import GroupTreatment as GT, _registry
+    from pydeflate.groups import GroupTreatment as GT
+    from pydeflate.groups import _registry
 
     previous_state = _registry.snapshot()
 

@@ -1,8 +1,8 @@
 from pydeflate.groups.emu import (
-    members_for_year,
-    all_members,
     accession_year,
+    all_members,
     is_member,
+    members_for_year,
 )
 
 

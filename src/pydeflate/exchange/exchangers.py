@@ -9,22 +9,39 @@ from pydeflate.core.source import DAC, IMF, WorldBank, WorldBankPPP
 def _generate_docstring(source_name: str) -> str:
     """Generate docstring for each decorated exchange function."""
     return (
-        f"Exchange a DataFrame using the {source_name} rates source.\n\n"
-        f"This function applies exchange rates toa  DataFrame using the {source_name} rates.\n\n"
+        f"Exchange a DataFrame using the {source_name} "
+        "rates source.\n\n"
+        "This function applies exchange rates to a "
+        f"DataFrame using the {source_name} rates.\n\n"
         "Args:\n"
-        "    data (pd.DataFrame): The input DataFrame containing data to deflate.\n"
-        "    source_currency (str, optional): The source currency code. Defaults to 'USA'.\n"
-        "    target_currency (str, optional): The target currency code. Defaults to 'USA'.\n"
-        "    id_column (str, optional): Column with entity identifiers. Defaults to 'iso_code'.\n"
-        "    year_column (str, optional): Column with year information. Defaults to 'year'.\n"
-        "    use_source_codes (bool, optional): Use source-specific entity codes. Defaults to False.\n"
-        "    value_column (str, optional): Column with values to deflate. Defaults to 'value'.\n"
-        "    target_value_column (str, optional): Column to store deflated values. Defaults to 'value'.\n"
-        "    reversed_ (bool, optional): The reverse of an exchange conversion. Defaults to False.\n"
-        "    year_format (str | None, optional): Format of the year in `year_column`. Defaults to None.\n"
-        "    update_rates (bool, optional): Update the exchange rate data. Defaults to False.\n\n"
+        "    data (pd.DataFrame): The input DataFrame "
+        "containing data to deflate.\n"
+        "    source_currency (str, optional): The source "
+        "currency code. Defaults to 'USA'.\n"
+        "    target_currency (str, optional): The target "
+        "currency code. Defaults to 'USA'.\n"
+        "    id_column (str, optional): Column with entity "
+        "identifiers. Defaults to 'iso_code'.\n"
+        "    year_column (str, optional): Column with year "
+        "information. Defaults to 'year'.\n"
+        "    use_source_codes (bool, optional): Use "
+        "source-specific entity codes. "
+        "Defaults to False.\n"
+        "    value_column (str, optional): Column with "
+        "values to deflate. Defaults to 'value'.\n"
+        "    target_value_column (str, optional): Column "
+        "to store deflated values. "
+        "Defaults to 'value'.\n"
+        "    reversed_ (bool, optional): The reverse of "
+        "an exchange conversion. Defaults to False.\n"
+        "    year_format (str | None, optional): Format "
+        "of the year in `year_column`. "
+        "Defaults to None.\n"
+        "    update_rates (bool, optional): Update the "
+        "exchange rate data. Defaults to False.\n\n"
         "Returns:\n"
-        "    pd.DataFrame: DataFrame with converted values in the `target_value_column`.\n"
+        "    pd.DataFrame: DataFrame with converted "
+        "values in the `target_value_column`.\n"
     )
 
 
@@ -52,7 +69,7 @@ def _exchange(exchange_source_cls, **fixed_params):
             value_column = kwargs.get("value_column", "value")
             target_value_column = kwargs.get("target_value_column", "value")
             reversed_ = kwargs.get("reversed_", False)
-            year_format = kwargs.get("year_format", None)
+            year_format = kwargs.get("year_format")
             update_rates = kwargs.get("update_rates", False)
 
             if not isinstance(data, pd.DataFrame):
@@ -78,7 +95,7 @@ def _exchange(exchange_source_cls, **fixed_params):
             if exchange_source_cls.__name__ == "WorldBankPPP":
                 source = exchange_source_cls(
                     update=update_rates,
-                    from_lcu=False if source_currency == "USA" else True,
+                    from_lcu=source_currency != "USA",
                 )
                 source_currency = "LCU" if source_currency == "USA" else source_currency
             else:

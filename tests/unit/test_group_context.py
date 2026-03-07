@@ -1,7 +1,7 @@
 """Test group treatment integration with pydeflate_session."""
 
 from pydeflate import imf_gdp_deflate, pydeflate_session
-from pydeflate.groups import _registry, GroupTreatment
+from pydeflate.groups import GroupTreatment, _registry
 
 
 class TestGroupTreatmentContext:

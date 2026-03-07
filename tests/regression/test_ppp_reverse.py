@@ -8,9 +8,7 @@ from pydeflate.core.source import WorldBankPPP
 
 def _base_exchange(source_currency: str):
     return BaseExchange(
-        exchange_source=WorldBankPPP(
-            from_lcu=False if source_currency == "USA" else True
-        ),
+        exchange_source=WorldBankPPP(from_lcu=source_currency != "USA"),
         source_currency=source_currency,
         target_currency="PPP",
     )

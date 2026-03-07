@@ -31,7 +31,9 @@ class SourceProtocol(Protocol):
     """The raw data loaded from this source"""
 
     _idx: list[str]
-    """Standard index columns: ['pydeflate_year', 'pydeflate_entity_code', 'pydeflate_iso3']"""
+    """Standard index columns:
+    ['pydeflate_year', 'pydeflate_entity_code',
+    'pydeflate_iso3']"""
 
     def lcu_usd_exchange(self) -> pd.DataFrame:
         """Return local currency to USD exchange rates.

@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from pydeflate.pydeflate_config import logger as pydeflate_logger
 from pydeflate.utils import (
     clean_number,
     create_pydeflate_year,
@@ -12,7 +13,6 @@ from pydeflate.utils import (
     get_unmatched_pydeflate_data,
     merge_user_and_pydeflate_data,
 )
-from pydeflate.pydeflate_config import logger as pydeflate_logger
 
 
 def test_clean_number_preserves_sign_and_decimal():

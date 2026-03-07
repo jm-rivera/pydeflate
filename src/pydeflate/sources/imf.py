@@ -113,7 +113,8 @@ def _compute_exchange(df: pd.DataFrame) -> pd.DataFrame:
     """Compute the exchange rate and append it to the original DataFrame.
 
     This function calculates the exchange rate by dividing the 'NGDP'
-     Gross domestic product in local currency) by 'NGDPD' (Gross domestic product in USD).
+     Gross domestic product in local currency) by 'NGDPD'
+     (Gross domestic product in USD).
     It then appends this computed exchange rate to the original DataFrame,
     and the new exchange rate rows are labeled with the 'EXCHANGE'
     concept code.
@@ -168,7 +169,8 @@ def _create_eur_series(df: pd.DataFrame) -> pd.DataFrame:
         .set_index("year")["EXCHANGE"]
     )
 
-    # Apply France's exchange rates to Euro Area rows (entity_code G163) with matching year
+    # Apply France's exchange rates to Euro Area rows
+    # (entity_code G163) with matching year
     # Note: IMF WEO uses "G163" as the entity code for "Euro Area (EA)"
     euro_area_mask = df.entity_code == "G163"
     df.loc[euro_area_mask, "EXCHANGE"] = df.loc[euro_area_mask, "year"].map(eur)

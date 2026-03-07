@@ -44,7 +44,7 @@ class TestEuroAreaMapping:
         assert result["pydeflate_iso3"].iloc[0] == "EMU"
 
     def test_euro_area_ea_with_parentheses_maps_to_emu_iso3(self):
-        """'Euro Area (EA)' entity name (actual IMF format) should map to EMU ISO3 code."""
+        """'Euro Area (EA)' (actual IMF format) maps to EMU."""
         df = pd.DataFrame(
             {
                 "entity": ["Euro Area (EA)"],
@@ -97,7 +97,7 @@ class TestEuropeanUnionMapping:
         assert result["pydeflate_iso3"].iloc[0] == "EU"
 
     def test_european_union_eu_with_parentheses_maps_to_eu_iso3(self):
-        """'European Union (EU)' entity name (actual IMF format) should map to EU ISO3 code."""
+        """'European Union (EU)' (actual IMF format) maps to EU."""
         df = pd.DataFrame(
             {
                 "entity": ["European Union (EU)"],

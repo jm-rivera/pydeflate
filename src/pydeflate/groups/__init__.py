@@ -19,12 +19,12 @@ Usage:
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from enum import Enum
-from typing import Callable
+from enum import StrEnum
 
 
-class GroupTreatment(str, Enum):
+class GroupTreatment(StrEnum):
     """How pydeflate computes deflators for country group rows.
 
     SOURCE: Use the data source's own published aggregate (default).

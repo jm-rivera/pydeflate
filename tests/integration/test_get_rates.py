@@ -6,8 +6,8 @@ from pydeflate import (
     get_oecd_dac_exchange_rates,
     get_wb_exchange_rates,
     get_wb_ppp_rates,
+    imf_exchange,
 )
-from pydeflate import imf_exchange
 
 
 def test_get_imf_exchange_rates_full_workflow(sample_source_frames):

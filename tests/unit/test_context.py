@@ -2,7 +2,6 @@
 
 import logging
 
-
 from pydeflate.context import (
     PydeflateContext,
     get_default_context,
@@ -54,7 +53,7 @@ class TestPydeflateContext:
         new_dir = tmp_path / "new_cache"
         assert not new_dir.exists()
 
-        ctx = PydeflateContext.create(data_dir=new_dir)
+        PydeflateContext.create(data_dir=new_dir)
 
         assert new_dir.exists()
         assert new_dir.is_dir()

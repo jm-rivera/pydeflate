@@ -74,15 +74,18 @@ def _base_operation(
     """Perform deflation or exchange rate adjustment on input data using pydeflate data.
 
     Args:
-        base_obj (BaseExchange | BaseDeflate): The base object containing pydeflate data.
+        base_obj (BaseExchange | BaseDeflate): The base object
+            containing pydeflate data.
         data (pd.DataFrame): Data to be adjusted.
         entity_column (str): Column with entity or country identifiers.
         year_column (str): Column with year information.
         value_column (str): Column with values to be adjusted.
-        target_value_column (str | None, optional): Column to store adjusted values. Defaults to `value_column`.
-        year_format (str, optional): Format of the year. Defaults to "%Y".
-        exchange (bool, optional): Whether to perform an exchange rate adjustment (True)
-        or deflation (False).
+        target_value_column (str | None, optional): Column to store
+            adjusted values. Defaults to `value_column`.
+        year_format (str, optional): Format of the year.
+            Defaults to "%Y".
+        exchange (bool, optional): Whether to perform an exchange
+            rate adjustment (True) or deflation (False).
         reversed_ (bool, optional): If True, perform the operation in reverse.
 
     Returns:
@@ -234,9 +237,12 @@ class BaseExchange:
             entity_column (str): Column with entity identifiers.
             year_column (str): Column with year information.
             value_column (str): Column with values to adjust.
-            target_value_column (str | None, optional): Column for adjusted values. Defaults to `value_column`.
-            year_format (str, optional): Format of the year. Defaults to "%Y".
-            reversed_ (bool, optional): If True, perform the operation in reverse. defaults to False.
+            target_value_column (str | None, optional): Column for
+                adjusted values. Defaults to `value_column`.
+            year_format (str, optional): Format of the year.
+                Defaults to "%Y".
+            reversed_ (bool, optional): If True, perform the
+                operation in reverse. Defaults to False.
 
         Returns:
             pd.DataFrame: DataFrame with exchange rate-adjusted values.
@@ -282,8 +288,10 @@ class BaseDeflate:
             price_kind (AvailableDeflators): Type of deflator (e.g., CPI).
             source_currency (str): Currency of the input data.
             target_currency (str): Currency for conversion.
-            use_source_codes (bool, optional): Use source-specific entity codes. Defaults to False.
-            to_current (bool, optional): If True, adjust to current year values. Defaults to False.
+            use_source_codes (bool, optional): Use source-specific
+                entity codes. Defaults to False.
+            to_current (bool, optional): If True, adjust to current
+                year values. Defaults to False.
         """
 
         # Try to accept common currencies by their country codes
@@ -296,7 +304,8 @@ class BaseDeflate:
         )
 
         # Apply group deflator treatment if configured.
-        # copy.copy ensures exchange_source (which may be the same object) is unaffected.
+        # copy.copy ensures exchange_source
+        # (which may be the same object) is unaffected.
         deflator_source = _maybe_apply_group_deflator(
             deflator_source, price_kind, source_currency
         )
@@ -330,7 +339,7 @@ class BaseDeflate:
         self.__post_init__()
 
     def __post_init__(self):
-        """Post-initialization process to merge deflator, exchange, and pydeflate data."""
+        """Merge deflator, exchange, and pydeflate data."""
 
         # Merge deflator and exchange rate data
         data = self._merge_components(
@@ -369,7 +378,9 @@ class BaseDeflate:
         exchange_rate: pd.Series,
         exchange_rate_base: pd.Series,
     ):
-        """Compute the combined deflator value using price deflator, exchange deflator, and rates.
+        """Compute the combined deflator value.
+
+        Uses price deflator, exchange deflator, and rates.
 
         Args:
             price_def (pd.Series): Series of price deflator values.
@@ -386,7 +397,8 @@ class BaseDeflate:
             # Use BASE YEAR exchange rate (not year's rate) because:
             # - We start with constant values at base year prices
             # - The base year exchange rate converts between currencies at base year
-            # - The price_def adjusts for price level changes from base year to target year
+            # - The price_def adjusts for price level changes
+            #   from base year to target year
             return 100 / (exchange_rate_base * price_def)
         else:
             # For current -> constant: standard formula
@@ -459,7 +471,8 @@ class BaseDeflate:
             entity_column (str): Column with entity identifiers.
             year_column (str): Column with year information.
             value_column (str): Column with values to deflate.
-            target_value_column (str | None, optional): Column to store deflated values. Defaults to `value_column`.
+            target_value_column (str | None, optional): Column to
+                store deflated values. Defaults to `value_column`.
             year_format (str, optional): Format of the year. Defaults to "%Y".
 
         Returns:
