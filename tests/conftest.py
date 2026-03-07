@@ -25,6 +25,7 @@ YEARS = [2021, 2022, 2023]
 ENTITY_INFO = {
     "USA": {"iso": "USA", "code": "001"},
     "FRA": {"iso": "FRA", "code": "250"},
+    "DEU": {"iso": "DEU", "code": "134"},
     "GBR": {"iso": "GBR", "code": "826"},
     "CAN": {"iso": "CAN", "code": "124"},
     "EUR": {"iso": "EUR", "code": "978"},
@@ -84,12 +85,13 @@ def sample_source_frames():
     common_exchange_def = _uniform([96.0, 100.0, 104.0])
 
     imf_frames = _build_source_frame(
-        ["USA", "FRA", "GBR", "CAN", "EUR"],
+        ["USA", "FRA", "DEU", "GBR", "CAN", "EUR"],
         {
             "pydeflate_NGDP_D": _series(
                 {
                     "USA": [98.0, 100.0, 103.0],
                     "FRA": [95.0, 100.0, 108.0],
+                    "DEU": [96.0, 100.0, 106.0],
                     "GBR": [96.0, 100.0, 105.0],
                     "CAN": [97.0, 100.0, 104.0],
                     "EUR": [95.5, 100.0, 107.5],
@@ -99,6 +101,7 @@ def sample_source_frames():
                 {
                     "USA": [99.0, 100.0, 102.0],
                     "FRA": [96.0, 100.0, 107.0],
+                    "DEU": [97.0, 100.0, 105.0],
                     "GBR": [97.0, 100.0, 104.0],
                     "CAN": [98.0, 100.0, 103.0],
                     "EUR": [96.5, 100.0, 107.5],
@@ -108,6 +111,7 @@ def sample_source_frames():
                 {
                     "USA": [99.5, 100.0, 102.5],
                     "FRA": [96.5, 100.0, 107.5],
+                    "DEU": [97.5, 100.0, 106.5],
                     "GBR": [97.5, 100.0, 104.5],
                     "CAN": [98.5, 100.0, 103.5],
                     "EUR": [97.0, 100.0, 108.0],
@@ -117,12 +121,23 @@ def sample_source_frames():
                 {
                     "USA": [1.0, 1.0, 1.0],
                     "FRA": [0.84, 0.85, 0.86],
+                    "DEU": [0.84, 0.85, 0.86],
                     "GBR": [0.73, 0.74, 0.75],
                     "CAN": [1.26, 1.27, 1.28],
                     "EUR": [0.9, 0.91, 0.92],
                 }
             ),
             "pydeflate_EXCHANGE_D": common_exchange_def,
+            "pydeflate_NGDPD": _series(
+                {
+                    "USA": [23000.0, 25000.0, 27000.0],
+                    "FRA": [2800.0, 3000.0, 3200.0],
+                    "DEU": [4000.0, 4200.0, 4400.0],
+                    "GBR": [3000.0, 3200.0, 3400.0],
+                    "CAN": [1800.0, 2000.0, 2200.0],
+                    "EUR": [14000.0, 15000.0, 16000.0],
+                }
+            ),
         },
     )
 
@@ -282,6 +297,27 @@ def mock_source_readers(sample_source_frames, monkeypatch):
         lambda update=False: sample_source_frames["dac"],
     )
     yield
+
+
+@pytest.fixture
+def eur_df():
+    """DataFrame with EUR-denominated data for group deflator tests."""
+    return pd.DataFrame(
+        {
+            "iso_code": ["FRA", "FRA"],
+            "year": [2022, 2023],
+            "value": [1000.0, 1050.0],
+        }
+    )
+
+
+@pytest.fixture(autouse=True)
+def _reset_group_registry():
+    """Ensure group registry is reset after each test."""
+    yield
+    from pydeflate.groups import _registry
+
+    _registry.reset()
 
 
 @pytest.fixture

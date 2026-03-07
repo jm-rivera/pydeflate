@@ -14,7 +14,7 @@ from pydeflate.sources.common import (
     enforce_pyarrow_types,
     prefix_pydeflate_to_columns,
 )
-from pydeflate.utils import emu
+from pydeflate.groups.emu import all_members as emu
 
 _INDICATORS: dict = {
     "NY.GDP.DEFL.ZS": "NGDP_D",  # GDP Deflator (Index)

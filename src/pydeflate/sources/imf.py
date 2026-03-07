@@ -132,8 +132,8 @@ def _compute_exchange(df: pd.DataFrame) -> pd.DataFrame:
     # Pivot the data so 'NGDPD' and 'NGDP' become separate columns
     exchange = exchange.pipe(_pivot_concept_code)
 
-    # Remove rows that correspond to 'NGDPD' and 'NGDP' from the original DataFrame
-    df = df.loc[lambda d: ~d.concept_code.isin(["NGDPD", "NGDP"])]
+    # Remove NGDP rows; keep NGDPD (GDP in USD) for GDP-weighted group deflators
+    df = df.loc[lambda d: ~d.concept_code.isin(["NGDP"])]
 
     # Compute the exchange rate as NGDP (local currency) divided by NGDPD (USD)
     exchange["value"] = round(exchange["NGDP"] / exchange["NGDPD"], 7)
@@ -204,7 +204,7 @@ _IMF_CACHE_ENTRY = CacheEntry(
     filename="imf_weo.parquet",
     fetcher=_download_weo,
     ttl_days=60,
-    version="2",  # Bump version to invalidate cache when EUR mapping fix is applied
+    version="3",  # Bump: preserve NGDPD for GDP-weighted group deflators
 )
 
 
