@@ -1,5 +1,5 @@
 __author__ = """Jorge Rivera"""
-__version__ = "2.3.0"
+__version__ = "2.4.0"
 
 from pydeflate.deflate.deflators import (
     imf_cpi_deflate,

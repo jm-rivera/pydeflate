@@ -495,6 +495,43 @@ constant_value = my_value_2021 / deflator_2021
 print(f"${my_value_2021} in 2021 = ${constant_value:.2f} in constant 2020 USD")
 ```
 
+## Country Group Deflators (EUR / EMU)
+
+**New in v2.4.0**: When deflating EUR-denominated data, pydeflate can compute GDP-weighted deflators from individual eurozone member countries instead of relying on the source's opaque aggregate.
+
+```python
+import pydeflate
+
+# Use GDP-weighted average of all EMU members' deflators
+pydeflate.set_group_treatment("fixed")
+
+result = pydeflate.imf_gdp_deflate(
+    data=df,
+    base_year=2015,
+    source_currency="EUR",
+    target_currency="USD",
+)
+```
+
+You can also pin membership to a specific year:
+
+```python
+# Use 2019 membership for all years (pre-COVID, pre-Croatia)
+pydeflate.configure_group("EMU", treatment="fixed", members_year=2019)
+```
+
+Or use scoped configuration:
+
+```python
+from pydeflate import pydeflate_session
+
+with pydeflate_session(group_treatment="dynamic"):
+    # Uses actual membership per year (11 members in 1999, 20 in 2023)
+    result = pydeflate.imf_gdp_deflate(df, base_year=2015, ...)
+```
+
+For full details, see [Country Group Deflators](advanced/groups.md).
+
 ## Next Steps
 
 - [**Currency Exchange**](exchange.md) - Convert currencies without deflation
