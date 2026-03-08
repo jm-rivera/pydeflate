@@ -49,6 +49,7 @@ def test_wb_gdp_deflate_with_iso_codes(sample_source_frames):
     assert result["value"].tolist() == pytest.approx(
         expected["value"].tolist(), rel=1e-6
     )
+    assert len(result) == len(data)
 
 
 def test_wb_gdp_deflate_accepts_source_codes(sample_source_frames):
@@ -83,6 +84,7 @@ def test_wb_gdp_deflate_accepts_source_codes(sample_source_frames):
     assert result["value"].tolist() == pytest.approx(
         expected["value"].tolist(), rel=1e-6
     )
+    assert len(result) == len(data)
 
 
 def test_wb_cpi_deflate_to_current_prices(sample_source_frames):
@@ -113,6 +115,7 @@ def test_wb_cpi_deflate_to_current_prices(sample_source_frames):
     assert result["value"].tolist() == pytest.approx(
         expected["value"].tolist(), rel=1e-6
     )
+    assert len(result) == len(data)
 
 
 def test_wb_gdp_linked_deflate_uses_linked_series(sample_source_frames):
@@ -138,3 +141,4 @@ def test_wb_gdp_linked_deflate_uses_linked_series(sample_source_frames):
     assert result["value"].tolist() == pytest.approx(
         expected["value"].tolist(), rel=1e-6
     )
+    assert len(result) == len(data)

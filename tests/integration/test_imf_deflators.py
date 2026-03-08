@@ -23,7 +23,6 @@ def _base_deflate(
         to_current=to_current,
     )
 
-
 def test_imf_gdp_deflate_returns_constant_prices(sample_source_frames):
     data = pd.DataFrame(
         {
@@ -47,6 +46,7 @@ def test_imf_gdp_deflate_returns_constant_prices(sample_source_frames):
     assert result["value"].tolist() == pytest.approx(
         expected["value"].tolist(), rel=1e-6
     )
+    assert len(result) == len(data)
 
 
 def test_imf_cpi_deflate_to_current_prices(sample_source_frames):
@@ -77,3 +77,4 @@ def test_imf_cpi_deflate_to_current_prices(sample_source_frames):
     assert result["value"].tolist() == pytest.approx(
         expected["value"].tolist(), rel=1e-6
     )
+    assert len(result) == len(data)
