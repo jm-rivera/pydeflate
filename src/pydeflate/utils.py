@@ -106,7 +106,7 @@ def merge_user_and_pydeflate_data(
 
     df_ = data.merge(
         pydeflate_data,
-        how="outer",
+        how="left",
         left_on=["pydeflate_year", f"temp_{entity_column}"],
         right_on=ix,
         suffixes=("", "_pydeflate"),
