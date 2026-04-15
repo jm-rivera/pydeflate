@@ -15,7 +15,7 @@ dependencies = [
     "pandas>=2.0",
     "pandera>=0.20.0",
     "pyarrow>=14.0",
-    "requests>=2.32.5",
+    "requests>=2.33.0",
     "wbgapi>=1.0.12",
     "platformdirs>=3.0.0",
     "filelock>=3.15.0",
@@ -27,7 +27,7 @@ dev = [
     "hypothesis>=6.122.3",
     "pandas-stubs>=2.3.2.250926",
     "pre-commit>=4.0.0",
-    "pytest>=8.4.2",
+    "pytest>=9.0.3",
     "pytest-cov>=7.0.0",
     "ruff>=0.13.3",
 ]
