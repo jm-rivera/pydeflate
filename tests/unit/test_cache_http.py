@@ -58,15 +58,18 @@ def test_get_cached_session_returns_cachedsession_under_http_dir(tmp_path):
 
 def test_set_cache_root_resets_cached_session(tmp_path):
     """Changing the cache root invalidates the CachedSession singleton."""
-    session_before_id = id(get_cached_session())
+    # Hold a strong reference: comparing id() across a GC point is unreliable
+    # — CPython will happily reuse the old object's memory address for the
+    # next allocation (observed on 3.14).
+    session_before = get_cached_session()
 
     # Change the cache root — the listener bus fires _reset_cached_session.
     other_path = tmp_path / "other"
     set_cache_root(other_path)
 
-    session_after_id = id(get_cached_session())
+    session_after = get_cached_session()
 
-    assert session_before_id != session_after_id
+    assert session_before is not session_after
 
 
 # ---------------------------------------------------------------------------
