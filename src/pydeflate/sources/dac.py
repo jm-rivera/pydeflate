@@ -5,7 +5,7 @@ from pathlib import Path
 import pandas as pd
 from oda_reader import download_dac1
 
-from pydeflate.cache import CacheEntry, cache_manager
+from pydeflate.cache import CacheEntry, bulk_cache_manager
 from pydeflate.pydeflate_config import logger
 from pydeflate.sources.common import (
     add_pydeflate_iso3,
@@ -116,7 +116,7 @@ _DAC_ENTRY = CacheEntry(
 
 
 def read_dac(update: bool = False) -> pd.DataFrame:
-    path = cache_manager().ensure(_DAC_ENTRY, refresh=update)
+    path = bulk_cache_manager().ensure(_DAC_ENTRY, refresh=update)
     return pd.read_parquet(path)
 
 

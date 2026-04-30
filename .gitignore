@@ -126,3 +126,4 @@ pydeflate/.DS_Store
 /pydeflate/.pydeflate_data/
 /.reports/
 pydeflate/experiments.py
+/.claude

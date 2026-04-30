@@ -10,10 +10,14 @@ from pydeflate.pydeflate_config import (
 
 @pytest.fixture(autouse=True)
 def restore_data_dir(monkeypatch, tmp_path):
-    def fake_user_cache(appname: str, appauthor: str) -> str:
-        return str(tmp_path / "default-cache")
+    # Slice A moved the platformdirs lookup into pydeflate.cache.config and
+    # switched from user_cache_dir (str) to user_cache_path (Path).
+    def fake_user_cache_path(appname: str, appauthor: str):
+        from pathlib import Path
 
-    monkeypatch.setattr("pydeflate.pydeflate_config.user_cache_dir", fake_user_cache)
+        return Path(tmp_path / "default-cache")
+
+    monkeypatch.setattr("pydeflate.cache.config.user_cache_path", fake_user_cache_path)
     reset_data_dir()
     yield
     reset_data_dir()

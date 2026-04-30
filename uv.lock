@@ -318,15 +318,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/f1/2a/8c3ac3d8bc94e6de8d7ae270bb5bc437b210bb9d6d9e46630c98f4abd20c/csscompressor-0.9.5.tar.gz", hash = "sha256:afa22badbcf3120a4f392e4d22f9fff485c044a1feda4a950ecc5eba9dd31a05", size = 237808, upload-time = "2017-11-26T21:13:08.238Z" }
 
 [[package]]
-name = "diskcache"
-version = "5.6.3"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/3f/21/1c1ffc1a039ddcc459db43cc108658f32c57d271d7289a2794e401d0fdb6/diskcache-5.6.3.tar.gz", hash = "sha256:2c3a3fa2743d8535d832ec61c2054a1641f41775aa7c556758a109941e33e4fc", size = 67916, upload-time = "2023-08-31T06:12:00.316Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/3f/27/4570e78fc0bf5ea0ca45eb1de3818a23787af9b390c0b0a0033a1b8236f9/diskcache-5.6.3-py3-none-any.whl", hash = "sha256:5e31b2d5fbad117cc363ebaf6b689474db18a1f6438bc82358b024abd4c2ca19", size = 45550, upload-time = "2023-08-31T06:11:58.822Z" },
-]
-
-[[package]]
 name = "distlib"
 version = "0.4.0"
 source = { registry = "https://pypi.org/simple" }
@@ -572,18 +563,21 @@ wheels = [
 
 [[package]]
 name = "imf-reader"
-version = "1.4.1"
+version = "1.5.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "beautifulsoup4" },
     { name = "chardet" },
-    { name = "diskcache" },
+    { name = "filelock" },
     { name = "pandas" },
+    { name = "platformdirs" },
+    { name = "pyarrow" },
     { name = "requests" },
+    { name = "requests-cache" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/16/5a/c8bc268ae5b6dbab4db01d92f9d34713a7c487bc85f2522173cf24bc5c74/imf_reader-1.4.1.tar.gz", hash = "sha256:2584e45485b539cd2d15bf0a785e6ac5f29775c042d9d5f83c7af5d5f0947c0b", size = 13271, upload-time = "2025-12-05T11:41:01.049Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/f8/3e/e92e43879fdef1807e1ca267abac4ff203c64e83e4798241214e65325c30/imf_reader-1.5.0.tar.gz", hash = "sha256:131c8c68f96c37844fa8c38853e5dce98549d29eeda541379a2a0c5c3cb568ca", size = 25546, upload-time = "2026-04-30T02:38:43.153Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c1/79/97bd7b6c3af609b33ba2d787ea9e06ad93b1deca38388a345b6c913825ea/imf_reader-1.4.1-py3-none-any.whl", hash = "sha256:16c0dafcbe0e6630e7d3adbccb81e828b3e971b79e3969b79fbd6772151165c5", size = 19285, upload-time = "2025-12-05T11:41:00.218Z" },
+    { url = "https://files.pythonhosted.org/packages/e0/33/eab89f17c4ea12656d0f7cdf1d335f9e728bdcd888d50836c68115c9ebdb/imf_reader-1.5.0-py3-none-any.whl", hash = "sha256:11956314416c2175e40ba2ad930c8451b84a734cd9cb209778518a4f8bb8e15e", size = 34409, upload-time = "2026-04-30T02:38:41.93Z" },
 ]
 
 [[package]]
@@ -1389,7 +1383,7 @@ wheels = [
 
 [[package]]
 name = "pydeflate"
-version = "2.4.0"
+version = "2.5.0"
 source = { editable = "." }
 dependencies = [
     { name = "filelock" },
@@ -1400,6 +1394,7 @@ dependencies = [
     { name = "platformdirs" },
     { name = "pyarrow" },
     { name = "requests" },
+    { name = "requests-cache" },
     { name = "wbgapi" },
 ]
 
@@ -1411,6 +1406,7 @@ dev = [
     { name = "pre-commit" },
     { name = "pytest" },
     { name = "pytest-cov" },
+    { name = "responses" },
     { name = "ruff" },
 ]
 docs = [
@@ -1422,13 +1418,14 @@ docs = [
 [package.metadata]
 requires-dist = [
     { name = "filelock", specifier = ">=3.15.0" },
-    { name = "imf-reader", specifier = ">=1.4.1" },
+    { name = "imf-reader", specifier = ">=1.5.0" },
     { name = "oda-reader", specifier = ">=1.4.2" },
     { name = "pandas", specifier = ">=2.0" },
     { name = "pandera", specifier = ">=0.20.0" },
     { name = "platformdirs", specifier = ">=3.0.0" },
     { name = "pyarrow", specifier = ">=14.0" },
     { name = "requests", specifier = ">=2.33.0" },
+    { name = "requests-cache", specifier = ">=1.2" },
     { name = "wbgapi", specifier = ">=1.0.12" },
 ]
 
@@ -1440,6 +1437,7 @@ dev = [
     { name = "pre-commit", specifier = ">=4.0.0" },
     { name = "pytest", specifier = ">=9.0.3" },
     { name = "pytest-cov", specifier = ">=7.0.0" },
+    { name = "responses", specifier = ">=0.25.0" },
     { name = "ruff", specifier = ">=0.13.3" },
 ]
 docs = [
@@ -1678,6 +1676,20 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/3c/f8/5dc70102e4d337063452c82e1f0d95e39abfe67aa222ed8a5ddeb9df8de8/requests_file-3.0.1.tar.gz", hash = "sha256:f14243d7796c588f3521bd423c5dea2ee4cc730e54a3cac9574d78aca1272576", size = 6967, upload-time = "2025-10-20T18:56:42.279Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/e1/d5/de8f089119205a09da657ed4784c584ede8381a0ce6821212a6d4ca47054/requests_file-3.0.1-py2.py3-none-any.whl", hash = "sha256:d0f5eb94353986d998f80ac63c7f146a307728be051d4d1cd390dbdb59c10fa2", size = 4514, upload-time = "2025-10-20T18:56:41.184Z" },
+]
+
+[[package]]
+name = "responses"
+version = "0.26.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pyyaml" },
+    { name = "requests" },
+    { name = "urllib3" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/9f/b4/b7e040379838cc71bf5aabdb26998dfbe5ee73904c92c1c161faf5de8866/responses-0.26.0.tar.gz", hash = "sha256:c7f6923e6343ef3682816ba421c006626777893cb0d5e1434f674b649bac9eb4", size = 81303, upload-time = "2026-02-19T14:38:05.574Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ce/04/7f73d05b556da048923e31a0cc878f03be7c5425ed1f268082255c75d872/responses-0.26.0-py3-none-any.whl", hash = "sha256:03ec4409088cd5c66b71ecbbbd27fe2c58ddfad801c66203457b3e6a04868c37", size = 35099, upload-time = "2026-02-19T14:38:03.847Z" },
 ]
 
 [[package]]

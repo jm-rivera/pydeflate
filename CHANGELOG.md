@@ -3,6 +3,87 @@
 All notable changes to this project are documented in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [Unreleased]
+
+## [2.5.0] - 2026-04-29
+
+This release reworks pydeflate's cache: a programmatic management API,
+faster World Bank queries via HTTP caching, and a more robust on-disk
+layout that survives concurrent access, crashes, and version upgrades.
+
+### Added
+
+- **Programmatic cache management.** New `pydeflate.cache` API lets you
+  inspect and control the cache from Python instead of poking at
+  directories on disk:
+
+    ```python
+    import pydeflate.cache as cache
+
+    cache.entries()                # list cached datasets with size + age
+    cache.size()                   # bytes per scope ("bulk", "http")
+    cache.path("bulk")             # on-disk path
+    cache.invalidate("imf_weo")    # drop one dataset
+    cache.clear("all")             # wipe everything
+    cache.disable_cache("http")    # bypass for one scope
+    cache.set_cache_root("/tmp/x") # override the cache root
+    ```
+
+- **HTTP caching for World Bank queries.** Repeated World Bank API
+  calls within the configured TTL (24 h) are served from a local
+  `requests-cache` store rather than re-fetched. Notable speed-up for
+  notebook workflows that re-run the same indicators. New dependency:
+  `requests-cache>=1.2`.
+
+- **Version-segmented cache layout.** The default cache root is now
+  `<platformdirs>/pydeflate/<version>/{bulk,http}/`, so upgrades no
+  longer poison caches written by an older release. Existing v2.4 caches
+  are migrated automatically on first use; user-overridden paths
+  (`PYDEFLATE_DATA_DIR`, `set_cache_root(...)`) are left untouched.
+
+### Changed
+
+- **`set_pydeflate_path()` and `set_data_dir()` are now aliases of
+  `pydeflate.cache.set_cache_root()`** (the canonical name). Behaviour
+  is unchanged; existing scripts keep working.
+- **Cache reliability hardening.** Downloads now write to a
+  hostname+PID-suffixed temp file before atomic rename, so crashes mid-
+  fetch never leave a corrupt parquet behind. The manifest is written
+  atomically and recovers from truncation. Concurrent processes are
+  serialized via a file lock. Sources that supply an integrity check
+  retry once on corruption before giving up. The cache enforces
+  `keep_n=5` via LRU eviction on every write — long-running processes
+  no longer accumulate stale entries indefinitely.
+- **`pydeflate.cache.CacheError`** now extends `PydeflateError` instead
+  of `RuntimeError`, so a single `except PydeflateError` catches every
+  pydeflate failure mode. No public caller in the codebase relied on
+  the `RuntimeError` parent.
+
+### Fixed
+
+- The public cache API (`entries`, `clear`, `invalidate`) and the
+  package's own data sources now share one cache directory. Previously
+  the two operated on different paths, so `clear("all")` could leave
+  the actual downloaded files behind.
+- The legacy → versioned migration now preserves the cache manifest, so
+  files moved into the new layout retain their TTL/version metadata
+  and aren't silently re-downloaded on the next call.
+- `keep_n` is now enforced after every cached download, not just at
+  manager startup. Long-lived processes that fetch many datasets stay
+  bounded.
+- `protocols.CacheManagerProtocol.base_dir` is now correctly typed as
+  `Path` (was `pd.DataFrame`).
+
+### Deprecated
+
+- **`pydeflate.cache.cache_manager()`** is deprecated in favour of
+  `pydeflate.cache.bulk_cache_manager()`. The legacy function is rooted
+  at the un-segmented cache root and is not visible to the new public
+  cache API; calling it now emits a `DeprecationWarning`. It will be
+  removed in a future release. No action is needed unless you call
+  `cache_manager()` directly — pydeflate's own readers have been
+  switched over.
+
 ## [2.4.0] - 2026-03-07
 ### Added
 - **Country Group Deflators**: Configurable GDP-weighted deflator computation for country groups like the Euro Area (EMU), addressing [#27](https://github.com/jm-rivera/pydeflate/issues/27).

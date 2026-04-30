@@ -1,5 +1,5 @@
 __author__ = """Jorge Rivera"""
-__version__ = "2.4.0"
+__version__ = "2.5.0"
 
 from pydeflate.context import (
     PydeflateContext,
@@ -66,9 +66,14 @@ from pydeflate.pydeflate_config import set_data_dir, setup_logger
 
 
 def set_pydeflate_path(path):
-    """Set the path to the pydeflate data cache directory."""
+    """Set the path to the pydeflate data cache directory.
 
-    return set_data_dir(path)
+    Equivalent to ``pydeflate.cache.set_cache_root(path)``; the latter is
+    the canonical name.
+    """
+    from pydeflate.cache import set_cache_root
+
+    return set_cache_root(path)
 
 
 def emu_members(year: int | None = None) -> list[str]:
@@ -171,6 +176,7 @@ __all__ = [
     "get_wb_exchange_rates",
     "get_wb_ppp_rates",
     # Configuration
+    "set_data_dir",
     "set_pydeflate_path",
     "setup_logger",
     # Context management

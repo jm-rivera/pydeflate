@@ -9,6 +9,7 @@ must implement. Using protocols enables:
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Protocol, runtime_checkable
 
 import pandas as pd
@@ -132,7 +133,7 @@ class ExchangeProtocol(Protocol):
 class CacheManagerProtocol(Protocol):
     """Protocol for cache management."""
 
-    base_dir: pd.DataFrame
+    base_dir: Path
     """Base directory for cached data"""
 
     def ensure(self, entry, *, refresh: bool = False):

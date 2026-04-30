@@ -1,6 +1,7 @@
 """Tests for context management and dependency injection."""
 
 import logging
+from pathlib import Path
 
 from pydeflate.context import (
     PydeflateContext,
@@ -213,6 +214,28 @@ class TestTemporaryContext:
         # After, back to original
         assert get_default_context() is original
         assert get_default_context().log_level == logging.INFO
+
+
+class TestProtocolAcceptance:
+    """Test that PydeflateContext accepts any CacheManagerProtocol implementation."""
+
+    def test_context_accepts_protocol_implementations(self, tmp_path):
+        """Context field is widened to CacheManagerProtocol — any conforming
+        stub can be injected without inheriting from BulkCacheManager."""
+
+        class StubCacheManager:
+            def __init__(self) -> None:
+                self.base_dir: Path = tmp_path
+
+            def ensure(self, entry, *, refresh: bool = False) -> Path:
+                return self.base_dir / "stub.parquet"
+
+            def clear(self, key: str | None = None) -> None:
+                pass
+
+        stub = StubCacheManager()
+        ctx = PydeflateContext(data_dir=tmp_path, cache_manager=stub)
+        assert ctx.cache_manager is stub
 
 
 class TestContextIsolation:

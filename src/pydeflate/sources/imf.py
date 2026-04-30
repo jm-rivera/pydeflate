@@ -5,7 +5,8 @@ from pathlib import Path
 import pandas as pd
 from imf_reader import weo
 
-from pydeflate.cache import CacheEntry, cache_manager
+from pydeflate.cache import CacheEntry, bulk_cache_manager
+from pydeflate.cache.imf_reader_bridge import ensure_synced as _sync_imf_reader_cache
 from pydeflate.pydeflate_config import logger
 from pydeflate.sources.common import (
     add_pydeflate_iso3,
@@ -180,6 +181,8 @@ def _create_eur_series(df: pd.DataFrame) -> pd.DataFrame:
 def _download_weo(output_path: Path) -> None:
     """Fetch, transform, and store the latest WEO dataset in Parquet format."""
 
+    # Route imf_reader's own (1.5+) cache into the pydeflate cache tree.
+    _sync_imf_reader_cache()
     logger.info("Downloading the latest IMF WEO dataset...")
     df = (
         weo.fetch_data()
@@ -211,7 +214,7 @@ _IMF_CACHE_ENTRY = CacheEntry(
 
 
 def read_weo(update: bool = False) -> pd.DataFrame:
-    path = cache_manager().ensure(_IMF_CACHE_ENTRY, refresh=update)
+    path = bulk_cache_manager().ensure(_IMF_CACHE_ENTRY, refresh=update)
     return pd.read_parquet(path)
 
 

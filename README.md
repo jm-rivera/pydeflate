@@ -486,6 +486,34 @@ The documentation includes:
 - [Migration Guide](https://jm-rivera.github.io/pydeflate/migration/) - v1 to v2 migration
 - [FAQ](https://jm-rivera.github.io/pydeflate/faq/) - Common questions and troubleshooting
 
+## Cache management
+
+pydeflate caches downloaded data to disk in two scopes:
+
+- **`bulk`** — parquet datasets (IMF WEO, World Bank indicators, OECD DAC).
+- **`http`** — raw responses from World Bank API queries (24 h TTL).
+
+The cache root defaults to a per-version directory under your platform's
+user-cache path, so upgrading pydeflate doesn't poison caches written by
+an older release. The `pydeflate.cache` module provides a programmatic
+surface that mirrors `oda-data` 2.6 / `oda-reader` 1.6:
+
+```python
+import pydeflate.cache as cache
+
+cache.set_cache_root("/tmp/pydeflate")     # override the cache root
+cache.path("bulk")                          # on-disk path for a scope
+cache.entries()                             # list cached datasets (size, age)
+cache.size()                                # bytes per scope
+cache.invalidate("imf_weo")                 # drop a single dataset
+cache.clear("all")                          # wipe everything
+cache.disable_cache("http")                 # bypass a scope (re-fetches)
+cache.enable_cache("all")                   # re-enable
+```
+
+`set_pydeflate_path()` and `pydeflate.pydeflate_config.set_data_dir()`
+continue to work as aliases of `set_cache_root()`.
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request or open an issue on [GitHub](https://github.com/jm-rivera/pydeflate).

@@ -15,7 +15,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from pydeflate.cache import CacheManager
+from pydeflate.cache import BulkCacheManager
+from pydeflate.protocols import CacheManagerProtocol
 from pydeflate.pydeflate_config import get_data_dir
 
 
@@ -41,7 +42,7 @@ class PydeflateContext:
     """
 
     data_dir: Path
-    cache_manager: CacheManager | None = None
+    cache_manager: CacheManagerProtocol | None = None
     logger: logging.Logger | None = None
     log_level: int = logging.INFO
     enable_validation: bool = True
@@ -50,7 +51,7 @@ class PydeflateContext:
     def __post_init__(self):
         """Initialize cache manager and logger if not provided."""
         if self.cache_manager is None:
-            self.cache_manager = CacheManager(self.data_dir)
+            self.cache_manager = BulkCacheManager(self.data_dir)
 
         if self.logger is None:
             self.logger = self._create_logger()

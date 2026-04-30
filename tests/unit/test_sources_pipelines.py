@@ -138,17 +138,17 @@ def test_world_bank_read_functions(monkeypatch, tmp_path):
 
     cache_path = tmp_path / "wb.parquet"
     dummy = DummyCache(cache_path)
-    monkeypatch.setattr(world_bank, "cache_manager", lambda: dummy)
+    monkeypatch.setattr(world_bank, "bulk_cache_manager", lambda: dummy)
 
     df = world_bank.read_wb(update=True)
     assert not df.empty
 
     dummy_lcu = DummyCache(tmp_path / "wb_lcu.parquet")
-    monkeypatch.setattr(world_bank, "cache_manager", lambda: dummy_lcu)
+    monkeypatch.setattr(world_bank, "bulk_cache_manager", lambda: dummy_lcu)
     df = world_bank.read_wb_lcu_ppp(update=False)
     assert not df.empty
 
     dummy_usd = DummyCache(tmp_path / "wb_usd.parquet")
-    monkeypatch.setattr(world_bank, "cache_manager", lambda: dummy_usd)
+    monkeypatch.setattr(world_bank, "bulk_cache_manager", lambda: dummy_usd)
     df = world_bank.read_wb_usd_ppp(update=False)
     assert not df.empty

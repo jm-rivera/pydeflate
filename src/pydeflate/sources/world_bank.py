@@ -7,7 +7,8 @@ from pathlib import Path
 import pandas as pd
 import wbgapi as wb
 
-from pydeflate.cache import CacheEntry, cache_manager
+from pydeflate.cache import CacheEntry, bulk_cache_manager
+from pydeflate.cache.http import wbgapi_cached_session
 from pydeflate.groups.emu import all_members as emu
 from pydeflate.pydeflate_config import logger
 from pydeflate.sources.common import (
@@ -116,11 +117,11 @@ def _parallel_download_indicators(indicators: dict) -> list[pd.DataFrame]:
         list[pd.DataFrame]: A list of DataFrames containing the downloaded indicators
 
     """
-    # List to store the resulting dataframes
     dfs = []
 
-    # Use ThreadPoolExecutor to fetch indicators in parallel
-    with ThreadPoolExecutor() as executor:
+    # Wrapping the entire executor block (not individual futures) ensures
+    # install_cache fires once per batch, not once per indicator call.
+    with wbgapi_cached_session(), ThreadPoolExecutor() as executor:
         future_to_series = {
             executor.submit(get_wb_indicator, series, value_name): series
             for series, value_name in indicators.items()
@@ -199,17 +200,17 @@ _WB_USD_PPP_ENTRY = _entry(
 
 
 def read_wb(update: bool = False) -> pd.DataFrame:
-    path = cache_manager().ensure(_WB_ENTRY, refresh=update)
+    path = bulk_cache_manager().ensure(_WB_ENTRY, refresh=update)
     return pd.read_parquet(path)
 
 
 def read_wb_lcu_ppp(update: bool = False) -> pd.DataFrame:
-    path = cache_manager().ensure(_WB_LCU_PPP_ENTRY, refresh=update)
+    path = bulk_cache_manager().ensure(_WB_LCU_PPP_ENTRY, refresh=update)
     return pd.read_parquet(path)
 
 
 def read_wb_usd_ppp(update: bool = False) -> pd.DataFrame:
-    path = cache_manager().ensure(_WB_USD_PPP_ENTRY, refresh=update)
+    path = bulk_cache_manager().ensure(_WB_USD_PPP_ENTRY, refresh=update)
     return pd.read_parquet(path)
 
 
