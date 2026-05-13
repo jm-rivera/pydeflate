@@ -1,8 +1,10 @@
 # pydeflate
 
-[![pypi](https://img.shields.io/pypi/v/pydeflate.svg)](https://pypi.python.org/pypi/pydeflate)
+[![](https://img.shields.io/pypi/v/pydeflate?label=PyPI%20-%20version)](https://pypi.org/project/pydeflate/)
+[![](https://img.shields.io/conda/vn/conda-forge/pydeflate?label=conda%20-%20version)](https://anaconda.org/channels/conda-forge/packages/pydeflate)
+![](https://img.shields.io/pypi/dm/pydeflate?label=PyPI%20downloads)
+![](https://img.shields.io/conda/dn/conda-forge/pydeflate?label=conda%20downloads)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
-[![Downloads](https://pepy.tech/badge/pydeflate/month)](https://pepy.tech/project/pydeflate)
 [![Documentation](https://img.shields.io/badge/docs-mkdocs-blue)](https://jm-rivera.github.io/pydeflate/)
 
 **pydeflate** is a Python package to:
@@ -55,10 +57,16 @@ When converting to or from constant prices, it takes into account changes in pri
 
 ## Installation
 
-Install pydeflate using pip:
+Install pydeflate using `pip`:
 
 ```bash
 pip install pydeflate --upgrade
+```
+
+Or, using `conda`:
+
+```bash
+conda install pydeflate
 ```
 
 ## Basic Usage
