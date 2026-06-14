@@ -5,6 +5,40 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [2.6.0] - 2026-06-14
+
+### Added
+
+- **resolvekit 0.1.10** is now a runtime dependency, replacing the static
+  HDX-generated country-name → ISO3 map for name resolution in IMF and DAC
+  pipelines. This fixes several long-standing resolution bugs:
+  - `Congo, Rep.` now correctly maps to `COG` instead of `COD` (DR Congo).
+  - `World` now maps to `WLD` (was incorrectly mapping to Americas via Q828).
+  - Korean, Iranian, Yemeni, Micronesian, Aruban, and Taiwanese entity names
+    now resolve correctly (were missing from the static map).
+  - `EU Institutions` is now correctly distinguished from `European Union`.
+
+### Changed
+
+- **Python 3.11 support dropped.** Minimum required version is now 3.12
+  (minor release, following the 3.10→3.11 drop precedent in 2.2.0). Users
+  who need to run on 3.11 can still use older pydeflate versions for
+  country-name conversion workflows.
+- IMF cache version bumped from `"3"` to `"4"` (resolvekit migration replaces
+  HDX name resolution; stale caches are automatically re-fetched on first use).
+- DAC cache version set to `"1"` (first explicit version; same reason as IMF).
+
+### Removed
+
+- Vestigial `from_type` / `to_type` parameters removed from internal functions
+  `convert_id` and `add_pydeflate_iso3`. Only `"regex"` → `"ISO3"` dispatch
+  was ever used; the dead branch is gone. These functions are not exported from
+  `pydeflate.__init__` so there is no public API break.
+- `src/pydeflate/sources/_country_mapping.py` (268-entry static HDX map) and
+  `scripts/generate_country_mapping.py` (its generator) are deleted; resolution
+  is now handled by resolvekit.
+- `hdx-python-country` removed from dev dependencies (no longer needed).
+
 ## [2.5.0] - 2026-04-29
 
 This release reworks pydeflate's cache: a programmatic management API,

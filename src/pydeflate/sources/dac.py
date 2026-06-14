@@ -94,7 +94,7 @@ def _download_dac(output_path: Path) -> None:
         .pipe(_compute_exchange)
         .pipe(_compute_dac_deflator)
         .pipe(_keep_useful_columns)
-        .pipe(add_pydeflate_iso3, column="donor_name", from_type="regex")
+        .pipe(add_pydeflate_iso3, column="donor_name")
         .pipe(_rename_columns)
         .pipe(compute_exchange_deflator, base_year_measure="DAC_DEFLATOR")
         .pipe(_compute_dac_gdp_deflator)
@@ -112,6 +112,7 @@ _DAC_ENTRY = CacheEntry(
     filename="dac.parquet",
     fetcher=_download_dac,
     ttl_days=30,
+    version="1",  # Bump: resolvekit migration replaces HDX name resolution
 )
 
 

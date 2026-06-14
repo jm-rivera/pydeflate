@@ -191,7 +191,7 @@ def _download_weo(output_path: Path) -> None:
         .pipe(_clean_columns)
         .pipe(_keep_useful_columns)
         .pipe(_compute_exchange)
-        .pipe(add_pydeflate_iso3, column="entity", from_type="regex")
+        .pipe(add_pydeflate_iso3, column="entity")
         .pipe(_pivot_concept_code)
         .pipe(_create_eur_series)
         .pipe(compute_exchange_deflator, base_year_measure="NGDP_D")
@@ -209,7 +209,7 @@ _IMF_CACHE_ENTRY = CacheEntry(
     filename="imf_weo.parquet",
     fetcher=_download_weo,
     ttl_days=60,
-    version="3",  # Bump: preserve NGDPD for GDP-weighted group deflators
+    version="4",  # Bump: resolvekit migration replaces HDX name resolution
 )
 
 
