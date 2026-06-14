@@ -84,7 +84,16 @@ set_pydeflate_path("path/to/data/folder")
 
 ### DataFrame requirements
 You need to provide a pandas DataFrame in order to convert data with `pydeflate`. The DataFrame must have at least the following columns:
-- **An `id_column`**: you must specify its name using the `id_column` parameter. By default, it expects `ISO3` country codes. Previous versions of pydeflate used to convert data automatically, but that could inadvertently introduce errors by mis-identifying countries. You can use tools like `bblocks` or `country-converter` to help you add `ISO3` codes to your data. If you're working with data from the same source as the one you're using in `pydeflate`, you can also set `use_source_codes=True`. That allows you to use the same encoding as the source data (e.g., DAC codes, IMF entity codes).
+- **An `id_column`**: you must specify its name using the `id_column` parameter. By default, it expects `ISO3` country codes. Previous versions of pydeflate used to convert data automatically, but that could inadvertently introduce errors by mis-identifying countries. pydeflate now ships a native helper, `pydeflate.add_iso3()`, that resolves entity names to pydeflate codes using the same vetted resolution the deflate functions use internally — with explicit control over how unmatched names are handled:
+
+  ```python
+  from pydeflate import add_iso3
+
+  # Adds an "iso_code" column (the deflate default) resolved from "country"
+  df = add_iso3(df, id_column="country")
+  ```
+
+  You can also use third-party tools like `bblocks` or `country-converter` to add `ISO3` codes. If you're working with data from the same source as the one you're using in `pydeflate`, you can also set `use_source_codes=True`. That allows you to use the same encoding as the source data (e.g., DAC codes, IMF entity codes).
 - **A `year_column`**: which can be a string, integer, or datetime. This is needed in order to match the data to the right deflator or exchange rate. By default, pydeflate assumes that the year column is named `year`. You can change this by setting the `year_column` parameter. If the optional parameter `year_format` is not set, pydeflate will try to infer the format of the year column. You can also provide a `year_format` as a string, to specify the format of your data's year column.
 - **A `value_column`**: which contains the data to be converted. By default, pydeflate assumes that the value column is named `value`. You can change this by setting the `value_column` parameter. The type of the value column must be numeric (int, float).
 

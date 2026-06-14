@@ -9,6 +9,13 @@ All notable changes to this project are documented in this file. The format foll
 
 ### Added
 
+- **`pydeflate.add_iso3(data, id_column, *, target_column="iso_code", on_unmatched="warn")`** —
+  a public helper that resolves a column of country names/IDs to pydeflate codes (ISO3 for
+  countries; aggregate codes for groups) using the same resolution the deflate functions use
+  internally. Returns a new DataFrame; unresolved names are reported via `on_unmatched`
+  (`"warn"` / `"raise"` / `"ignore"`), with `UnmatchedEntitiesError` carrying the offending values.
+  This re-exposes, as an explicit opt-in, the country-name conversion that earlier versions did
+  automatically.
 - **resolvekit 0.1.10** is now a runtime dependency, replacing the static
   HDX-generated country-name → ISO3 map for name resolution in the IMF and DAC
   pipelines. Resolution output is preserved (parity-verified against the

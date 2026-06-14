@@ -8,6 +8,7 @@ from pydeflate.context import (
     set_default_context,
     temporary_context,
 )
+from pydeflate.convert import add_iso3
 from pydeflate.deflate.deflators import (
     imf_cpi_deflate,
     imf_cpi_e_deflate,
@@ -36,6 +37,7 @@ from pydeflate.exceptions import (
     PluginError,
     PydeflateError,
     SchemaValidationError,
+    UnmatchedEntitiesError,
 )
 from pydeflate.exchange.exchangers import (
     imf_exchange,
@@ -148,6 +150,8 @@ def reset_group_config() -> None:
 
 
 __all__ = [
+    # Country-name resolution
+    "add_iso3",
     # Deflation functions
     "deflate",
     "imf_cpi_deflate",
@@ -194,6 +198,7 @@ __all__ = [
     "PluginError",
     "PydeflateError",
     "SchemaValidationError",
+    "UnmatchedEntitiesError",
     # Plugin system
     "get_source",
     "is_source_registered",
