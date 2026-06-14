@@ -10,13 +10,9 @@ All notable changes to this project are documented in this file. The format foll
 ### Added
 
 - **resolvekit 0.1.10** is now a runtime dependency, replacing the static
-  HDX-generated country-name → ISO3 map for name resolution in IMF and DAC
-  pipelines. This fixes several long-standing resolution bugs:
-  - `Congo, Rep.` now correctly maps to `COG` instead of `COD` (DR Congo).
-  - `World` now maps to `WLD` (was incorrectly mapping to Americas via Q828).
-  - Korean, Iranian, Yemeni, Micronesian, Aruban, and Taiwanese entity names
-    now resolve correctly (were missing from the static map).
-  - `EU Institutions` is now correctly distinguished from `European Union`.
+  HDX-generated country-name → ISO3 map for name resolution in the IMF and DAC
+  pipelines. Resolution output is preserved (parity-verified against the
+  previous static map).
 
 ### Changed
 
@@ -24,9 +20,14 @@ All notable changes to this project are documented in this file. The format foll
   (minor release, following the 3.10→3.11 drop precedent in 2.2.0). Users
   who need to run on 3.11 can still use older pydeflate versions for
   country-name conversion workflows.
-- IMF cache version bumped from `"3"` to `"4"` (resolvekit migration replaces
-  HDX name resolution; stale caches are automatically re-fetched on first use).
-- DAC cache version set to `"1"` (first explicit version; same reason as IMF).
+- IMF cache version bumped from `"3"` to `"4"` and DAC cache version set to
+  `"1"` so existing caches are re-fetched once on first use under the new
+  resolution path.
+
+### Fixed
+
+- `Non-DAC countries` no longer resolves to `ESH` (Western Sahara), a
+  fuzzy-match artifact in the old static map; it is now left unresolved.
 
 ### Removed
 
