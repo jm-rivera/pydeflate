@@ -181,6 +181,8 @@ def _download_wb_dataset(
 def _entry(
     key: str, filename: str, fetcher: Callable[[Path], None], ttl_days: int = 30
 ) -> CacheEntry:
+    # version intentionally omitted: pydeflate_iso3 comes from wbgapi entity codes,
+    # not name resolution, so bumping here would force needless re-downloads.
     return CacheEntry(key=key, filename=filename, fetcher=fetcher, ttl_days=ttl_days)
 
 

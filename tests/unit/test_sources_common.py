@@ -17,17 +17,30 @@ def test_prefix_pydeflate_to_columns_adds_prefix_once():
     assert list(renamed.columns) == ["pydeflate_foo", "pydeflate_bar"]
 
 
-def test_convert_id_uses_additional_mapping():
-    series = pd.Series(["European Union", "Custom"], name="region")
+def test_convert_id_resolves_aggregate_and_country():
+    series = pd.Series(["European Union", "France"], name="region")
 
-    converted = convert_id(
-        series,
-        from_type="regex",
-        to_type="ISO3",
-        additional_mapping={"Custom": "CUS"},
-    )
+    converted = convert_id(series)
 
-    assert list(converted) == ["EU", "CUS"]
+    assert list(converted) == ["EU", "FRA"]
+
+
+def test_convert_id_passthrough_on_unresolved():
+    """Unresolved names pass through when not_found=None."""
+    series = pd.Series(["Not A Country"], name="region")
+
+    converted = convert_id(series)
+
+    assert list(converted) == ["Not A Country"]
+
+
+def test_convert_id_not_found_value():
+    """Unresolved names take not_found value when supplied."""
+    series = pd.Series(["Not A Country"], name="region")
+
+    converted = convert_id(series, not_found=pd.NA)
+
+    assert pd.isna(converted.iloc[0])
 
 
 def test_identify_base_year_returns_first_match():

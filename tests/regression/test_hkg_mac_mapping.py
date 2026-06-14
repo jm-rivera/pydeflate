@@ -22,7 +22,7 @@ def test_hong_kong_maps_to_hkg_not_chn():
     )
 
     # Use real fuzzy matching (the bug is in fuzzy matching results)
-    result = add_pydeflate_iso3(df, column="entity", from_type="regex")
+    result = add_pydeflate_iso3(df, column="entity")
 
     iso3_values = result["pydeflate_iso3"].tolist()
     assert iso3_values[0] == "CHN", "Mainland China should map to CHN"
@@ -40,7 +40,7 @@ def test_macao_maps_to_mac_not_chn():
         }
     )
 
-    result = add_pydeflate_iso3(df, column="entity", from_type="regex")
+    result = add_pydeflate_iso3(df, column="entity")
 
     iso3_values = result["pydeflate_iso3"].tolist()
     assert iso3_values[0] == "CHN", "Mainland China should map to CHN"
@@ -61,7 +61,7 @@ def test_no_duplicate_chn_rows_after_iso3_mapping():
         }
     )
 
-    result = add_pydeflate_iso3(df, column="entity", from_type="regex")
+    result = add_pydeflate_iso3(df, column="entity")
 
     # Each entity should have a unique ISO3 code
     chn_rows = result[result["pydeflate_iso3"] == "CHN"]

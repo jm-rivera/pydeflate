@@ -1,23 +1,7 @@
-"""Regression test for entity name mappings to ISO3 codes.
+"""Regression tests for entity name mappings to ISO3 codes.
 
-Bug: IMF WEO data uses "Euro area" as the entity name for code 998,
-but the ISO3 mapping only had "European Union" -> "EUR", causing
-EUR currency lookups to fail with:
-    ValueError: No currency exchange data for to_='EUR'
-
-Fix: Added "Euro area" and "Euro Area (EA)" mappings to add_pydeflate_iso3().
-
-Bug v2 (2.3.3): IMF WEO actually uses "Euro Area (EA)" and "European Union (EU)"
-with entity codes "G163" and "G998" respectively. The previous fix used incorrect
-entity names without parentheses and the wrong entity code (998 vs "G163").
-
-Fix v2: Added correct entity name mappings with parentheses and fixed entity code.
-
-Bug v3 (2.5.0): "Euro area" (EMU) and "European Union" (EU) were conflated under
-the same ISO3 code "EUR". They are distinct entities: Euro area = eurozone (EMU),
-European Union = broader political union.
-
-Fix v3: Euro area variants now map to "EMU", European Union variants stay "EUR".
+Tests verify that Euro area entity names map to EMU, and European Union
+entities map to EU — they are distinct, not conflated.
 """
 
 import pandas as pd
@@ -39,7 +23,7 @@ class TestEuroAreaMapping:
             }
         )
 
-        result = add_pydeflate_iso3(df, column="entity", from_type="regex")
+        result = add_pydeflate_iso3(df, column="entity")
 
         assert result["pydeflate_iso3"].iloc[0] == "EMU"
 
@@ -53,7 +37,7 @@ class TestEuroAreaMapping:
             }
         )
 
-        result = add_pydeflate_iso3(df, column="entity", from_type="regex")
+        result = add_pydeflate_iso3(df, column="entity")
 
         assert result["pydeflate_iso3"].iloc[0] == "EMU"
 
@@ -74,7 +58,7 @@ class TestEuroAreaMapping:
             }
         )
 
-        result = add_pydeflate_iso3(df, column="entity", from_type="regex")
+        result = add_pydeflate_iso3(df, column="entity")
 
         assert result["pydeflate_iso3"].iloc[0] == "EMU"
 
@@ -92,7 +76,7 @@ class TestEuropeanUnionMapping:
             }
         )
 
-        result = add_pydeflate_iso3(df, column="entity", from_type="regex")
+        result = add_pydeflate_iso3(df, column="entity")
 
         assert result["pydeflate_iso3"].iloc[0] == "EU"
 
@@ -106,7 +90,7 @@ class TestEuropeanUnionMapping:
             }
         )
 
-        result = add_pydeflate_iso3(df, column="entity", from_type="regex")
+        result = add_pydeflate_iso3(df, column="entity")
 
         assert result["pydeflate_iso3"].iloc[0] == "EU"
 
@@ -120,7 +104,7 @@ class TestEuropeanUnionMapping:
             }
         )
 
-        result = add_pydeflate_iso3(df, column="entity", from_type="regex")
+        result = add_pydeflate_iso3(df, column="entity")
 
         assert result["pydeflate_iso3"].iloc[0] == "EMU"
         assert result["pydeflate_iso3"].iloc[1] == "EU"
@@ -146,7 +130,7 @@ class TestKosovoMapping:
             }
         )
 
-        result = add_pydeflate_iso3(df, column="entity", from_type="regex")
+        result = add_pydeflate_iso3(df, column="entity")
 
         assert result["pydeflate_iso3"].iloc[0] == "XXK"
 
@@ -172,7 +156,7 @@ class TestDACEntityMapping:
             }
         )
 
-        result = add_pydeflate_iso3(df, column="entity", from_type="regex")
+        result = add_pydeflate_iso3(df, column="entity")
 
         assert result["pydeflate_iso3"].iloc[0] == "DAC"
 
@@ -186,6 +170,6 @@ class TestDACEntityMapping:
             }
         )
 
-        result = add_pydeflate_iso3(df, column="entity", from_type="regex")
+        result = add_pydeflate_iso3(df, column="entity")
 
         assert result["pydeflate_iso3"].iloc[0] == "EUI"
