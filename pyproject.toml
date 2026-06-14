@@ -37,6 +37,8 @@ docs = [
     "mkdocs-material>=9.5.0",
     "mkdocs-minify-plugin>=0.8.0",
     "mkdocstrings[python]>=0.26.0",
+    # 10.21.3 fixes a crash with Pygments 2.20.0 (filename=None -> html.escape)
+    "pymdown-extensions>=10.21.3",
 ]
 
 [project.urls]
