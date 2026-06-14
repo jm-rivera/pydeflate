@@ -144,6 +144,26 @@ class MissingDataError(PydeflateError):
         super().__init__(message)
 
 
+class UnmatchedEntitiesError(ConfigurationError):
+    """Raised when add_iso3(on_unmatched="raise") hits unresolvable names.
+
+    Carries the distinct unmatched values on the ``unmatched`` attribute.
+    """
+
+    def __init__(self, unmatched: list[str]) -> None:
+        """Initialize UnmatchedEntitiesError.
+
+        Args:
+            unmatched: Sorted list of distinct entity names that failed
+                resolution (includes ambiguous names).
+        """
+        self.unmatched = unmatched
+        n = len(unmatched)
+        super().__init__(
+            f"{n} value(s) could not be resolved: {unmatched}",
+        )
+
+
 class PluginError(PydeflateError):
     """Raised when plugin registration or loading fails.
 
