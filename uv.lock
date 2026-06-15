@@ -1088,7 +1088,7 @@ requires-dist = [
     { name = "pyarrow", specifier = ">=14.0" },
     { name = "requests", specifier = ">=2.33.0" },
     { name = "requests-cache", specifier = ">=1.2" },
-    { name = "resolvekit", specifier = ">=0.1.10" },
+    { name = "resolvekit", specifier = ">=0.1.11" },
     { name = "wbgapi", specifier = ">=1.0.12" },
 ]
 
@@ -1341,7 +1341,7 @@ wheels = [
 
 [[package]]
 name = "resolvekit"
-version = "0.1.10"
+version = "0.1.11"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "packaging" },
@@ -1350,9 +1350,9 @@ dependencies = [
     { name = "rapidfuzz" },
     { name = "symspellpy" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/85/d5/aeb6b8299753ba13202ffb39844280ce8a0232039ec5c53a2375a5ecb21d/resolvekit-0.1.10.tar.gz", hash = "sha256:82f143c036ee047ca13ef030e7dc3630963bf3adca64401934c95a87c96ea345", size = 2346164, upload-time = "2026-06-14T16:22:28.438Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/8f/45/db32ab33511784f907b9756462be060d519f97804e386df4c1125e6ecf2a/resolvekit-0.1.11.tar.gz", hash = "sha256:c596b7eed53e5d846c761f66565925fc37579975c7e59cbbfdf8ad031ce9cc91", size = 2345257, upload-time = "2026-06-14T21:53:35.711Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b7/cd/1719b6a90184ccbc693f108fb2187c32dfae08342b70699350e5a3820cd2/resolvekit-0.1.10-py3-none-any.whl", hash = "sha256:148793c83653ecffcc096b3f4cb8ca1f3819beb75edf043b6b0cb1fc8388769f", size = 2508776, upload-time = "2026-06-14T16:22:26.646Z" },
+    { url = "https://files.pythonhosted.org/packages/a0/40/ed4d00f0f5dff2af413983c83a8b1a5b9ee00be334168bc234e9bd0eda2a/resolvekit-0.1.11-py3-none-any.whl", hash = "sha256:1130649f869a0ad419c30c6287284099e5c7691419b421c24377d132fb728b0a", size = 2507017, upload-time = "2026-06-14T21:53:34.094Z" },
 ]
 
 [[package]]
