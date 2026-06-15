@@ -94,10 +94,15 @@ class TestEMUMembershipProperties:
         members = members_for_year(year)
         assert 0 <= len(members) <= len(all_members())
 
-    @given(year=st.integers(min_value=2023, max_value=2100))
+    @given(year=st.integers(min_value=2027, max_value=2100))
     def test_membership_stable_after_latest_accession(self, year):
-        """Property: membership is stable after the latest accession (2023)."""
-        assert members_for_year(year) == members_for_year(2023)
+        """Property: membership is stable after the latest accession (2026)."""
+        assert members_for_year(year) == members_for_year(2027)
+
+    def test_bulgaria_joins_2026(self):
+        """Bulgaria joined the eurozone on 2026-01-01."""
+        assert "BGR" in members_for_year(2026)
+        assert "BGR" not in members_for_year(2025)
 
     @given(year=st.integers(min_value=1900, max_value=1998))
     def test_no_members_before_1999(self, year):
@@ -274,8 +279,8 @@ class TestTreatmentModeProperties:
         self, defl_a, defl_b, gdp_a, gdp_b
     ):
         """Property: for years after all accessions, fixed == dynamic."""
-        # Use year 2025, well after the last accession (2023)
-        data = _make_two_country_data(defl_a, defl_b, gdp_a, gdp_b, year=2025)
+        # Use year 2027, well after the latest accession (2026)
+        data = _make_two_country_data(defl_a, defl_b, gdp_a, gdp_b, year=2027)
 
         result_fixed = compute_group_deflator(
             data,

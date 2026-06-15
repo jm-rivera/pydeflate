@@ -1,5 +1,4 @@
 from pydeflate.groups.emu import (
-    accession_year,
     all_members,
     is_member,
     members_for_year,
@@ -23,15 +22,18 @@ class TestEMUMembership:
         assert "HRV" not in members_for_year(2022)
         assert "HRV" in members_for_year(2023)
 
-    def test_all_members_returns_20(self):
-        assert len(all_members()) == 20
+    def test_all_members_returns_21(self):
+        assert len(all_members()) == 21
         assert "HRV" in all_members()
+        assert "BGR" in all_members()
 
-    def test_accession_year(self):
-        assert accession_year("DEU") == 1999
-        assert accession_year("GRC") == 2001
-        assert accession_year("HRV") == 2023
-        assert accession_year("USA") is None
+    def test_membership_is_all_str(self):
+        assert all(isinstance(c, str) for c in all_members())
+        assert all(isinstance(c, str) for c in members_for_year(2023))
+
+    def test_2026_includes_bulgaria(self):
+        assert "BGR" in members_for_year(2026)
+        assert "BGR" not in members_for_year(2025)
 
     def test_is_member(self):
         assert is_member("DEU", 2020) is True
@@ -42,5 +44,5 @@ class TestEMUMembership:
     def test_pre_euro_returns_empty(self):
         assert members_for_year(1998) == []
 
-    def test_2023_includes_all_20(self):
+    def test_2023_includes_20(self):
         assert len(members_for_year(2023)) == 20

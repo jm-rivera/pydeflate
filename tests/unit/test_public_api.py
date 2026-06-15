@@ -39,9 +39,11 @@ class TestPublicGroupAPI:
 
 class TestEmuMembersPublic:
     def test_default_returns_all(self):
+        """No-arg call returns all 21 current EMU members."""
         members = emu_members()
-        assert len(members) == 20
+        assert len(members) == 21
         assert "DEU" in members
+        assert "BGR" in members
 
     def test_with_year(self):
         members = emu_members(1999)
