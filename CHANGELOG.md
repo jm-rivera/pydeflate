@@ -5,6 +5,18 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+### Changed
+
+- `emu_members()` (no argument) now returns 21 countries instead of 20, reflecting
+  Bulgaria's accession to the eurozone on 2026-01-01; `emu_members(2026)` and later years
+  include `"BGR"`. Years 2025 and earlier are unchanged. EMU/eurozone membership is now
+  sourced live from resolvekit's `Eurozone` group instead of a static table, so future
+  accessions are picked up automatically. Users asserting `len(emu_members()) == 20` should
+  update to `21`.
+- World Bank cache version bumped to `"2"` so existing caches are re-fetched once on first
+  use under the new eurozone membership (the euro-area exchange-rate fix bakes membership
+  into the cached data).
+
 ## [2.6.0] - 2026-06-14
 
 ### Added

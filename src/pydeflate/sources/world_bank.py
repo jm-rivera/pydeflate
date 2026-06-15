@@ -89,8 +89,6 @@ def _eur_series_fix(df: pd.DataFrame) -> pd.DataFrame:
             rates for the Euro area countries.
 
     """
-    # Find the Euro area data. This is done given that some countries are missing
-    # exchange rates, but they are part of the Euro area.
     eur = (
         df.loc[lambda d: d["entity_code"] == "EMU"]
         .dropna(subset=["EXCHANGE"])
@@ -98,10 +96,7 @@ def _eur_series_fix(df: pd.DataFrame) -> pd.DataFrame:
         .to_dict()
     )
 
-    # Euro area countries without exchange rates
     eur_mask = (df["entity_code"].isin(emu())) & (df["EXCHANGE"].isna())
-
-    # Assign EURO exchange rate to euro are countries from year euro adopted
     df.loc[eur_mask, "EXCHANGE"] = df["year"].map(eur)
 
     return df
@@ -181,9 +176,13 @@ def _download_wb_dataset(
 def _entry(
     key: str, filename: str, fetcher: Callable[[Path], None], ttl_days: int = 30
 ) -> CacheEntry:
-    # version intentionally omitted: pydeflate_iso3 comes from wbgapi entity codes,
-    # not name resolution, so bumping here would force needless re-downloads.
-    return CacheEntry(key=key, filename=filename, fetcher=fetcher, ttl_days=ttl_days)
+    # version is meaningful: _eur_series_fix bakes EMU membership (all_members())
+    # into the cached parquet, so a membership change (e.g. Bulgaria 2026) alters
+    # cached WB output. Bump this whenever EMU membership changes so the staleness
+    # check rebuilds stale parquet instead of serving it for up to ttl_days.
+    return CacheEntry(
+        key=key, filename=filename, fetcher=fetcher, ttl_days=ttl_days, version="2"
+    )
 
 
 _WB_ENTRY = _entry(

@@ -138,4 +138,5 @@ class TestEmuMembersPublic:
         assert len(emu_members(1999)) == 11
 
     def test_all_members(self):
-        assert len(emu_members()) == 20
+        assert len(emu_members()) == 21
+        assert "BGR" in emu_members()

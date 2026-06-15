@@ -86,17 +86,24 @@ def emu_members(year: int | None = None) -> list[str]:
               If None, return all countries that have ever been members.
 
     Returns:
-        Sorted list of ISO3 country codes.
+        A new sorted list of ISO3 country codes; safe to modify — the internal
+        membership cache is not affected.
 
     Examples:
         >>> emu_members(1999)
         ['AUT', 'BEL', 'DEU', 'ESP', 'FIN', 'FRA', 'IRL', 'ITA', 'LUX', 'NLD', 'PRT']
         >>> len(emu_members(2023))
         20
+        >>> len(emu_members())
+        21
+        >>> "BGR" in emu_members()
+        True
+        >>> "BGR" in emu_members(2026)
+        True
     """
     if year is None:
-        return _all_members()
-    return _members_for_year(year)
+        return list(_all_members())
+    return list(_members_for_year(year))
 
 
 def set_group_treatment(treatment: str) -> None:
