@@ -5,17 +5,26 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [2.6.1] - 2026-06-15
+
 ### Changed
 
-- `emu_members()` (no argument) now returns 21 countries instead of 20, reflecting
-  Bulgaria's accession to the eurozone on 2026-01-01; `emu_members(2026)` and later years
-  include `"BGR"`. Years 2025 and earlier are unchanged. EMU/eurozone membership is now
-  sourced live from resolvekit's `Eurozone` group instead of a static table, so future
-  accessions are picked up automatically. Users asserting `len(emu_members()) == 20` should
-  update to `21`.
-- World Bank cache version bumped to `"2"` so existing caches are re-fetched once on first
-  use under the new eurozone membership (the euro-area exchange-rate fix bakes membership
-  into the cached data).
+- EMU/eurozone membership is now sourced live from resolvekit's `Eurozone` group instead of a
+  static table, so `emu_members()` (no argument) returns 21 countries instead of 20 — reflecting
+  Bulgaria's accession to the eurozone on 2026-01-01 — and future accessions are picked up
+  automatically. `emu_members(2026)` and later years include `"BGR"`; years 2025 and earlier are
+  unchanged. Users asserting `len(emu_members()) == 20` should update to `21`.
+- `resolvekit` pinned to `>=0.1.11` (was `>=0.1.10`), which includes upstream eurozone data
+  corrections (e.g. Poland is no longer mismarked as a eurozone member).
+- World Bank cache version bumped to `"2"` so existing caches are re-fetched once on first use
+  under the new eurozone membership (the euro-area exchange-rate fix bakes membership into the
+  cached data).
+
+### Security
+
+- Bumped transitive runtime dependencies to clear advisories: `urllib3` 2.6.3 → 2.7.0
+  (CVE-2026-44431, CVE-2026-44432), `idna` 3.11 → 3.18 (CVE-2026-45409), and `url-normalize`
+  2.2.1 → 3.0.0 (which drops the deprecated `transitional=True` argument to `idna.encode()`).
 
 ## [2.6.0] - 2026-06-14
 
