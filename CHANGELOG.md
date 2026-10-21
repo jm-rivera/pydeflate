@@ -5,6 +5,8 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [2.6.2] - 2026-10-21
+
 ### Fixed
 
 - Converting to or from `"EUR"` with the DAC source now uses the euro exchange rate. Recent DAC1
