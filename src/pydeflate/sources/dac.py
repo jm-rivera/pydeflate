@@ -51,11 +51,12 @@ def _pivot_amount_type(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def _compute_exchange(df: pd.DataFrame) -> pd.DataFrame:
-    """Derive exchange rates, forcing DAC aggregates to unity."""
+    """Derive exchange rates as national-currency over USD amounts.
 
-    df.loc[lambda d: d.donor_code >= 20000, "N"] = df.loc[
-        lambda d: d.donor_code >= 20000, "A"
-    ]
+    DAC aggregates publish no national-currency amounts, so their rate falls back
+    to 1 (USD).
+    """
+
     df["EXCHANGE"] = round(df["N"] / df["A"], 6).fillna(1)
     return df
 
@@ -112,7 +113,7 @@ _DAC_ENTRY = CacheEntry(
     filename="dac.parquet",
     fetcher=_download_dac,
     ttl_days=30,
-    version="1",  # Bump: resolvekit migration replaces HDX name resolution
+    version="2",  # Bump: EU Institutions exchange rate is no longer forced to 1
 )
 
 

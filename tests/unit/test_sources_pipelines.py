@@ -120,6 +120,40 @@ def test_download_dac_dataset(monkeypatch, tmp_path):
     assert "pydeflate_iso3" in df.columns
 
 
+def test_download_dac_keeps_eu_institutions_euro_rate(monkeypatch, tmp_path):
+    """EU Institutions (20918) reports N in euros; aggregates publish no N."""
+    donors = {
+        (20918, "EU Institutions"): {"A": 100.0, "N": 95.09, "D": 100.0},
+        (20000, "DAC Members"): {"A": 100.0, "D": 100.0},
+    }
+    raw = pd.DataFrame(
+        [
+            {
+                "year": 2022,
+                "unit_multiplier": 1,
+                "aidtype_code": 11010,
+                "flows_code": 1160,
+                "donor_code": code,
+                "donor_name": name,
+                "amounttype_code": amount_type,
+                "value": value,
+            }
+            for (code, name), amounts in donors.items()
+            for amount_type, value in amounts.items()
+        ]
+    )
+    monkeypatch.setattr(dac, "download_dac1", lambda **_: raw)
+    output = tmp_path / "dac.parquet"
+
+    dac._download_dac(output)
+    rates = pd.read_parquet(output).set_index("pydeflate_entity_code")[
+        "pydeflate_EXCHANGE"
+    ]
+
+    assert rates[20918] == 0.9509
+    assert rates[20000] == 1
+
+
 def test_pivot_amount_type_creates_columns():
     pivoted = dac._pivot_amount_type(_dac_sample_frame())
     assert {"A", "N", "D"}.issubset(pivoted.columns)

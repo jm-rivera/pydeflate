@@ -30,7 +30,7 @@ ENTITY_INFO = {
     "CAN": {"iso": "CAN", "code": "124"},
     "EMU": {"iso": "EMU", "code": "978"},
     "PPP": {"iso": "PPP", "code": "PPP"},
-    "EUI": {"iso": "EUI", "code": "918"},
+    "EUI": {"iso": "EUI", "code": "20918"},
     "DAC": {"iso": "DAC", "code": "20001"},
 }
 
