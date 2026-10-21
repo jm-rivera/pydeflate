@@ -5,6 +5,18 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+### Fixed
+
+- Converting to or from `"EUR"` with the DAC source now uses the euro exchange rate. Recent DAC1
+  dataflows number EU Institutions (the series behind `"EUR"` for DAC) `20918` (was `918`), and
+  the DAC pipeline forced the exchange rate of every donor code `>= 20000` to 1, so
+  `oecd_dac_exchange(..., target_currency="EUR")` returned USD values unchanged and EUR
+  deflators carried no exchange movement. The rate is now national-currency over USD amounts for
+  every donor that publishes both, so EU Institutions gets the published euro rate (ECU before
+  1999), e.g. 0.9509 for 2022. DAC aggregates publish no national-currency amounts and keep a
+  rate of 1. DAC cache version bumped to `"2"` so existing caches are re-fetched once on first
+  use.
+
 ## [2.6.1] - 2026-06-15
 
 ### Changed
