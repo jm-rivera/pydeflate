@@ -48,7 +48,7 @@ Issues = "https://github.com/jm-rivera/pydeflate/issues"
 
 
 [tool.uv.sources]
-oda-reader = { git = "https://github.com/ONEcampaign/oda_reader", rev = "fe3890f7a8c9d01a2a90002264c7af2dd849482f" }
+oda-reader = { git = "https://github.com/ONEcampaign/oda_reader", rev = "c0a720dfbf7c59444bbb3f28ca450937818f380b" }
 
 [build-system]
 requires = ["uv_build>=0.8.22,<0.9.0"]

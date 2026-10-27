@@ -777,8 +777,8 @@ wheels = [
 
 [[package]]
 name = "oda-reader"
-version = "1.14.0"
-source = { git = "https://github.com/ONEcampaign/oda_reader?rev=fe3890f7a8c9d01a2a90002264c7af2dd849482f#fe3890f7a8c9d01a2a90002264c7af2dd849482f" }
+version = "1.14.0rc1"
+source = { git = "https://github.com/ONEcampaign/oda_reader?rev=c0a720dfbf7c59444bbb3f28ca450937818f380b#c0a720dfbf7c59444bbb3f28ca450937818f380b" }
 dependencies = [
     { name = "filelock" },
     { name = "inflate64" },
@@ -1126,7 +1126,7 @@ docs = [
 requires-dist = [
     { name = "filelock", specifier = ">=3.15.0" },
     { name = "imf-reader", specifier = ">=1.5.0" },
-    { name = "oda-reader", git = "https://github.com/ONEcampaign/oda_reader?rev=fe3890f7a8c9d01a2a90002264c7af2dd849482f" },
+    { name = "oda-reader", git = "https://github.com/ONEcampaign/oda_reader?rev=c0a720dfbf7c59444bbb3f28ca450937818f380b" },
     { name = "pandas", specifier = ">=2.0" },
     { name = "pandera", specifier = ">=0.20.0" },
     { name = "platformdirs", specifier = ">=3.0.0" },
