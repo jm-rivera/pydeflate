@@ -16,6 +16,11 @@ from pydeflate.sources.common import (
 
 logger = logging.getLogger(__name__)
 
+# DAC aggregates are the donor codes from 20000. They take a pydeflate code from
+# this table only: name matching gives DAC Members (20000) the DAC code too.
+_FIRST_AGGREGATE_CODE = 20000
+_AGGREGATE_CODES = {20001: "DAC"}
+
 
 def _to_units(df: pd.DataFrame) -> pd.DataFrame:
     """Scale reported DAC values (supplied in millions) into base units."""
@@ -77,6 +82,16 @@ def _compute_dac_gdp_deflator(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def _set_aggregate_codes(df: pd.DataFrame) -> pd.DataFrame:
+    """Set the pydeflate code of DAC aggregates by DAC code."""
+
+    aggregate = df["donor_code"] >= _FIRST_AGGREGATE_CODE
+    df["pydeflate_iso3"] = df["pydeflate_iso3"].mask(
+        aggregate, df["donor_code"].map(_AGGREGATE_CODES)
+    )
+    return df
+
+
 def _rename_columns(df: pd.DataFrame) -> pd.DataFrame:
     """Align donor metadata with pydeflate naming conventions."""
 
@@ -98,6 +113,7 @@ def _download_dac(output_path: Path) -> None:
         .pipe(_compute_dac_deflator)
         .pipe(_keep_useful_columns)
         .pipe(add_pydeflate_iso3, column="donor_name")
+        .pipe(_set_aggregate_codes)
         .pipe(_rename_columns)
         .pipe(compute_exchange_deflator, base_year_measure="DAC_DEFLATOR")
         .pipe(_compute_dac_gdp_deflator)
@@ -115,7 +131,7 @@ _DAC_ENTRY = CacheEntry(
     filename="dac.parquet",
     fetcher=_download_dac,
     ttl_days=30,
-    version="2",  # Bump: EU Institutions exchange rate is no longer forced to 1
+    version="3",  # Bump: only DAC countries (20001) carries the DAC code
 )
 
 

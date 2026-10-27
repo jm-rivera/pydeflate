@@ -121,9 +121,9 @@ def test_download_dac_dataset(monkeypatch, tmp_path):
 
 
 def test_download_dac_keeps_eu_institutions_euro_rate(monkeypatch, tmp_path):
-    """EU Institutions (20918) reports N in euros; aggregates publish no N."""
+    """EU Institutions (918) reports N in euros; aggregates publish no N."""
     donors = {
-        (20918, "EU Institutions"): {"A": 100.0, "N": 95.09, "D": 100.0},
+        (918, "EU Institutions"): {"A": 100.0, "N": 95.09, "D": 100.0},
         (20000, "DAC Members"): {"A": 100.0, "D": 100.0},
     }
     raw = pd.DataFrame(
@@ -150,8 +150,40 @@ def test_download_dac_keeps_eu_institutions_euro_rate(monkeypatch, tmp_path):
         "pydeflate_EXCHANGE"
     ]
 
-    assert rates[20918] == 0.9509
+    assert rates[918] == 0.9509
     assert rates[20000] == 1
+
+
+def test_download_dac_gives_the_dac_code_to_dac_countries_only(monkeypatch, tmp_path):
+    """DAC Members (20000) stays unresolved, so data keyed DAC matches one row."""
+    raw = pd.DataFrame(
+        [
+            {
+                "year": 2022,
+                "unit_multiplier": 1,
+                "aidtype_code": 11010,
+                "flows_code": 1160,
+                "donor_code": code,
+                "donor_name": name,
+                "amounttype_code": amount_type,
+                "value": 100.0,
+            }
+            for code, name, amount_types in [
+                (4, "France", "AND"),
+                (20000, "DAC Members", "AD"),
+                (20001, "DAC countries", "AD"),
+            ]
+            for amount_type in amount_types
+        ]
+    )
+    monkeypatch.setattr(dac, "download_dac1", lambda **_: raw)
+    output = tmp_path / "dac.parquet"
+
+    dac._download_dac(output)
+    codes = pd.read_parquet(output).set_index("pydeflate_entity_code")["pydeflate_iso3"]
+
+    assert codes[20001] == "DAC"
+    assert pd.isna(codes[20000])
 
 
 def test_pivot_amount_type_creates_columns():
