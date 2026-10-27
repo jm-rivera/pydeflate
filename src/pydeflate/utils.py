@@ -1,6 +1,7 @@
 import json
 import logging
 import re
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -88,6 +89,33 @@ def _use_implied_dac_rates(
     return data
 
 
+# DAC1 API codes the DAC1 bulk file numbers differently: EU Institutions.
+_LEGACY_DAC_CODES = {20918: 918}
+
+
+def _translate_legacy_dac_codes(data: pd.DataFrame, entity_column: str) -> None:
+    """Look up data keyed by a legacy DAC1 API code under its bulk-file code.
+
+    Rewrites the ``temp_`` lookup column in place, matching its dtype as
+    `_use_implied_dac_rates` does. The user's column keeps its codes.
+    """
+    col = f"temp_{entity_column}"
+    as_str = pd.api.types.is_string_dtype(data[col])
+    for legacy, current in _LEGACY_DAC_CODES.items():
+        old, new = (str(legacy), str(current)) if as_str else (legacy, current)
+        mask = data[col] == old
+        if not mask.any():
+            continue
+        data.loc[mask, col] = new
+        warnings.warn(
+            f"DAC code {legacy} is read as {current}, the code the DAC1 bulk file "
+            f"uses. Key your data by {current}: this translation will be removed "
+            "in pydeflate 3.0.",
+            FutureWarning,
+            stacklevel=2,
+        )
+
+
 def merge_user_and_pydeflate_data(
     data: pd.DataFrame,
     pydeflate_data: pd.DataFrame,
@@ -97,6 +125,9 @@ def merge_user_and_pydeflate_data(
     dac: bool = False,
 ) -> pd.DataFrame:
     data[f"temp_{entity_column}"] = data[entity_column]
+
+    if dac and source_codes:
+        _translate_legacy_dac_codes(data, entity_column)
 
     if dac:
         data = _use_implied_dac_rates(

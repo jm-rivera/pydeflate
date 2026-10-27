@@ -4,7 +4,11 @@ from pathlib import Path
 import pandas as pd
 from oda_reader import ScannedTable
 
+from pydeflate.cache.manager import BulkCacheManager
 from pydeflate.sources import dac, imf, world_bank
+
+# Bound at import: the autouse source fixture replaces dac.read_dac with a stub.
+READ_DAC = dac.read_dac
 
 
 def _imf_sample_frame():
@@ -97,17 +101,28 @@ def _dac_sample_frame():
     )
 
 
-def _patch_scan(monkeypatch, tmp_path, rows: pd.DataFrame) -> None:
-    """Make dac.scan("dac1") return *rows* as a Parquet table."""
+def _patch_scan(monkeypatch, tmp_path, rows: pd.DataFrame) -> list[dict]:
+    """Make dac.scan("dac1") return *rows* as a Parquet table.
+
+    Returns the list each call's keyword arguments are appended to.
+    """
     path = tmp_path / "dac1.parquet"
     rows.to_parquet(path, index=False)
     table = ScannedTable(
         path=path,
         release="etag-1",
+        label_release=None,
         downloaded=datetime(2026, 10, 27, tzinfo=UTC),
         columns=tuple(rows.columns),
     )
-    monkeypatch.setattr(dac, "scan", lambda dataset: table)
+    calls: list[dict] = []
+
+    def fake_scan(dataset, **kwargs):
+        calls.append({"dataset": dataset, **kwargs})
+        return table
+
+    monkeypatch.setattr(dac, "scan", fake_scan)
+    return calls
 
 
 def test_download_dac_dataset(monkeypatch, tmp_path):
@@ -119,6 +134,19 @@ def test_download_dac_dataset(monkeypatch, tmp_path):
     assert "pydeflate_DAC_DEFLATOR" in df.columns
     assert "pydeflate_iso3" in df.columns
     assert df["pydeflate_EXCHANGE"].tolist() == [1.1, 1.2]
+
+
+def test_read_dac_downloads_a_fresh_bulk_file_on_rebuild(monkeypatch, tmp_path):
+    """A rebuild of the DAC cache, forced or first, refreshes the DAC1 scan."""
+    calls = _patch_scan(monkeypatch, tmp_path, _dac_sample_frame())
+    manager = BulkCacheManager(tmp_path / "bulk")
+    monkeypatch.setattr(dac, "bulk_cache_manager", lambda: manager)
+
+    READ_DAC()
+    READ_DAC()
+    READ_DAC(update=True)
+
+    assert calls == [{"dataset": "dac1", "refresh": True}] * 2
 
 
 def test_download_dac_keeps_eu_institutions_euro_rate(monkeypatch, tmp_path):

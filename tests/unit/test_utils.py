@@ -1,4 +1,5 @@
 import logging
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -97,6 +98,70 @@ def test_merge_user_and_pydeflate_data_applies_dac_fallback(caplog):
 
     messages = "\n".join(r.getMessage() for r in caplog.records)
     assert "Using DAC members' rates" in messages
+
+
+@pytest.mark.parametrize("as_str", [False, True], ids=["int", "str"])
+def test_merge_user_and_pydeflate_data_reads_legacy_eu_institutions_code(as_str):
+    """Data keyed by the API code 20918 takes EU Institutions' (918) rates."""
+    codes = [20918, 1]
+    user = pd.DataFrame(
+        {
+            "pydeflate_year": [2022, 2022],
+            "donor_code": [str(c) for c in codes] if as_str else codes,
+            "value": [100.0, 200.0],
+        }
+    )
+    table_codes = [918, 20001]
+    pydeflate_data = pd.DataFrame(
+        {
+            "pydeflate_year": [2022, 2022],
+            "pydeflate_entity_code": (
+                [str(c) for c in table_codes] if as_str else table_codes
+            ),
+            "pydeflate_NGDP_D": [90.0, 100.0],
+        }
+    )
+
+    with pytest.warns(FutureWarning, match="20918"):
+        merged = merge_user_and_pydeflate_data(
+            data=user,
+            pydeflate_data=pydeflate_data,
+            entity_column="donor_code",
+            ix=["pydeflate_year", "pydeflate_entity_code"],
+            source_codes=True,
+            dac=True,
+        )
+
+    matched = get_matched_pydeflate_data(merged)
+    eu = matched.loc[matched["value"] == 100.0]
+    assert eu["pydeflate_NGDP_D"].tolist() == [90.0]
+    assert eu["donor_code"].astype(str).tolist() == ["20918"]
+
+
+def test_merge_user_and_pydeflate_data_translates_dac_codes_only():
+    user = pd.DataFrame(
+        {"pydeflate_year": [2022], "donor_code": [20918], "value": [100.0]}
+    )
+    pydeflate_data = pd.DataFrame(
+        {
+            "pydeflate_year": [2022],
+            "pydeflate_entity_code": [918],
+            "pydeflate_NGDP_D": [90.0],
+        }
+    )
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", FutureWarning)
+        merged = merge_user_and_pydeflate_data(
+            data=user,
+            pydeflate_data=pydeflate_data,
+            entity_column="donor_code",
+            ix=["pydeflate_year", "pydeflate_entity_code"],
+            source_codes=True,
+            dac=False,
+        )
+
+    assert get_matched_pydeflate_data(merged)["pydeflate_NGDP_D"].isna().all()
 
 
 def test_flag_missing_pydeflate_data_logs_when_required(caplog):

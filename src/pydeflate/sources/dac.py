@@ -160,10 +160,16 @@ def dac_source_frame(dac1_rows: pd.DataFrame) -> pd.DataFrame:
 
 
 def _download_dac(output_path: Path) -> None:
-    """Build the DAC source table from the DAC1 bulk file and cache it."""
+    """Build the DAC source table from a fresh DAC1 bulk file and cache it.
 
-    logger.info("Reading DAC1 through oda_reader.scan...")
-    table = scan("dac1")
+    The pydeflate cache calls this when its copy is missing, past its TTL, or
+    `read_dac(update=True)` forces a rebuild. Each case downloads the current
+    bulk file (``refresh=True``), so the rebuilt table is never older than the
+    rebuild, whatever copy oda_reader holds.
+    """
+
+    logger.info("Downloading DAC1 through oda_reader.scan...")
+    table = scan("dac1", refresh=True)
     df = dac_source_frame(read_dac1_rows(table.path))
     output_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_parquet(output_path)

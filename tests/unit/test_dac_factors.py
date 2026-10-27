@@ -110,6 +110,7 @@ def scanned(dac1_path):
     return ScannedTable(
         path=dac1_path,
         release='"0x8DF2539D20A32DF"',
+        label_release=None,
         downloaded=datetime(2026, 10, 27, tzinfo=UTC),
         columns=tuple(rows.columns),
     )

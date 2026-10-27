@@ -22,10 +22,13 @@ All notable changes to this project are documented in this file. The format foll
   logging.getLogger("pydeflate").setLevel(logging.INFO)
   ```
 
-- The DAC source reads DAC1 through `oda_reader.scan("dac1")` (the bulk file) in place of `oda_reader.download_dac1` (the API). `oda-reader` floor raised to `>=1.13.0` (was `>=1.4.2`). DAC cache version bumped to `"3"`, so existing caches are rebuilt once on first use.
-- The bulk file numbers EU Institutions `918` (the API used `20918`) and has no `20000` ("DAC Members"). With `use_source_codes=True`, data keyed `20918` or `20000` now takes the DAC total's rates. Use `918` and `20001`. ISO3 lookups (`"EUI"`, `"DAC"`) are unchanged.
+- The DAC source reads DAC1 through `oda_reader.scan("dac1")` (the bulk file) in place of `oda_reader.download_dac1` (the API). `oda-reader` floor raised to `>=1.13.0` (was `>=1.4.2`). Every rebuild of the DAC cache, whether first use, expiry after 30 days or `update=True`, downloads the current bulk file. DAC cache version bumped to `"3"`, so existing caches are rebuilt once on first use.
+- The bulk file numbers EU Institutions `918` (the API used `20918`). With `use_source_codes=True`, data keyed `20918` is looked up as `918` and raises a `FutureWarning`; key it by `918`, since the translation will be removed in 3.0. Data keyed `918` now gets EU Institutions' own rates, where 2.6.2 fell back to the DAC total (EUR deflator for 2015: 103.901, was 104.858).
+- The bulk file has no `20000` ("DAC Members"). Data keyed `20000` falls back to the DAC total (`20001`) and the fallback is logged. The two series differ: by a median 0.42% and at most 1.9% (2000) on the deflator.
+- `get_oecd_dac_deflators` and `get_oecd_dac_exchange_rates` return tables that key EU Institutions by `918` and have no `20000` row. The `20918` translation applies to lookups in your data only, so code filters on these tables need `918` and `20001`.
 - EU Institutions, the DAC total and the G7 total get their pydeflate codes (`EUI`, `DAC`, `G7C`) from their DAC codes, since name matching misses the bulk file's "G7 Countries, Total".
-- Rates from the bulk file differ from the API's by rounding: on the DAC1 bulk file read on 2026-10-27, constant 2022 USD factors for 2000 to 2024 moved by at most 0.23% (Estonia) and current-price exchange rates by at most 2e-6 relative.
+- Rates are derived from the bulk file's amounts, which are more precise than the API's rounded figures, so some published rates are corrected. On the DAC1 bulk file read on 2026-10-27, Türkiye 1990 moves 22% in both its exchange rate (LCU per USD) and `NGDP_D`, because the API rounded its national-currency amount. The next largest moves are Estonia 1998 (exchange rate 3.8%, `NGDP_D` 4.2%) and Estonia 2000 (0.70% and 0.94%). 26 entity-years move by more than 0.1% in exchange rate, 9 of them from 2000 on. Conversions for those donors to or from local currency, EUR or GBP inherit these changes. Constant 2022 USD factors for 2000 to 2024 moved by at most 0.23% (Estonia), and the EU Institutions euro rate by at most 2e-6 relative.
+- Russia (`87`, `RUS`) is new in the DAC table, so its exchange rates for 2010 to 2020 are its own where they were the DAC total's.
 
 ### Deprecated
 
@@ -34,6 +37,10 @@ These are removed in 3.0. The first two emit a `DeprecationWarning`. `PydeflateC
 - `pydeflate.pydeflate_config.logger` and `pydeflate.pydeflate_config.setup_logger`. `logger` is now `logging.getLogger("pydeflate")`; `setup_logger` still configures a logger as before.
 - The `log_level` argument of `PydeflateContext`, `PydeflateContext.create`, `pydeflate_session` and `temporary_context`. It never changed which messages pydeflate emitted, and it still has no effect. Contexts derived by `temporary_context` no longer store it.
 - `PydeflateContext.logger`, which is now the shared `pydeflate` logger. pydeflate does not read it.
+
+### Fixed
+
+- With `use_source_codes=False`, data for the DAC total (`"DAC"`) or for any entity that falls back to it gets one output row per input row, at the DAC total (`20001`) rate. The 2.6.2 table mapped both `20000` and `20001` to `DAC`, so the ISO3 merge returned several rows per input row and mixed the "DAC Members" and DAC total rates. The `get_oecd_dac_deflators` and `get_oecd_dac_exchange_rates` tables now have one `DAC` row per year.
 
 ## [2.6.2] - 2026-10-21
 
