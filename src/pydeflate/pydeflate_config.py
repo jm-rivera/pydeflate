@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import warnings
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -67,7 +68,11 @@ PYDEFLATE_PATHS = _Paths(
 
 
 def setup_logger(name) -> logging.Logger:
-    """Set up the logger.
+    """Attach a console handler to a logger and set it to INFO.
+
+    Deprecated: pydeflate leaves logging configuration to the application.
+    Use ``logging.basicConfig()`` and
+    ``logging.getLogger("pydeflate").setLevel(...)`` instead. Removed in 3.0.
 
     Args:
         name (str): The name of the logger.
@@ -76,6 +81,13 @@ def setup_logger(name) -> logging.Logger:
         logging.Logger: The logger.
 
     """
+    warnings.warn(
+        "pydeflate.setup_logger is deprecated and will be removed in pydeflate "
+        "3.0. Configure logging in your application, for example with "
+        "logging.basicConfig() and logging.getLogger('pydeflate').setLevel().",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     logger_ = logging.getLogger(name)
     logger_.setLevel(logging.INFO)
 
@@ -95,7 +107,17 @@ def setup_logger(name) -> logging.Logger:
     return logger_
 
 
-logger = setup_logger("pydeflate")
+def __getattr__(name: str) -> logging.Logger:
+    # A module-level ``logger`` would shadow this hook, so none may be defined.
+    if name == "logger":
+        warnings.warn(
+            "pydeflate.pydeflate_config.logger is deprecated and will be removed "
+            "in pydeflate 3.0. Use logging.getLogger('pydeflate').",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return logging.getLogger("pydeflate")
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
 def set_pydeflate_path(path: str | Path) -> Path:

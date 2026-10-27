@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
@@ -10,12 +11,13 @@ import wbgapi as wb
 from pydeflate.cache import CacheEntry, bulk_cache_manager
 from pydeflate.cache.http import wbgapi_cached_session
 from pydeflate.groups.emu import all_members as emu
-from pydeflate.pydeflate_config import logger
 from pydeflate.sources.common import (
     compute_exchange_deflator,
     enforce_pyarrow_types,
     prefix_pydeflate_to_columns,
 )
+
+logger = logging.getLogger(__name__)
 
 _INDICATORS: dict = {
     "NY.GDP.DEFL.ZS": "NGDP_D",  # GDP Deflator (Index)

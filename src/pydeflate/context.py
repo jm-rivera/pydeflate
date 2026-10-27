@@ -1,31 +1,66 @@
 """Context management for dependency injection.
 
 This module provides a context-based approach to managing pydeflate's
-configuration, cache, and logging. This eliminates global state and
-enables better testability and parallel execution.
+configuration and cache. This eliminates global state and enables better
+testability and parallel execution.
+
+pydeflate does not configure logging. Its modules log through
+``logging.getLogger(__name__)`` under the ``pydeflate`` logger, and the
+application sets handlers and levels.
 """
 
 from __future__ import annotations
 
+import contextlib
 import logging
+import os
+import sys
 import threading
+import warnings
 from collections.abc import Generator
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
+from types import CodeType
 from typing import Any
 
 from pydeflate.cache import BulkCacheManager
 from pydeflate.protocols import CacheManagerProtocol
 from pydeflate.pydeflate_config import get_data_dir
 
+# Frames in pydeflate's own package and in contextlib's module file are
+# skipped when attributing the log_level deprecation, so the warning names the
+# caller's file and line whether the value came through the dataclass,
+# ``create``, ``pydeflate_session`` or ``temporary_context`` (the last two run
+# inside ``contextlib``). The trailing separator keeps sibling directories such
+# as ``pydeflate_extras`` out, and matching contextlib's file keeps third-party
+# packages installed under the stdlib directory in view.
+_PACKAGE_DIR = os.path.dirname(os.path.abspath(__file__)) + os.sep
+_CONTEXTLIB_FILE = contextlib.__file__
+
+
+def _is_internal_frame(code: CodeType) -> bool:
+    """Whether a frame belongs to pydeflate's machinery rather than its caller.
+
+    Dataclass-generated ``__init__`` methods report the filename ``<string>``.
+    Matching on that filename together with the ``__init__`` name skips them,
+    including a base ``__init__`` reached through ``super().__init__``, while a
+    ``python -c`` caller's frame (named ``<module>``) stays visible.
+    """
+    filename = code.co_filename
+    return (
+        filename.startswith(_PACKAGE_DIR)
+        or filename == _CONTEXTLIB_FILE
+        or (filename == "<string>" and code.co_name == "__init__")
+    )
+
 
 @dataclass
 class PydeflateContext:
     """Encapsulates all runtime configuration for pydeflate operations.
 
-    This class holds the cache manager, data directory, logger, and other
-    runtime settings. Using a context object instead of global variables
+    This class holds the cache manager, data directory, and other runtime
+    settings. Using a context object instead of global variables
     enables:
     - Multiple independent configurations in the same process
     - Better testability (mock the context instead of globals)
@@ -35,40 +70,49 @@ class PydeflateContext:
     Attributes:
         data_dir: Directory where deflator/exchange data is cached
         cache_manager: Manages cached datasets
-        logger: Logger instance for this context
-        log_level: Logging level (DEBUG, INFO, WARNING, ERROR)
+        logger: Deprecated, removed in 3.0. Defaults to the shared
+            ``logging.getLogger("pydeflate")``. pydeflate does not read it.
+        log_level: Deprecated, removed in 3.0. Has no effect; passing a
+            value emits a ``DeprecationWarning``. Configure the
+            ``pydeflate`` logger in your application instead.
         enable_validation: Whether to validate data schemas (recommended: True)
         config: Additional configuration options
     """
 
     data_dir: Path
     cache_manager: CacheManagerProtocol | None = None
-    logger: logging.Logger | None = None
-    log_level: int = logging.INFO
+    logger: logging.Logger = field(
+        default_factory=lambda: logging.getLogger("pydeflate")
+    )
+    log_level: int | None = None
     enable_validation: bool = True
     config: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self):
-        """Initialize cache manager and logger if not provided."""
+        """Initialize the cache manager and warn on the deprecated log_level."""
         if self.cache_manager is None:
             self.cache_manager = BulkCacheManager(self.data_dir)
 
-        if self.logger is None:
-            self.logger = self._create_logger()
-
-    def _create_logger(self) -> logging.Logger:
-        """Create a logger for this context."""
-        from pydeflate.pydeflate_config import setup_logger
-
-        logger = setup_logger(f"pydeflate.{id(self)}")
-        logger.setLevel(self.log_level)
-        return logger
+        if self.log_level is not None:
+            frame = sys._getframe()
+            stacklevel = 1
+            while frame.f_back is not None and _is_internal_frame(frame.f_code):
+                frame = frame.f_back
+                stacklevel += 1
+            warnings.warn(
+                "log_level is deprecated, has no effect, and will be removed in "
+                "pydeflate 3.0. Configure the 'pydeflate' logger in your "
+                "application, for example "
+                "logging.getLogger('pydeflate').setLevel(logging.DEBUG).",
+                DeprecationWarning,
+                stacklevel=stacklevel,
+            )
 
     @classmethod
     def create(
         cls,
         data_dir: str | Path | None = None,
-        log_level: int = logging.INFO,
+        log_level: int | None = None,
         enable_validation: bool = True,
         **config,
     ) -> PydeflateContext:
@@ -76,7 +120,8 @@ class PydeflateContext:
 
         Args:
             data_dir: Path to cache directory. If None, uses default from config.
-            log_level: Logging level for this context
+            log_level: Deprecated, has no effect. Passing a value emits a
+                ``DeprecationWarning``.
             enable_validation: Enable schema validation
             **config: Additional configuration options
 
@@ -126,7 +171,7 @@ def set_default_context(context: PydeflateContext) -> None:
 @contextmanager
 def pydeflate_session(
     data_dir: str | Path | None = None,
-    log_level: int = logging.INFO,
+    log_level: int | None = None,
     enable_validation: bool = True,
     group_treatment: str | None = None,
     **config,
@@ -144,7 +189,8 @@ def pydeflate_session(
 
     Args:
         data_dir: Path to cache directory
-        log_level: Logging level
+        log_level: Deprecated, has no effect. Passing a value emits a
+            ``DeprecationWarning``.
         enable_validation: Enable schema validation
         group_treatment: How to treat country groups ('source', 'fixed', 'dynamic')
         **config: Additional configuration
@@ -199,7 +245,8 @@ def temporary_context(
         ...     result = process_data(ctx=ctx)
 
     Args:
-        **overrides: Configuration overrides (log_level, enable_validation, etc.)
+        **overrides: Configuration overrides (data_dir, enable_validation,
+            config). A ``log_level`` override is deprecated and only warns.
 
     Yields:
         Temporary PydeflateContext with overrides applied
@@ -212,7 +259,7 @@ def temporary_context(
 
     temp_ctx = PydeflateContext.create(
         data_dir=overrides.get("data_dir", default.data_dir),
-        log_level=overrides.get("log_level", default.log_level),
+        log_level=overrides.get("log_level"),
         enable_validation=overrides.get("enable_validation", default.enable_validation),
         **config,
     )

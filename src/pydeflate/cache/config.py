@@ -17,7 +17,7 @@ from platformdirs import user_cache_path
 
 from pydeflate.pydeflate_config import DATA_DIR_ENV
 
-logger = logging.getLogger("pydeflate")
+logger = logging.getLogger(__name__)
 
 try:
     _PACKAGE_VERSION: str = importlib.metadata.version("pydeflate")

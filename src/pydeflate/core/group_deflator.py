@@ -6,11 +6,12 @@ and a group ISO3 code. Specific group data lives in pydeflate.groups.*.
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Callable
 
 import pandas as pd
 
-from pydeflate.pydeflate_config import logger
+logger = logging.getLogger(__name__)
 
 
 def compute_group_deflator(

@@ -1,11 +1,14 @@
 import json
+import logging
 import re
 
 import numpy as np
 import pandas as pd
 
-from pydeflate.pydeflate_config import PYDEFLATE_PATHS, logger
+from pydeflate.pydeflate_config import PYDEFLATE_PATHS
 from pydeflate.sources.common import enforce_pyarrow_types
+
+logger = logging.getLogger(__name__)
 
 
 def oecd_codes() -> dict:

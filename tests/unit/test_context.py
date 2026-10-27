@@ -1,14 +1,80 @@
 """Tests for context management and dependency injection."""
 
+import contextlib
 import logging
+import os
+import warnings
 from pathlib import Path
 
+import pytest
+
+import pydeflate.context
 from pydeflate.context import (
     PydeflateContext,
     get_default_context,
     pydeflate_session,
     set_default_context,
     temporary_context,
+)
+
+# Each helper passes log_level and returns the file the warning must name.
+
+
+def _construct_with_log_level(path):
+    PydeflateContext(data_dir=path, log_level=logging.DEBUG)
+    return __file__
+
+
+def _create_with_log_level(path):
+    PydeflateContext.create(data_dir=path, log_level=logging.DEBUG)
+    return __file__
+
+
+def _session_with_log_level(path):
+    with pydeflate_session(data_dir=path, log_level=logging.DEBUG):
+        pass
+    return __file__
+
+
+def _temporary_with_log_level(path):
+    with temporary_context(log_level=logging.DEBUG):
+        pass
+    return __file__
+
+
+class _ContextSubclass(PydeflateContext):
+    def __init__(self, data_dir):
+        super().__init__(data_dir=data_dir, log_level=logging.DEBUG)
+
+
+def _subclass_with_log_level(path):
+    _ContextSubclass(path)
+    return __file__
+
+
+def _library_call_from(filename):
+    """Build a caller whose frames report ``filename``, like an installed library."""
+
+    def call(path):
+        source = (
+            "def call(path):\n"
+            "    PydeflateContext.create(data_dir=path, log_level=10)\n"
+        )
+        namespace = {"PydeflateContext": PydeflateContext}
+        exec(compile(source, filename, "exec"), namespace)
+        namespace["call"](path)
+        return filename
+
+    return call
+
+
+# site-packages sits inside the stdlib directory on system Python, Docker and conda.
+_site_packages_library = _library_call_from(
+    os.path.join(os.path.dirname(contextlib.__file__), "site-packages", "lib.py")
+)
+# A sibling distribution whose directory name starts with "pydeflate".
+_pydeflate_named_library = _library_call_from(
+    os.path.dirname(pydeflate.context.__file__) + "_extras" + os.sep + "lib.py"
 )
 
 
@@ -20,17 +86,37 @@ class TestPydeflateContext:
         ctx = PydeflateContext.create(data_dir=tmp_path)
 
         assert ctx.data_dir == tmp_path
-        assert ctx.log_level == logging.INFO
+        assert ctx.log_level is None
         assert ctx.enable_validation is True
         assert ctx.cache_manager is not None
-        assert ctx.logger is not None
+        assert ctx.logger is logging.getLogger("pydeflate")
 
-    def test_create_with_custom_log_level(self, tmp_path):
-        """Context can specify custom log level."""
-        ctx = PydeflateContext.create(data_dir=tmp_path, log_level=logging.DEBUG)
+    @pytest.mark.parametrize(
+        "make_context",
+        [
+            pytest.param(_construct_with_log_level, id="dataclass"),
+            pytest.param(_create_with_log_level, id="create"),
+            pytest.param(_session_with_log_level, id="pydeflate_session"),
+            pytest.param(_temporary_with_log_level, id="temporary_context"),
+            pytest.param(_subclass_with_log_level, id="subclass_init"),
+            pytest.param(_site_packages_library, id="library_under_stdlib_dir"),
+            pytest.param(_pydeflate_named_library, id="library_named_pydeflate_x"),
+        ],
+    )
+    def test_log_level_warns_at_caller_and_changes_nothing(
+        self, tmp_path, make_context
+    ):
+        """Passing log_level warns once, names the caller's file, sets no level."""
+        set_default_context(PydeflateContext.create(data_dir=tmp_path))
+        pkg_logger = logging.getLogger("pydeflate")
+        level_before = pkg_logger.level
 
-        assert ctx.log_level == logging.DEBUG
-        assert ctx.logger.level == logging.DEBUG
+        with pytest.warns(DeprecationWarning, match="log_level") as record:
+            caller_file = make_context(tmp_path)
+
+        assert len(record) == 1
+        assert record[0].filename == caller_file
+        assert pkg_logger.level == level_before
 
     def test_create_with_validation_disabled(self, tmp_path):
         """Context can disable schema validation."""
@@ -78,15 +164,10 @@ class TestDefaultContext:
 
     def test_set_default_context_changes_default(self, tmp_path):
         """set_default_context changes the default for the thread."""
-        custom_ctx = PydeflateContext.create(
-            data_dir=tmp_path, log_level=logging.WARNING
-        )
+        custom_ctx = PydeflateContext.create(data_dir=tmp_path)
         set_default_context(custom_ctx)
 
-        retrieved = get_default_context()
-
-        assert retrieved is custom_ctx
-        assert retrieved.log_level == logging.WARNING
+        assert get_default_context() is custom_ctx
 
     def test_default_context_is_thread_local(self, tmp_path):
         """Default context should be thread-local."""
@@ -128,10 +209,8 @@ class TestPydeflateSession:
 
     def test_session_sets_as_default(self, tmp_path):
         """Context from session becomes default within the block."""
-        with pydeflate_session(data_dir=tmp_path, log_level=logging.DEBUG) as ctx:
-            default = get_default_context()
-            assert default is ctx
-            assert default.log_level == logging.DEBUG
+        with pydeflate_session(data_dir=tmp_path) as ctx:
+            assert get_default_context() is ctx
 
     def test_session_restores_previous_context(self, tmp_path):
         """Session restores previous default context when exiting."""
@@ -177,28 +256,39 @@ class TestTemporaryContext:
         """temporary_context inherits from current default."""
         original = PydeflateContext.create(
             data_dir=tmp_path,
-            log_level=logging.WARNING,
+            enable_validation=False,
             custom_setting="value",
         )
         set_default_context(original)
 
         with temporary_context() as ctx:
-            # Should inherit data_dir and log_level
             assert ctx.data_dir == tmp_path
-            assert ctx.log_level == logging.WARNING
+            assert ctx.enable_validation is False
             assert ctx.config["custom_setting"] == "value"
+
+    def test_temporary_context_does_not_repeat_log_level_warning(self, tmp_path):
+        """A default built with log_level does not make temporary_context warn."""
+        with pytest.warns(DeprecationWarning):
+            original = PydeflateContext.create(
+                data_dir=tmp_path, log_level=logging.WARNING
+            )
+        set_default_context(original)
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            with temporary_context() as ctx:
+                assert ctx.log_level is None
 
     def test_temporary_context_with_overrides(self, tmp_path):
         """temporary_context can override specific settings."""
         original = PydeflateContext.create(
             data_dir=tmp_path / "original",
-            log_level=logging.INFO,
         )
         set_default_context(original)
 
-        with temporary_context(log_level=logging.DEBUG) as ctx:
-            # Log level should be overridden
-            assert ctx.log_level == logging.DEBUG
+        with temporary_context(enable_validation=False) as ctx:
+            # Validation should be overridden
+            assert ctx.enable_validation is False
             # Data dir should be inherited
             assert ctx.data_dir == tmp_path / "original"
 
@@ -207,13 +297,13 @@ class TestTemporaryContext:
         original = PydeflateContext.create(data_dir=tmp_path)
         set_default_context(original)
 
-        with temporary_context(log_level=logging.DEBUG):
+        with temporary_context(enable_validation=False):
             # Inside, different context
-            assert get_default_context().log_level == logging.DEBUG
+            assert get_default_context().enable_validation is False
 
         # After, back to original
         assert get_default_context() is original
-        assert get_default_context().log_level == logging.INFO
+        assert get_default_context().enable_validation is True
 
 
 class TestProtocolAcceptance:
@@ -249,14 +339,19 @@ class TestContextIsolation:
         assert ctx1.cache_manager is not ctx2.cache_manager
         assert ctx1.cache_manager.base_dir != ctx2.cache_manager.base_dir
 
-    def test_different_contexts_have_different_loggers(self, tmp_path):
-        """Different contexts should have independent loggers."""
-        ctx1 = PydeflateContext.create(data_dir=tmp_path, log_level=logging.DEBUG)
-        ctx2 = PydeflateContext.create(data_dir=tmp_path, log_level=logging.ERROR)
+    def test_contexts_share_package_logger_and_configure_nothing(self, tmp_path):
+        """Contexts use the package logger and leave its configuration alone."""
+        pkg_logger = logging.getLogger("pydeflate")
+        before = (pkg_logger.level, list(pkg_logger.handlers), pkg_logger.propagate)
+        loggers_before = set(logging.Logger.manager.loggerDict)
 
-        assert ctx1.logger is not ctx2.logger
-        assert ctx1.logger.level == logging.DEBUG
-        assert ctx2.logger.level == logging.ERROR
+        ctx1 = PydeflateContext.create(data_dir=tmp_path)
+        ctx2 = PydeflateContext.create(data_dir=tmp_path)
+
+        assert ctx1.logger is pkg_logger
+        assert ctx2.logger is pkg_logger
+        assert (pkg_logger.level, pkg_logger.handlers, pkg_logger.propagate) == before
+        assert set(logging.Logger.manager.loggerDict) == loggers_before
 
     def test_contexts_do_not_share_config(self, tmp_path):
         """Different contexts should have independent config dicts."""

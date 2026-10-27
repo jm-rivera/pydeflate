@@ -18,7 +18,7 @@ result = imf_gdp_deflate(df, base_year=2015, ...)
 **Limitations:**
 
 - Can't use different cache directories in the same script
-- Difficult to manage logging verbosity per operation
+- Difficult to test code that depends on the cache location
 
 **Context management solves these issues:**
 
@@ -100,21 +100,21 @@ with pydeflate_session(data_dir="/app/data/pydeflate") as ctx:
     result = imf_gdp_deflate(df, context=ctx, ...)
 ```
 
-### Logging Level
+### Logging
 
-Control verbosity:
+Your application owns logging, and a context has no say in it. Modules log under the `pydeflate` logger, and your application sets handlers and levels:
 
 ```python
 import logging
 
-with pydeflate_session(log_level=logging.DEBUG) as ctx:
-    # Detailed debug logs
-    result = imf_gdp_deflate(df, context=ctx, ...)
+logging.basicConfig()
+logging.getLogger("pydeflate").setLevel(logging.DEBUG)  # or INFO, WARNING
 
-with pydeflate_session(log_level=logging.WARNING) as ctx:
-    # Only warnings and errors
-    result = wb_gdp_deflate(df, context=ctx, ...)
+with pydeflate_session() as ctx:
+    result = imf_gdp_deflate(df, context=ctx, ...)
 ```
+
+The `log_level` argument of `PydeflateContext`, `PydeflateContext.create`, `pydeflate_session` and `temporary_context` is deprecated and will be removed in 3.0. It never changed pydeflate's messages, and passing it emits a `DeprecationWarning`. `PydeflateContext.logger` is also deprecated and is the shared `pydeflate` logger.
 
 ### Schema Validation
 
@@ -144,11 +144,8 @@ See [Country Group Deflators](groups.md) for details on treatment modes.
 ### Combined Configuration
 
 ```python
-import logging
-
 with pydeflate_session(
     data_dir="./cache",
-    log_level=logging.INFO,
     enable_validation=True,
     group_treatment="fixed"
 ) as ctx:
@@ -162,12 +159,10 @@ Set a default context for your entire application:
 ```python
 from pydeflate.context import PydeflateContext, set_default_context
 from pydeflate import imf_gdp_deflate
-import logging
 
 # Create and configure context
 ctx = PydeflateContext.create(
     data_dir="/app/cache",
-    log_level=logging.INFO,
     enable_validation=False
 )
 
@@ -187,7 +182,7 @@ from pydeflate.context import get_default_context
 
 ctx = get_default_context()
 print(f"Cache directory: {ctx.data_dir}")
-print(f"Logging level: {ctx.log_level}")
+print(f"Validation enabled: {ctx.enable_validation}")
 ```
 
 ## Parallel Processing
@@ -270,22 +265,24 @@ import logging
 # Load environment
 environment = os.getenv("ENVIRONMENT", "development")
 
+logging.basicConfig()
+
 if environment == "production":
+    logging.getLogger("pydeflate").setLevel(logging.WARNING)
     ctx = PydeflateContext.create(
         data_dir="/var/lib/pydeflate",
-        log_level=logging.WARNING,
         enable_validation=True  # Strict validation in prod
     )
 elif environment == "development":
+    logging.getLogger("pydeflate").setLevel(logging.DEBUG)  # Verbose logs in dev
     ctx = PydeflateContext.create(
         data_dir="./dev_cache",
-        log_level=logging.DEBUG,  # Verbose logs in dev
         enable_validation=False
     )
 elif environment == "testing":
+    logging.getLogger("pydeflate").setLevel(logging.ERROR)
     ctx = PydeflateContext.create(
         data_dir="/tmp/pydeflate_test",
-        log_level=logging.ERROR,
         enable_validation=True
     )
 
@@ -392,20 +389,20 @@ env = os.getenv("APP_ENV", "development")
 
 if env == "production":
     context = PydeflateContext.create(
+    logging.getLogger("pydeflate").setLevel(logging.WARNING)
         data_dir="/var/lib/myapp/pydeflate",
-        log_level=logging.WARNING,
         enable_validation=True
     )
 elif env == "testing":
     context = PydeflateContext.create(
+    logging.getLogger("pydeflate").setLevel(logging.ERROR)
         data_dir="/tmp/pydeflate_test",
-        log_level=logging.ERROR,
         enable_validation=True
     )
 else:  # development
     context = PydeflateContext.create(
+    logging.getLogger("pydeflate").setLevel(logging.DEBUG)
         data_dir="./dev_cache",
-        log_level=logging.DEBUG,
         enable_validation=False
     )
 

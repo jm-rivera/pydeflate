@@ -11,24 +11,6 @@ import pydeflate
 from pydeflate.convert import add_iso3
 from pydeflate.exceptions import ConfigurationError, UnmatchedEntitiesError
 
-
-@pytest.fixture()
-def propagating_pydeflate_logger():
-    """Temporarily enable propagation on the pydeflate logger.
-
-    The production logger sets propagate=False, which prevents pytest's
-    caplog fixture (which intercepts via propagation) from capturing log
-    records. Flip it for the test duration only.
-    """
-    logger = logging.getLogger("pydeflate")
-    saved = logger.propagate
-    logger.propagate = True
-    try:
-        yield logger
-    finally:
-        logger.propagate = saved
-
-
 # ---------------------------------------------------------------------------
 # Resolution correctness
 # ---------------------------------------------------------------------------
@@ -86,7 +68,7 @@ def test_returns_new_dataframe():
 # ---------------------------------------------------------------------------
 
 
-def test_warn_sets_na_and_logs(caplog, propagating_pydeflate_logger):
+def test_warn_sets_na_and_logs(caplog):
     # "Atlantis" is confirmed unresolvable by resolvekit
     df = pd.DataFrame({"name": ["France", "Atlantis"]})
 
@@ -115,7 +97,7 @@ def test_raise_lists_offending_values():
     assert "Atlantis" in str(err)
 
 
-def test_ignore_silent_na(caplog, propagating_pydeflate_logger):
+def test_ignore_silent_na(caplog):
     # "Atlantis" is confirmed unresolvable by resolvekit
     df = pd.DataFrame({"name": ["France", "Atlantis"]})
 

@@ -51,16 +51,8 @@ def _reset_singletons():
     The listener list is snapshot-and-restored so tests that register extra
     listeners don't accumulate them across the suite (each reset_cache_root()
     call would otherwise call an ever-growing list of test lambdas).
-
-    Also flips the pydeflate logger to ``propagate=True`` for the test duration
-    so pytest's ``caplog`` fixture can capture warnings emitted from the
-    package (production logger sets ``propagate=False``).
     """
     import pydeflate.cache.config as _cfg
-
-    pkg_logger = logging.getLogger("pydeflate")
-    saved_propagate = pkg_logger.propagate
-    pkg_logger.propagate = True
 
     saved_listeners = list(_cfg._CACHE_DIR_LISTENERS)
     reset_cache_root()
@@ -69,7 +61,6 @@ def _reset_singletons():
     finally:
         reset_cache_root()
         _cfg._CACHE_DIR_LISTENERS[:] = saved_listeners
-        pkg_logger.propagate = saved_propagate
         # Reset the per-scope enable/disable state so tests don't bleed into
         # each other through the module-level _SCOPE_ENABLED dict.
         try:

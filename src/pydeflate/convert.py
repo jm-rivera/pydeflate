@@ -8,13 +8,15 @@ internal deflate pipeline uses.
 
 from __future__ import annotations
 
+import logging
 from typing import Literal
 
 import pandas as pd
 
 from pydeflate.exceptions import ConfigurationError, UnmatchedEntitiesError
-from pydeflate.pydeflate_config import logger
 from pydeflate.sources.common import _match_name_to_iso3
+
+logger = logging.getLogger(__name__)
 
 _VALID_ON_UNMATCHED = frozenset({"warn", "raise", "ignore"})
 
