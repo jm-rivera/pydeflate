@@ -9,6 +9,10 @@ from pydeflate.context import (
     temporary_context,
 )
 from pydeflate.convert import add_iso3
+from pydeflate.dac_factors import (
+    DacConversionFactors,
+    get_oecd_dac_conversion_factors,
+)
 from pydeflate.deflate.deflators import (
     imf_cpi_deflate,
     imf_cpi_e_deflate,
@@ -186,6 +190,9 @@ __all__ = [
     "get_oecd_dac_exchange_rates",
     "get_wb_exchange_rates",
     "get_wb_ppp_rates",
+    # DAC conversion factors from a caller-supplied DAC1 table
+    "DacConversionFactors",
+    "get_oecd_dac_conversion_factors",
     # Configuration
     "set_data_dir",
     "set_pydeflate_path",

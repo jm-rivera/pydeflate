@@ -7,6 +7,10 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [2.7.0] - 2026-10-27
 
+### Added
+
+- `get_oecd_dac_conversion_factors(dac1, *, entities, years, target_currency="USA", base_year=None)` returns a `DacConversionFactors` with `factors` (columns `entity_code`, `year`, `factor`, `fallback`) and `release`. It derives the factors from the DAC1 table passed in, either the `ScannedTable` that `oda_reader.scan("dac1")` returns or a Parquet path, so factors and ODA figures read from one table share one DAC1 release. A current-USD value times `factor` equals what `oecd_dac_exchange` or `oecd_dac_deflate` returns for it with `source_currency="USA"` and `use_source_codes=True`. Entities absent from the table take the DAC total's (20001) factors and carry `fallback=True`. `release` is the `ScannedTable` release token, or `None` for a path.
+
 ### Changed
 
 - Importing pydeflate no longer configures logging. It used to set the `pydeflate` logger's level to `INFO` and, when neither that logger nor the root logger had a handler at import, attach its own stream handler and stop propagation to the root logger. An application that configured logging after importing pydeflate could then not route pydeflate's messages through its handlers. Modules now log through `logging.getLogger(__name__)` under the `pydeflate` logger and add no handlers. Python's default setup shows warnings and errors only. To see the `INFO` messages again (downloads, missing-data notices), configure logging in your application:
@@ -18,7 +22,10 @@ All notable changes to this project are documented in this file. The format foll
   logging.getLogger("pydeflate").setLevel(logging.INFO)
   ```
 
-- `oda-reader` floor raised to `>=1.13.0` (was `>=1.4.2`).
+- The DAC source reads DAC1 through `oda_reader.scan("dac1")` (the bulk file) in place of `oda_reader.download_dac1` (the API). `oda-reader` floor raised to `>=1.13.0` (was `>=1.4.2`). DAC cache version bumped to `"3"`, so existing caches are rebuilt once on first use.
+- The bulk file numbers EU Institutions `918` (the API used `20918`) and has no `20000` ("DAC Members"). With `use_source_codes=True`, data keyed `20918` or `20000` now takes the DAC total's rates. Use `918` and `20001`. ISO3 lookups (`"EUI"`, `"DAC"`) are unchanged.
+- EU Institutions, the DAC total and the G7 total get their pydeflate codes (`EUI`, `DAC`, `G7C`) from their DAC codes, since name matching misses the bulk file's "G7 Countries, Total".
+- Rates from the bulk file differ from the API's by rounding: on the DAC1 bulk file read on 2026-10-27, constant 2022 USD factors for 2000 to 2024 moved by at most 0.23% (Estonia) and current-price exchange rates by at most 2e-6 relative.
 
 ### Deprecated
 
