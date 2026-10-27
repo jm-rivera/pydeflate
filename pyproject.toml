@@ -11,7 +11,7 @@ license-files = ["LICENSE*"]
 
 dependencies = [
     "imf-reader>=1.5.0",
-    "oda-reader>=1.13.0",
+    "oda-reader>=1.14.0",
     "pandas>=2.0",
     "pandera>=0.20.0",
     "pyarrow>=14.0",
@@ -48,7 +48,7 @@ Issues = "https://github.com/jm-rivera/pydeflate/issues"
 
 
 [tool.uv.sources]
-oda-reader = { git = "https://github.com/ONEcampaign/oda_reader", rev = "817e14127ea07897f2efb73f51b945a4d134f503" }
+oda-reader = { git = "https://github.com/ONEcampaign/oda_reader", rev = "fe3890f7a8c9d01a2a90002264c7af2dd849482f" }
 
 [build-system]
 requires = ["uv_build>=0.8.22,<0.9.0"]
