@@ -3,14 +3,17 @@ import pytest
 
 from pydeflate.core.exchange import Exchange
 from pydeflate.core.source import WorldBank
+from pydeflate.exceptions import MissingDataError
 
 
 def test_convert_exchange_raises_for_unknown_currency():
     source = WorldBank()
     exchange = Exchange(source=source, source_currency="USA", target_currency="USA")
 
-    with pytest.raises(ValueError, match="No currency exchange data"):
+    with pytest.raises(MissingDataError, match="No currency exchange data") as exc:
         exchange._convert_exchange("XYZ")
+
+    assert isinstance(exc.value, ValueError)
 
 
 def test_exchange_rate_builds_multiplier_between_currencies():

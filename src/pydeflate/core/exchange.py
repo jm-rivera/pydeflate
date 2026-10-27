@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 import pandas as pd
 
 from pydeflate.core.source import Source
+from pydeflate.exceptions import MissingDataError
 from pydeflate.sources.common import compute_exchange_deflator
 
 _REPORTED = "pydeflate_EXCHANGE_REPORTED"
@@ -75,7 +76,8 @@ class Exchange:
                 exchange rates for the target currency.
 
         Raises:
-            ValueError: If no exchange rate data is available for the target currency.
+            MissingDataError: If no exchange rate data is available for the
+                target currency.
         """
 
         if to_ == "LCU":
@@ -85,7 +87,7 @@ class Exchange:
         target_exchange = self._get_exchange_rate(to_)
 
         if target_exchange.empty:
-            raise ValueError(f"No currency exchange data for {to_=}")
+            raise MissingDataError(f"No currency exchange data for {to_=}")
 
         merged = pd.merge(
             usd_rate,

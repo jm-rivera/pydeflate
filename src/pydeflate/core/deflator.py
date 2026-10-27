@@ -5,6 +5,7 @@ import pandas as pd
 
 from pydeflate.core.exchange import Exchange
 from pydeflate.core.source import Source
+from pydeflate.exceptions import MissingDataError
 from pydeflate.sources.common import AvailableDeflators
 
 
@@ -68,7 +69,7 @@ class Deflator:
         )
 
         if base_year_values.empty:
-            raise ValueError(f"No data found for base year {self.base_year}.")
+            raise MissingDataError(f"No data found for base year {self.base_year}.")
         return base_year_values
 
     @staticmethod
@@ -92,9 +93,8 @@ class Deflator:
         Adjusts the deflator values so that the base year values are set to 100.
 
         Raises:
-            ValueError: If `deflator_data` is empty, has an
-                invalid format, or lacks data for the
-                base year.
+            ValueError: If `deflator_data` is empty or has an invalid format.
+            MissingDataError: If `deflator_data` lacks data for the base year.
         """
 
         # Check if deflator data is empty
