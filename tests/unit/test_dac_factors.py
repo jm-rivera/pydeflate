@@ -18,7 +18,9 @@ YEARS = [2016, 2017, 2018, 2019]
 BASE_YEAR = 2018
 
 # (code, name): {year: (A, N, D)}. A == D in 2018, the table's price base year.
-# France has no 2016 row. DAC aggregates publish no national-currency amount.
+# France has no 2016 row. EU Institutions publish no national-currency amount
+# for 2016, as the real table has none before 1973, so EUR has no 2016 rate.
+# DAC aggregates publish no national-currency amount.
 DONORS: dict[tuple[int, str], dict[int, tuple[float, float | None, float]]] = {
     (4, "France"): {
         2017: (110.0, 97.0, 108.0),
@@ -38,7 +40,7 @@ DONORS: dict[tuple[int, str], dict[int, tuple[float, float | None, float]]] = {
         2019: (330.0, 330.0, 325.0),
     },
     (918, "EU Institutions"): {
-        2016: (50.0, 45.2, 48.0),
+        2016: (50.0, None, 48.0),
         2017: (55.0, 48.7, 53.0),
         2018: (60.0, 50.8, 60.0),
         2019: (65.0, 58.1, 64.0),
@@ -148,6 +150,26 @@ def test_plain_path_reports_no_release(dac1_path):
     assert result.release is None
 
 
+@pytest.mark.parametrize("base_year", [None, BASE_YEAR])
+def test_target_currency_without_a_rate_gives_no_factor(dac1_path, base_year):
+    """EUR has no 2016 rate, so no 2016 EUR factor; another currency has one."""
+    factors = {
+        currency: get_oecd_dac_conversion_factors(
+            dac1_path,
+            entities=[4, 12, 302, 918, 20001],
+            years=[2016, 2017],
+            target_currency=currency,
+            base_year=base_year,
+        ).factors.set_index(["entity_code", "year"])["factor"]
+        for currency in ["EUR", "GBP"]
+    }
+
+    assert factors["EUR"].xs(2016, level="year").isna().all()
+    assert factors["EUR"].xs(2017, level="year").notna().all()
+    # EU Institutions' own amounts in 2016 still convert to GBP.
+    assert pd.notna(factors["GBP"].loc[(918, 2016)])
+
+
 def test_exchange_factors_use_total_oda_lines(dac1_path):
     """EUR factors are EU Institutions' N/A on the line and flow for each year."""
     factors = get_oecd_dac_conversion_factors(
@@ -155,11 +177,10 @@ def test_exchange_factors_use_total_oda_lines(dac1_path):
     ).factors
 
     expected = [
-        round(n / a, 6)
+        float("nan") if n is None else round(n / a, 6)
         for a, n, _ in DONORS[(918, "EU Institutions")].values()
-        if n is not None
     ]
-    assert factors["factor"].tolist() == pytest.approx(expected, abs=1e-12)
+    assert factors["factor"].tolist() == pytest.approx(expected, abs=1e-12, nan_ok=True)
 
 
 def test_missing_entities_fall_back_to_dac_total(dac1_path):

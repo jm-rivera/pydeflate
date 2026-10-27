@@ -74,7 +74,16 @@ def _keep_official_definition_only(df: pd.DataFrame) -> pd.DataFrame:
 def _keep_useful_columns(df: pd.DataFrame) -> pd.DataFrame:
     """Select the key columns used downstream in pydeflate."""
 
-    return df.filter(["year", "donor_code", "donor_name", "EXCHANGE", "DAC_DEFLATOR"])
+    return df.filter(
+        [
+            "year",
+            "donor_code",
+            "donor_name",
+            "EXCHANGE",
+            "EXCHANGE_REPORTED",
+            "DAC_DEFLATOR",
+        ]
+    )
 
 
 def _pivot_amount_type(df: pd.DataFrame) -> pd.DataFrame:
@@ -91,11 +100,19 @@ def _pivot_amount_type(df: pd.DataFrame) -> pd.DataFrame:
 def _compute_exchange(df: pd.DataFrame) -> pd.DataFrame:
     """Derive exchange rates as national-currency over USD amounts.
 
-    DAC aggregates publish no national-currency amounts, so their rate falls back
-    to 1 (USD).
+    ``EXCHANGE_REPORTED`` is the rate where the donor reports a national-currency
+    amount and missing elsewhere. It is the rate of the donor's currency when that
+    currency is a conversion source or target, such as EU Institutions' for EUR.
+
+    ``EXCHANGE`` is the donor's own rate and falls back to 1 (USD) where the donor
+    reports no national-currency amount: always for DAC aggregates, and in some
+    years for donors such as EU Institutions before 1973. Converting a donor's
+    USD amounts to another currency divides out the donor's own rate, so the
+    fallback keeps those rows without affecting the result.
     """
 
-    df["EXCHANGE"] = round(df["N"] / df["A"], 6).fillna(1)
+    df["EXCHANGE_REPORTED"] = round(df["N"] / df["A"], 6)
+    df["EXCHANGE"] = df["EXCHANGE_REPORTED"].fillna(1)
     return df
 
 
@@ -181,7 +198,7 @@ _DAC_ENTRY = CacheEntry(
     filename="dac.parquet",
     fetcher=_download_dac,
     ttl_days=30,
-    version="3",  # Bump: built from the DAC1 bulk file read through scan("dac1")
+    version="4",  # Bump: adds pydeflate_EXCHANGE_REPORTED
 )
 
 

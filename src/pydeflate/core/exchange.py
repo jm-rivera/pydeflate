@@ -5,6 +5,8 @@ import pandas as pd
 from pydeflate.core.source import Source
 from pydeflate.sources.common import compute_exchange_deflator
 
+_REPORTED = "pydeflate_EXCHANGE_REPORTED"
+
 
 @dataclass
 class Exchange:
@@ -19,17 +21,29 @@ class Exchange:
             (default is 'LCU' - Local Currency Unit).
         target_currency (str): The target currency code (default is 'USA' - US Dollar).
         exchange_data (pd.DataFrame): DataFrame holding the exchange rate data.
+        currency_data (pd.DataFrame): Each currency's rate per USD, used when it
+            is the source or target currency.
     """
 
     source: Source
     source_currency: str = "LCU"
     target_currency: str = "USA"
     exchange_data: pd.DataFrame = field(default_factory=pd.DataFrame)
+    currency_data: pd.DataFrame = field(default_factory=pd.DataFrame)
 
     def __post_init__(self):
         """Initialize the Exchange object and process the exchange rate data."""
-        # Load and filter the relevant columns from the exchange rate data
-        self.exchange_data = self.source.lcu_usd_exchange()
+        rates = self.source.lcu_usd_exchange()
+        self.exchange_data = rates.drop(columns=_REPORTED, errors="ignore")
+        # A currency's rate as a conversion source or target is its published
+        # rate, which a source may keep apart from a filled entity rate.
+        self.currency_data = (
+            rates.drop(columns="pydeflate_EXCHANGE").rename(
+                columns={_REPORTED: "pydeflate_EXCHANGE"}
+            )
+            if _REPORTED in rates.columns
+            else self.exchange_data
+        )
 
         if self.source_currency == self.target_currency:
             self.exchange_data = self.exchange_rate("LCU", self.target_currency)
@@ -41,8 +55,8 @@ class Exchange:
 
     def _get_exchange_rate(self, currency):
         """Helper function to fetch exchange rates for a given currency."""
-        exchange_rate = self.exchange_data.loc[
-            self.exchange_data["pydeflate_iso3"] == currency
+        exchange_rate = self.currency_data.loc[
+            self.currency_data["pydeflate_iso3"] == currency
         ]
         return exchange_rate
 

@@ -80,7 +80,8 @@ class Source:
         """Return local currency to USD exchange rates.
 
         Returns:
-            DataFrame with exchange rate data
+            DataFrame with exchange rate data, and ``pydeflate_EXCHANGE_REPORTED``
+            when the source carries it (see `SourceProtocol.lcu_usd_exchange`).
 
         Raises:
             DataSourceError: If exchange rate data is missing
@@ -90,7 +91,9 @@ class Source:
                 "Exchange rate data (pydeflate_EXCHANGE) not available",
                 source=self.name,
             )
-        return self.data.filter(self._idx + ["pydeflate_EXCHANGE"])
+        return self.data.filter(
+            self._idx + ["pydeflate_EXCHANGE", "pydeflate_EXCHANGE_REPORTED"]
+        )
 
     def price_deflator(self, kind: AvailableDeflators = "NGDP_D") -> pd.DataFrame:
         """Return price deflator data for specified kind.
