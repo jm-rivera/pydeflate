@@ -23,6 +23,7 @@ All notable changes to this project are documented in this file. The format foll
   ```
 
 - The DAC source reads DAC1 through `oda_reader.scan("dac1")` (the bulk file) in place of `oda_reader.download_dac1` (the API), and requires `oda-reader` 1.14.0 or later (was 1.4.2). Every rebuild of the DAC cache, whether first use, expiry after 30 days or `update=True`, downloads the current bulk file. The DAC cache version is bumped to `"4"`, so existing caches are rebuilt once on first use.
+- `imf-reader` 2.3.0 or later is required (was 1.5.0). Earlier releases configure logging when imported, which set up the root logger for any application that imports pydeflate.
 - The bulk file numbers EU Institutions `918`, where the API used `20918`. With `use_source_codes=True`, data keyed `20918` is looked up as `918` and raises a `FutureWarning`. Key it by `918`, since the translation will be removed in 3.0.
 - The bulk file has no `20000` ("DAC Members"). Data keyed `20000` falls back to the DAC total (`20001`) and the fallback is logged. The two series differ by a median 0.42% and at most 1.9% (2000) on the deflator.
 - `get_oecd_dac_deflators` and `get_oecd_dac_exchange_rates` return tables that key EU Institutions by `918` and have no `20000` row. The `20918` translation applies to lookups in your data only, so code filters on these tables need `918` and `20001`.

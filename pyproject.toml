@@ -10,7 +10,7 @@ license = "MIT"
 license-files = ["LICENSE*"]
 
 dependencies = [
-    "imf-reader>=1.5.0",
+    "imf-reader>=2.3.0",
     "oda-reader>=1.14.0",
     "pandas>=2.0",
     "pandera>=0.20.0",
