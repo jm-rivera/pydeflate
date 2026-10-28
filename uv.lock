@@ -777,8 +777,8 @@ wheels = [
 
 [[package]]
 name = "oda-reader"
-version = "1.14.0rc1"
-source = { git = "https://github.com/ONEcampaign/oda_reader?rev=c0a720dfbf7c59444bbb3f28ca450937818f380b#c0a720dfbf7c59444bbb3f28ca450937818f380b" }
+version = "1.15.0"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "filelock" },
     { name = "inflate64" },
@@ -789,6 +789,10 @@ dependencies = [
     { name = "readerkit" },
     { name = "requests" },
     { name = "requests-cache" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/89/10/251574e326775bae721cc7da347de54bb1a1c2a8bd2f3d762038a7892158/oda_reader-1.15.0.tar.gz", hash = "sha256:92f6bc5cc7d9147960c6c876d3c6e45ba53596d3b7363acddeba7dd855955123", size = 155400, upload-time = "2026-10-28T10:08:19.282Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/21/1d/cbaad26803cb103a0332a1aafeb8c219b9e200903175bbeb9c68feeba4b7/oda_reader-1.15.0-py3-none-any.whl", hash = "sha256:e96b617c3729300978d76cab607cb49a30d362d28337c484a1bfe3249a89b306", size = 177070, upload-time = "2026-10-28T10:08:17.828Z" },
 ]
 
 [[package]]
@@ -1089,7 +1093,7 @@ wheels = [
 
 [[package]]
 name = "pydeflate"
-version = "2.7.0rc1"
+version = "2.7.0"
 source = { editable = "." }
 dependencies = [
     { name = "filelock" },
@@ -1126,7 +1130,7 @@ docs = [
 requires-dist = [
     { name = "filelock", specifier = ">=3.15.0" },
     { name = "imf-reader", specifier = ">=1.5.0" },
-    { name = "oda-reader", git = "https://github.com/ONEcampaign/oda_reader?rev=c0a720dfbf7c59444bbb3f28ca450937818f380b" },
+    { name = "oda-reader", specifier = ">=1.14.0" },
     { name = "pandas", specifier = ">=2.0" },
     { name = "pandera", specifier = ">=0.20.0" },
     { name = "platformdirs", specifier = ">=3.0.0" },

@@ -1,5 +1,5 @@
 __author__ = """Jorge Rivera"""
-__version__ = "2.7.0rc1"
+__version__ = "2.7.0"
 
 from pydeflate.context import (
     PydeflateContext,
