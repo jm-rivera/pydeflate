@@ -37,6 +37,11 @@ _ODA_FLOWS = [1140, 1160]
 # misses the bulk file's names for some ("G7 Countries, Total").
 _DAC_CODE_TO_PYDEFLATE = {918: "EUI", 20001: "DAC", 20003: "G7C"}
 
+# DAC aggregates are the donor codes from 20000. They take a pydeflate code from
+# `_DAC_CODE_TO_PYDEFLATE` only: name matching gives DAC Members (20000) the DAC
+# code too, and other aggregates could take a member's code.
+_FIRST_AGGREGATE_CODE = 20000
+
 
 def read_dac1_rows(path: str | Path) -> pd.DataFrame:
     """Read the total ODA rows the DAC pipeline needs from a DAC1 Parquet file.
@@ -131,10 +136,15 @@ def _compute_dac_gdp_deflator(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def _set_aggregate_codes(df: pd.DataFrame) -> pd.DataFrame:
-    """Set the pydeflate code of DAC aggregates and EU Institutions by DAC code."""
+    """Set the pydeflate code of DAC aggregates and EU Institutions by DAC code.
+
+    Donors in `_DAC_CODE_TO_PYDEFLATE` take its code. Other aggregates (codes
+    from 20000) get none, and other donors keep the code matched by name.
+    """
 
     fixed = df["donor_code"].map(_DAC_CODE_TO_PYDEFLATE)
-    df["pydeflate_iso3"] = fixed.where(fixed.notna(), df["pydeflate_iso3"])
+    by_code = fixed.notna() | (df["donor_code"] >= _FIRST_AGGREGATE_CODE)
+    df["pydeflate_iso3"] = fixed.where(by_code, df["pydeflate_iso3"])
     return df
 
 
@@ -198,7 +208,9 @@ _DAC_ENTRY = CacheEntry(
     filename="dac.parquet",
     fetcher=_download_dac,
     ttl_days=30,
-    version="4",  # Bump: adds pydeflate_EXCHANGE_REPORTED
+    # Bump: built from the DAC1 bulk file, aggregates take pydeflate codes by DAC
+    # code only, and the table adds pydeflate_EXCHANGE_REPORTED.
+    version="4",
 )
 
 
