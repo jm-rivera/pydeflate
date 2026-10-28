@@ -372,16 +372,16 @@ env = os.getenv("ENVIRONMENT", "development")
 
 if env == "production":
     # Enable validation in production
+    logging.getLogger("pydeflate").setLevel(logging.WARNING)
     ctx = PydeflateContext.create(
         data_dir="/var/lib/app/pydeflate",
-        log_level=logging.WARNING,
         enable_validation=True  # Strict validation
     )
 elif env == "development":
     # No validation in dev for speed
+    logging.getLogger("pydeflate").setLevel(logging.DEBUG)
     ctx = PydeflateContext.create(
         data_dir="./dev_cache",
-        log_level=logging.DEBUG,
         enable_validation=False
     )
 

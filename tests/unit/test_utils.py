@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from pydeflate.pydeflate_config import logger as pydeflate_logger
 from pydeflate.utils import (
     clean_number,
     create_pydeflate_year,
@@ -69,7 +68,7 @@ def test_merge_user_and_pydeflate_data_matches_iso_codes():
     assert unmatched.empty
 
 
-def test_merge_user_and_pydeflate_data_applies_dac_fallback():
+def test_merge_user_and_pydeflate_data_applies_dac_fallback(caplog):
     user = pd.DataFrame(
         {
             "pydeflate_year": [2022],
@@ -86,15 +85,7 @@ def test_merge_user_and_pydeflate_data_applies_dac_fallback():
         }
     )
 
-    records: list[logging.LogRecord] = []
-
-    class _Capture(logging.Handler):
-        def emit(self, record: logging.LogRecord) -> None:
-            records.append(record)
-
-    handler = _Capture(level=logging.INFO)
-    pydeflate_logger.addHandler(handler)
-    try:
+    with caplog.at_level(logging.INFO, logger="pydeflate"):
         merge_user_and_pydeflate_data(
             data=user,
             pydeflate_data=pydeflate_data,
@@ -103,14 +94,12 @@ def test_merge_user_and_pydeflate_data_applies_dac_fallback():
             source_codes=True,
             dac=True,
         )
-    finally:
-        pydeflate_logger.removeHandler(handler)
 
-    messages = "\n".join(r.getMessage() for r in records)
+    messages = "\n".join(r.getMessage() for r in caplog.records)
     assert "Using DAC members' rates" in messages
 
 
-def test_flag_missing_pydeflate_data_logs_when_required():
+def test_flag_missing_pydeflate_data_logs_when_required(caplog):
     unmatched = pd.DataFrame(
         {
             "iso_code": ["USA", "USA"],
@@ -118,24 +107,14 @@ def test_flag_missing_pydeflate_data_logs_when_required():
         }
     )
 
-    records: list[logging.LogRecord] = []
-
-    class _Capture(logging.Handler):
-        def emit(self, record: logging.LogRecord) -> None:
-            records.append(record)
-
-    handler = _Capture(level=logging.INFO)
-    pydeflate_logger.addHandler(handler)
-    try:
+    with caplog.at_level(logging.INFO, logger="pydeflate"):
         flag_missing_pydeflate_data(
             unmatched_data=unmatched,
             entity_column="iso_code",
             year_column="year",
         )
-    finally:
-        pydeflate_logger.removeHandler(handler)
 
-    messages = "\n".join(r.getMessage() for r in records)
+    messages = "\n".join(r.getMessage() for r in caplog.records)
     assert "Missing exchange data" in messages
     assert "USA" in messages
 

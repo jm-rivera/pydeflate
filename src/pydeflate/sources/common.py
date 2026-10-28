@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import functools
+import logging
 from typing import Any, Literal
 
 import pandas as pd
 from resolvekit import Resolver
 
-from pydeflate.pydeflate_config import logger
+logger = logging.getLogger(__name__)
+
 
 AvailableDeflators = Literal["NGDP_D", "NGDP_DL", "CPI", "PCPI", "PCPIE"]
 

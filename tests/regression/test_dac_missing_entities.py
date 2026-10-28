@@ -3,7 +3,6 @@ import logging
 import pandas as pd
 
 from pydeflate import oecd_dac_deflate
-from pydeflate.pydeflate_config import logger as pydeflate_logger
 
 
 def _dac_lookup(frame):
@@ -15,7 +14,7 @@ def _dac_lookup(frame):
     }
 
 
-def test_dac_deflate_uses_aggregate_for_missing_entities(sample_source_frames):
+def test_dac_deflate_uses_aggregate_for_missing_entities(sample_source_frames, caplog):
     data = pd.DataFrame(
         {
             "donor_code": ["999"],
@@ -24,25 +23,15 @@ def test_dac_deflate_uses_aggregate_for_missing_entities(sample_source_frames):
         }
     )
 
-    records: list[logging.LogRecord] = []
-
-    class _Capture(logging.Handler):
-        def emit(self, record: logging.LogRecord) -> None:
-            records.append(record)
-
-    handler = _Capture(level=logging.INFO)
-    pydeflate_logger.addHandler(handler)
-    try:
+    with caplog.at_level(logging.INFO, logger="pydeflate"):
         result = oecd_dac_deflate(
             data=data.copy(),
             base_year=2022,
             id_column="donor_code",
             use_source_codes=True,
         )
-    finally:
-        pydeflate_logger.removeHandler(handler)
 
-    messages = "\n".join(rec.getMessage() for rec in records)
+    messages = "\n".join(rec.getMessage() for rec in caplog.records)
     assert "Using DAC members' rates" in messages
     assert "999: 2022" in messages
     # Fallback to DAC aggregate rates should produce a deflated value, not NaN.

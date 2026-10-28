@@ -1,3 +1,4 @@
+import logging
 from dataclasses import dataclass, field
 
 import pandas as pd
@@ -7,6 +8,8 @@ from pydeflate.sources.common import AvailableDeflators
 from pydeflate.sources.dac import read_dac
 from pydeflate.sources.imf import read_weo
 from pydeflate.sources.world_bank import read_wb, read_wb_lcu_ppp, read_wb_usd_ppp
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -71,9 +74,6 @@ class Source:
             except Exception as e:
                 # Schema validation failed, but don't break for now
                 # This allows us to roll out schema validation gradually
-                import logging
-
-                logger = logging.getLogger("pydeflate")
                 logger.debug(f"Schema validation skipped for {self.name}: {e}")
 
     def lcu_usd_exchange(self) -> pd.DataFrame:

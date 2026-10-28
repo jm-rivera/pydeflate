@@ -194,15 +194,17 @@ Common causes:
 2. **Invalid country codes** (not recognized)
 3. **Year out of range** (e.g., before 1960)
 
-Check warnings in logs:
+Turn on pydeflate's INFO messages. They list the countries and years with missing data:
 
 ```python
 import logging
-logging.basicConfig(level=logging.WARNING)
+logging.basicConfig()
+logging.getLogger("pydeflate").setLevel(logging.INFO)
 
-# Run deflation - warnings show missing data
 result = imf_gdp_deflate(df, ...)
 ```
+
+pydeflate leaves logging to your application. The `log_level` argument of `pydeflate_session` and `PydeflateContext` is deprecated and has no effect.
 
 Filter to valid data:
 

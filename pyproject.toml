@@ -1,6 +1,6 @@
 [project]
 name = "pydeflate"
-version = "2.6.2"
+version = "2.7.0"
 description = "Package to convert current prices figures to constant prices and vice versa"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -11,7 +11,7 @@ license-files = ["LICENSE*"]
 
 dependencies = [
     "imf-reader>=1.5.0",
-    "oda-reader>=1.4.2",
+    "oda-reader>=1.13.1",
     "pandas>=2.0",
     "pandera>=0.20.0",
     "pyarrow>=14.0",

@@ -462,21 +462,16 @@ For advanced use cases, you can use context managers to customize pydeflate's be
 
 ```python
 from pydeflate.context import pydeflate_session
-import logging
 
-# Use a custom cache directory and logging level
-with pydeflate_session(data_dir="/tmp/my_cache", log_level=logging.DEBUG) as ctx:
+# Use a custom cache directory
+with pydeflate_session(data_dir="/tmp/my_cache") as ctx:
     result = imf_gdp_deflate(df, base_year=2015, ...)
     # Data is cached in /tmp/my_cache
-    # Debug logging is enabled
 
 # Or set a default context for your entire application
 from pydeflate.context import PydeflateContext, set_default_context
 
-ctx = PydeflateContext.create(
-    data_dir="/app/data/pydeflate_cache",
-    log_level=logging.INFO
-)
+ctx = PydeflateContext.create(data_dir="/app/data/pydeflate_cache")
 set_default_context(ctx)
 
 # All subsequent pydeflate operations use this configuration
@@ -485,8 +480,20 @@ set_default_context(ctx)
 This is useful for:
 - Using different cache directories for different projects
 - Running multiple pydeflate operations in parallel without cache conflicts
-- Customizing logging verbosity
 - Testing with temporary cache directories
+
+### Logging
+
+pydeflate leaves logging configuration to your application. Its modules log through loggers under the `pydeflate` name, and importing the package adds no handlers and changes no levels. Python's default setup shows warnings and errors only. To see informational messages such as downloads and missing-data notices, configure logging and set the `pydeflate` logger to `INFO`:
+
+```python
+import logging
+
+logging.basicConfig()
+logging.getLogger("pydeflate").setLevel(logging.INFO)
+```
+
+Use `logging.DEBUG` for more detail. The `log_level` argument of `PydeflateContext`, `PydeflateContext.create`, `pydeflate_session` and `temporary_context` is deprecated and will be removed in 3.0. It never changed pydeflate's messages.
 
 ## Documentation
 

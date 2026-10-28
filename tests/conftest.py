@@ -1,4 +1,3 @@
-import contextlib
 import importlib.machinery
 import sys
 import types
@@ -340,27 +339,3 @@ def sample_source_code_frame():
             "value": [1000.0, 1050.0, 500.0],
         }
     )
-
-
-@pytest.fixture
-def caplog_info(caplog):
-    with caplog.at_level("INFO"):
-        yield caplog
-
-
-@contextlib.contextmanager
-def swap_logger_level(logger, level):
-    previous = logger.level
-    logger.setLevel(level)
-    try:
-        yield
-    finally:
-        logger.setLevel(previous)
-
-
-@pytest.fixture
-def enforce_info_logging():
-    from pydeflate.pydeflate_config import logger
-
-    with swap_logger_level(logger, level="INFO"):
-        yield logger

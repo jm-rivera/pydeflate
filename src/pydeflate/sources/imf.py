@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 
 import pandas as pd
@@ -7,13 +8,14 @@ from imf_reader import weo
 
 from pydeflate.cache import CacheEntry, bulk_cache_manager
 from pydeflate.cache.imf_reader_bridge import ensure_synced as _sync_imf_reader_cache
-from pydeflate.pydeflate_config import logger
 from pydeflate.sources.common import (
     add_pydeflate_iso3,
     compute_exchange_deflator,
     enforce_pyarrow_types,
     prefix_pydeflate_to_columns,
 )
+
+logger = logging.getLogger(__name__)
 
 # List of WEO indicators of interest
 WEO_INDICATORS: list[str] = [

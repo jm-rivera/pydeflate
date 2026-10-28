@@ -18,7 +18,7 @@ from pydeflate.cache.config import (
 )
 from pydeflate.cache.types import CacheRecord, Scope, _validate_scope
 
-logger = logging.getLogger("pydeflate")
+logger = logging.getLogger(__name__)
 
 _CANONICAL_BULK_KEYS: frozenset[str] = frozenset(
     {"imf_weo", "dac_stats", "world_bank", "world_bank_lcu_ppp", "world_bank_usd_ppp"}

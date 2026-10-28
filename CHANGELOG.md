@@ -5,6 +5,34 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [2.7.0] - 2026-10-27
+
+### Changed
+
+- Importing pydeflate no longer configures logging. It used to set the `pydeflate` logger's level to `INFO` and, when neither that logger nor the root logger had a handler at import, attach its own stream handler and stop propagation to the root logger. An application that configured logging after importing pydeflate could then not route pydeflate's messages through its handlers. Modules now log through `logging.getLogger(__name__)` under the `pydeflate` logger and add no handlers. Python's default setup shows warnings and errors only. To see the `INFO` messages again (downloads, missing-data notices), configure logging in your application:
+
+  ```python
+  import logging
+
+  logging.basicConfig()
+  logging.getLogger("pydeflate").setLevel(logging.INFO)
+  ```
+
+- `oda-reader` floor raised to `>=1.13.1` (was `>=1.4.2`).
+
+### Deprecated
+
+These are removed in 3.0. The first two emit a `DeprecationWarning`. `PydeflateContext.logger` is deprecated in its docstring only.
+
+- `pydeflate.pydeflate_config.logger` and `pydeflate.pydeflate_config.setup_logger`. `logger` is now `logging.getLogger("pydeflate")`; `setup_logger` still configures a logger as before.
+- The `log_level` argument of `PydeflateContext`, `PydeflateContext.create`, `pydeflate_session` and `temporary_context`. It never changed which messages pydeflate emitted, and it still has no effect. Contexts derived by `temporary_context` no longer store it.
+- `PydeflateContext.logger`, which is now the shared `pydeflate` logger. pydeflate does not read it.
+
+### Fixed
+
+- With the DAC source, data keyed `"DAC"` came back with one row per DAC aggregate. Both DAC countries (20001) and DAC Members (20000) carried the `DAC` code, so each input row returned several times with two different values. Only DAC countries carries it now, matching the code `use_source_codes=True` falls back to.
+- EU Institutions is DAC donor code `918` again. With oda-reader 1.7.0 to 1.13.0 installed, the DAC source numbered it `20918`, so data keyed `918` with `use_source_codes=True` fell back to DAC countries' rates. oda-reader 1.13.1 converts it to `918`.
+
 ## [2.6.2] - 2026-10-21
 
 ### Fixed

@@ -21,7 +21,7 @@ from pydeflate.cache.config import (
 from pydeflate.cache.types import CacheEntry, CacheRecord
 from pydeflate.exceptions import CacheError
 
-logger = logging.getLogger("pydeflate")
+logger = logging.getLogger(__name__)
 
 _HOSTNAME: str = socket.gethostname()
 _TMP_SWEEP_MAX_AGE_SECONDS: int = 86_400  # 24 hours
