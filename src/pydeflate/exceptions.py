@@ -120,8 +120,10 @@ class ConfigurationError(PydeflateError):
         )
 
 
-class MissingDataError(PydeflateError):
+class MissingDataError(PydeflateError, ValueError):
     """Raised when required deflator or exchange data is unavailable.
+
+    Also a ``ValueError``, so callers that catch ``ValueError`` keep working.
 
     This occurs when:
     - Requested country/year combination has no data in the source

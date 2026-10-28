@@ -4,9 +4,11 @@ import logging
 from pathlib import Path
 
 import pandas as pd
-from oda_reader import download_dac1
+import pyarrow.parquet as pq
+from oda_reader import scan
 
 from pydeflate.cache import CacheEntry, bulk_cache_manager
+from pydeflate.exceptions import DataSourceError
 from pydeflate.sources.common import (
     add_pydeflate_iso3,
     compute_exchange_deflator,
@@ -16,18 +18,52 @@ from pydeflate.sources.common import (
 
 logger = logging.getLogger(__name__)
 
+# The DAC1 columns the DAC pipeline reads, as `oda_reader.scan("dac1")` names them.
+DAC1_COLUMNS = [
+    "donor_code",
+    "donor_name",
+    "aidtype_code",
+    "flows_code",
+    "amounttype_code",
+    "year",
+    "value",
+]
+
+# Total ODA (net disbursements before 2018, grant equivalents from 2018).
+_ODA_LINES = [1010, 11010]
+_ODA_FLOWS = [1140, 1160]
+
+# DAC1 donors whose pydeflate code is fixed by their DAC code. Name matching
+# misses the bulk file's names for some ("G7 Countries, Total").
+_DAC_CODE_TO_PYDEFLATE = {918: "EUI", 20001: "DAC", 20003: "G7C"}
+
 # DAC aggregates are the donor codes from 20000. They take a pydeflate code from
-# this table only: name matching gives DAC Members (20000) the DAC code too.
+# `_DAC_CODE_TO_PYDEFLATE` only: name matching gives DAC Members (20000) the DAC
+# code too, and other aggregates could take a member's code.
 _FIRST_AGGREGATE_CODE = 20000
-_AGGREGATE_CODES = {20001: "DAC"}
 
 
-def _to_units(df: pd.DataFrame) -> pd.DataFrame:
-    """Scale reported DAC values (supplied in millions) into base units."""
+def read_dac1_rows(path: str | Path) -> pd.DataFrame:
+    """Read the total ODA rows the DAC pipeline needs from a DAC1 Parquet file.
 
-    df = df.copy()
-    df["value"] = df["value"] * df["unit_multiplier"]
-    return df
+    Args:
+        path: A DAC1 table in the layout `oda_reader.scan("dac1")` writes.
+
+    Raises:
+        DataSourceError: If the file lacks one of `DAC1_COLUMNS`.
+    """
+    missing = sorted(set(DAC1_COLUMNS) - set(pq.read_schema(path).names))
+    if missing:
+        raise DataSourceError(
+            f"DAC1 table {path} lacks columns {missing}. Pass the Parquet file "
+            "oda_reader.scan('dac1') returns.",
+            source="DAC",
+        )
+    return pd.read_parquet(
+        path,
+        columns=DAC1_COLUMNS,
+        filters=[("aidtype_code", "in", _ODA_LINES), ("flows_code", "in", _ODA_FLOWS)],
+    )
 
 
 def _keep_official_definition_only(df: pd.DataFrame) -> pd.DataFrame:
@@ -43,7 +79,16 @@ def _keep_official_definition_only(df: pd.DataFrame) -> pd.DataFrame:
 def _keep_useful_columns(df: pd.DataFrame) -> pd.DataFrame:
     """Select the key columns used downstream in pydeflate."""
 
-    return df.filter(["year", "donor_code", "donor_name", "EXCHANGE", "DAC_DEFLATOR"])
+    return df.filter(
+        [
+            "year",
+            "donor_code",
+            "donor_name",
+            "EXCHANGE",
+            "EXCHANGE_REPORTED",
+            "DAC_DEFLATOR",
+        ]
+    )
 
 
 def _pivot_amount_type(df: pd.DataFrame) -> pd.DataFrame:
@@ -60,11 +105,19 @@ def _pivot_amount_type(df: pd.DataFrame) -> pd.DataFrame:
 def _compute_exchange(df: pd.DataFrame) -> pd.DataFrame:
     """Derive exchange rates as national-currency over USD amounts.
 
-    DAC aggregates publish no national-currency amounts, so their rate falls back
-    to 1 (USD).
+    ``EXCHANGE_REPORTED`` is the rate where the donor reports a national-currency
+    amount and missing elsewhere. It is the rate of the donor's currency when that
+    currency is a conversion source or target, such as EU Institutions' for EUR.
+
+    ``EXCHANGE`` is the donor's own rate and falls back to 1 (USD) where the donor
+    reports no national-currency amount: always for DAC aggregates, and in some
+    years for donors such as EU Institutions before 1973. Converting a donor's
+    USD amounts to another currency divides out the donor's own rate, so the
+    fallback keeps those rows without affecting the result.
     """
 
-    df["EXCHANGE"] = round(df["N"] / df["A"], 6).fillna(1)
+    df["EXCHANGE_REPORTED"] = round(df["N"] / df["A"], 6)
+    df["EXCHANGE"] = df["EXCHANGE_REPORTED"].fillna(1)
     return df
 
 
@@ -83,12 +136,15 @@ def _compute_dac_gdp_deflator(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def _set_aggregate_codes(df: pd.DataFrame) -> pd.DataFrame:
-    """Set the pydeflate code of DAC aggregates by DAC code."""
+    """Set the pydeflate code of DAC aggregates and EU Institutions by DAC code.
 
-    aggregate = df["donor_code"] >= _FIRST_AGGREGATE_CODE
-    df["pydeflate_iso3"] = df["pydeflate_iso3"].mask(
-        aggregate, df["donor_code"].map(_AGGREGATE_CODES)
-    )
+    Donors in `_DAC_CODE_TO_PYDEFLATE` take its code. Other aggregates (codes
+    from 20000) get none, and other donors keep the code matched by name.
+    """
+
+    fixed = df["donor_code"].map(_DAC_CODE_TO_PYDEFLATE)
+    by_code = fixed.notna() | (df["donor_code"] >= _FIRST_AGGREGATE_CODE)
+    df["pydeflate_iso3"] = fixed.where(by_code, df["pydeflate_iso3"])
     return df
 
 
@@ -98,16 +154,23 @@ def _rename_columns(df: pd.DataFrame) -> pd.DataFrame:
     return df.rename(columns={"donor_code": "entity_code", "donor_name": "entity"})
 
 
-def _download_dac(output_path: Path) -> None:
-    """Download and cache the DAC statistics parquet file."""
+def dac_source_frame(dac1_rows: pd.DataFrame) -> pd.DataFrame:
+    """Derive the DAC source table (deflators and exchange rates) from DAC1 rows.
 
-    logger.info("Downloading DAC statistics from ODA reader...")
-    df = download_dac1(
-        filters={"measure": ["1010", "11010"], "flow_type": ["1140", "1160"]}
-    )
-    df = (
-        df.pipe(_to_units)
-        .pipe(_keep_official_definition_only)
+    The DAC deflator is ``100 * A / D`` and the exchange rate ``N / A``, read from
+    total ODA: line 1010 net disbursements before 2018 and line 11010 grant
+    equivalents from 2018. Both are ratios, so the unit of ``value`` (DAC1 bulk
+    files report millions) does not matter.
+
+    Args:
+        dac1_rows: DAC1 rows with the `DAC1_COLUMNS`, such as `read_dac1_rows`
+            returns.
+
+    Returns:
+        The table a DAC `Source` holds, with ``pydeflate_``-prefixed columns.
+    """
+    return (
+        dac1_rows.pipe(_keep_official_definition_only)
         .pipe(_pivot_amount_type)
         .pipe(_compute_exchange)
         .pipe(_compute_dac_deflator)
@@ -121,9 +184,23 @@ def _download_dac(output_path: Path) -> None:
         .pipe(enforce_pyarrow_types)
         .reset_index(drop=True)
     )
+
+
+def _download_dac(output_path: Path) -> None:
+    """Build the DAC source table from a fresh DAC1 bulk file and cache it.
+
+    The pydeflate cache calls this when its copy is missing, past its TTL, or
+    `read_dac(update=True)` forces a rebuild. Each case downloads the current
+    bulk file (``refresh=True``), so the rebuilt table is never older than the
+    rebuild, whatever copy oda_reader holds.
+    """
+
+    logger.info("Downloading DAC1 through oda_reader.scan...")
+    table = scan("dac1", refresh=True)
+    df = dac_source_frame(read_dac1_rows(table.path))
     output_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_parquet(output_path)
-    logger.info("Saved DAC dataset to %s", output_path)
+    logger.info("Saved DAC dataset (DAC1 release %s) to %s", table.release, output_path)
 
 
 _DAC_ENTRY = CacheEntry(
@@ -131,7 +208,9 @@ _DAC_ENTRY = CacheEntry(
     filename="dac.parquet",
     fetcher=_download_dac,
     ttl_days=30,
-    version="3",  # Bump: only DAC countries (20001) carries the DAC code
+    # Bump: built from the DAC1 bulk file, aggregates take pydeflate codes by DAC
+    # code only, and the table adds pydeflate_EXCHANGE_REPORTED.
+    version="4",
 )
 
 

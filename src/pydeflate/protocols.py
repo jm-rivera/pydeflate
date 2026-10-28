@@ -41,7 +41,11 @@ class SourceProtocol(Protocol):
 
         Returns:
             DataFrame with columns: pydeflate_year, pydeflate_entity_code,
-            pydeflate_iso3, pydeflate_EXCHANGE
+            pydeflate_iso3, pydeflate_EXCHANGE. A source whose
+            pydeflate_EXCHANGE fills years without a published rate may add
+            pydeflate_EXCHANGE_REPORTED, missing in those years; conversions to
+            or from that entity's currency then use it, so they are missing
+            where no rate was published.
         """
         ...
 

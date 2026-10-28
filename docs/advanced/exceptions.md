@@ -164,12 +164,7 @@ except MissingDataError as e:
 ```
 
 !!! note
-    In most cases, pydeflate doesn't raise `MissingDataError`. Instead, it:
-
-    1. Returns NaN values for missing data
-    2. Logs warnings with details
-
-    The exception is raised only for critical missing data scenarios.
+    pydeflate raises `MissingDataError` in two cases: the target or source currency has no exchange data, and the base year has no deflator data. It subclasses `ValueError`, so code that catches `ValueError` still catches it. Other gaps return NaN values and log a warning with details.
 
 **Handling missing data:**
 

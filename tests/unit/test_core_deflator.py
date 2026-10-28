@@ -4,6 +4,7 @@ import pandas as pd
 import pytest
 
 from pydeflate.core.deflator import ExchangeDeflator, PriceDeflator
+from pydeflate.exceptions import MissingDataError
 
 
 @pytest.fixture
@@ -43,8 +44,10 @@ def test_exchange_deflator_raises_when_base_year_missing(base_idx):
     exchange_source.source = MagicMock()
     exchange_source.source._idx = base_idx
 
-    with pytest.raises(ValueError, match="No data found for base year"):
+    with pytest.raises(MissingDataError, match="No data found for base year") as exc:
         ExchangeDeflator(source=exchange_source, base_year=2022)
+
+    assert isinstance(exc.value, ValueError)
 
 
 def test_price_deflator_rejects_multiple_value_columns(base_idx):

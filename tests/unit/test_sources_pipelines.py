@@ -1,8 +1,14 @@
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pandas as pd
+from oda_reader import ScannedTable
 
+from pydeflate.cache.manager import BulkCacheManager
 from pydeflate.sources import dac, imf, world_bank
+
+# Bound at import: the autouse source fixture replaces dac.read_dac with a stub.
+READ_DAC = dac.read_dac
 
 
 def _imf_sample_frame():
@@ -84,8 +90,7 @@ def test_download_world_bank_dataset_with_ppp(monkeypatch, tmp_path):
 def _dac_sample_frame():
     return pd.DataFrame(
         {
-            "year": [2021, 2021, 2021, 2022, 2022, 2022],
-            "unit_multiplier": [1, 1, 1, 1, 1, 1],
+            "year": [2016, 2016, 2016, 2017, 2017, 2017],
             "aidtype_code": [1010, 1010, 1010, 1010, 1010, 1010],
             "flows_code": [1140, 1140, 1140, 1140, 1140, 1140],
             "donor_code": [1, 1, 1, 1, 1, 1],
@@ -96,41 +101,65 @@ def _dac_sample_frame():
     )
 
 
-def test_download_dac_dataset(monkeypatch, tmp_path):
-    monkeypatch.setattr(dac, "download_dac1", lambda **_: _dac_sample_frame())
-    monkeypatch.setattr(
-        dac,
-        "_pivot_amount_type",
-        lambda df: pd.DataFrame(
-            {
-                "year": [2021, 2022],
-                "donor_code": [1, 1],
-                "donor_name": ["Donor", "Donor"],
-                "A": [100.0, 110.0],
-                "N": [100.0, 120.0],
-                "D": [100.0, 105.0],
-            }
-        ),
+def _patch_scan(monkeypatch, tmp_path, rows: pd.DataFrame) -> list[dict]:
+    """Make dac.scan("dac1") return *rows* as a Parquet table.
+
+    Returns the list each call's keyword arguments are appended to.
+    """
+    path = tmp_path / "dac1.parquet"
+    rows.to_parquet(path, index=False)
+    table = ScannedTable(
+        path=path,
+        release="etag-1",
+        label_release=None,
+        downloaded=datetime(2026, 10, 27, tzinfo=UTC),
+        columns=tuple(rows.columns),
     )
+    calls: list[dict] = []
+
+    def fake_scan(dataset, **kwargs):
+        calls.append({"dataset": dataset, **kwargs})
+        return table
+
+    monkeypatch.setattr(dac, "scan", fake_scan)
+    return calls
+
+
+def test_download_dac_dataset(monkeypatch, tmp_path):
+    _patch_scan(monkeypatch, tmp_path, _dac_sample_frame())
     output = tmp_path / "dac.parquet"
 
     dac._download_dac(output)
     df = pd.read_parquet(output)
     assert "pydeflate_DAC_DEFLATOR" in df.columns
     assert "pydeflate_iso3" in df.columns
+    assert df["pydeflate_EXCHANGE"].tolist() == [1.1, 1.2]
+
+
+def test_read_dac_downloads_a_fresh_bulk_file_on_rebuild(monkeypatch, tmp_path):
+    """A rebuild of the DAC cache, forced or first, refreshes the DAC1 scan."""
+    calls = _patch_scan(monkeypatch, tmp_path, _dac_sample_frame())
+    manager = BulkCacheManager(tmp_path / "bulk")
+    monkeypatch.setattr(dac, "bulk_cache_manager", lambda: manager)
+
+    READ_DAC()
+    READ_DAC()
+    READ_DAC(update=True)
+
+    assert calls == [{"dataset": "dac1", "refresh": True}] * 2
 
 
 def test_download_dac_keeps_eu_institutions_euro_rate(monkeypatch, tmp_path):
     """EU Institutions (918) reports N in euros; aggregates publish no N."""
     donors = {
         (918, "EU Institutions"): {"A": 100.0, "N": 95.09, "D": 100.0},
-        (20000, "DAC Members"): {"A": 100.0, "D": 100.0},
+        (20001, "DAC Countries, Total"): {"A": 100.0, "D": 100.0},
+        (20003, "G7 Countries, Total"): {"A": 100.0, "D": 100.0},
     }
     raw = pd.DataFrame(
         [
             {
                 "year": 2022,
-                "unit_multiplier": 1,
                 "aidtype_code": 11010,
                 "flows_code": 1160,
                 "donor_code": code,
@@ -142,16 +171,18 @@ def test_download_dac_keeps_eu_institutions_euro_rate(monkeypatch, tmp_path):
             for amount_type, value in amounts.items()
         ]
     )
-    monkeypatch.setattr(dac, "download_dac1", lambda **_: raw)
+    _patch_scan(monkeypatch, tmp_path, raw)
     output = tmp_path / "dac.parquet"
 
     dac._download_dac(output)
-    rates = pd.read_parquet(output).set_index("pydeflate_entity_code")[
-        "pydeflate_EXCHANGE"
-    ]
+    table = pd.read_parquet(output).set_index("pydeflate_entity_code")
 
-    assert rates[918] == 0.9509
-    assert rates[20000] == 1
+    assert table["pydeflate_EXCHANGE"].to_dict() == {918: 0.9509, 20001: 1, 20003: 1}
+    assert table["pydeflate_iso3"].to_dict() == {
+        918: "EUI",
+        20001: "DAC",
+        20003: "G7C",
+    }
 
 
 def test_download_dac_gives_the_dac_code_to_dac_countries_only(monkeypatch, tmp_path):
@@ -160,7 +191,6 @@ def test_download_dac_gives_the_dac_code_to_dac_countries_only(monkeypatch, tmp_
         [
             {
                 "year": 2022,
-                "unit_multiplier": 1,
                 "aidtype_code": 11010,
                 "flows_code": 1160,
                 "donor_code": code,
@@ -176,7 +206,7 @@ def test_download_dac_gives_the_dac_code_to_dac_countries_only(monkeypatch, tmp_
             for amount_type in amount_types
         ]
     )
-    monkeypatch.setattr(dac, "download_dac1", lambda **_: raw)
+    _patch_scan(monkeypatch, tmp_path, raw)
     output = tmp_path / "dac.parquet"
 
     dac._download_dac(output)

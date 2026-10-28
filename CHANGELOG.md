@@ -5,7 +5,11 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
-## [2.7.0] - 2026-10-27
+## [2.7.0] - Unreleased
+
+### Added
+
+- `get_oecd_dac_conversion_factors(dac1, *, entities, years, target_currency="USA", base_year=None)` returns a `DacConversionFactors` with `factors` (columns `entity_code`, `year`, `factor`, `fallback`) and `release`. It derives the factors from the DAC1 table passed in, either the `ScannedTable` that `oda_reader.scan("dac1")` returns or a Parquet path, so factors and ODA figures read from one table share one DAC1 release. A current-USD value times `factor` equals what `oecd_dac_exchange` or `oecd_dac_deflate` returns for it with `source_currency="USA"` and `use_source_codes=True`. Entities absent from the table take the DAC total's (20001) factors and carry `fallback=True`. `release` is the `ScannedTable` release token, or `None` for a path.
 
 ### Changed
 
@@ -18,7 +22,14 @@ All notable changes to this project are documented in this file. The format foll
   logging.getLogger("pydeflate").setLevel(logging.INFO)
   ```
 
-- `oda-reader` floor raised to `>=1.13.1` (was `>=1.4.2`).
+- The DAC source reads DAC1 through `oda_reader.scan("dac1")` (the bulk file) in place of `oda_reader.download_dac1` (the API), and requires `oda-reader` 1.14.0 or later (was 1.4.2). Every rebuild of the DAC cache, whether first use, expiry after 30 days or `update=True`, downloads the current bulk file. The DAC cache version is bumped to `"4"`, so existing caches are rebuilt once on first use.
+- `imf-reader` 2.3.0 or later is required (was 1.5.0). Earlier releases configure logging when imported, which set up the root logger for any application that imports pydeflate.
+- The bulk file numbers EU Institutions `918`, where the API used `20918`. With `use_source_codes=True`, data keyed `20918` is looked up as `918` and raises a `FutureWarning`. Key it by `918`, since the translation will be removed in 3.0.
+- The bulk file has no `20000` ("DAC Members"). Data keyed `20000` falls back to the DAC total (`20001`) and the fallback is logged. The two series differ by a median 0.42% and at most 1.9% (2000) on the deflator.
+- `get_oecd_dac_deflators` and `get_oecd_dac_exchange_rates` return tables that key EU Institutions by `918` and have no `20000` row. The `20918` translation applies to lookups in your data only, so code filters on these tables need `918` and `20001`.
+- DAC aggregates (donor codes from `20000`) take a pydeflate code by DAC code alone. The DAC total gets `DAC`, the G7 total `G7C`, and every other aggregate none, so an aggregate never takes a member's code through its name. EU Institutions gets `EUI` by DAC code too. These fixed codes also cover bulk file names that name matching misses, such as "G7 Countries, Total".
+- Rates are derived from the bulk file's amounts, which are more precise than the API's rounded figures, so some published rates are corrected. On the DAC1 bulk file read on 2026-10-27, Türkiye 1990 moves 22% in both its exchange rate (LCU per USD) and `NGDP_D`, because the API rounded its national-currency amount. The next largest moves are Estonia 1998 (exchange rate 3.8%, `NGDP_D` 4.2%) and Estonia 2000 (0.70% and 0.94%). 26 entity-years move by more than 0.1% in exchange rate, 9 of them from 2000 on. Conversions for those donors to or from local currency, EUR or GBP inherit these changes. Constant 2022 USD factors for 2000 to 2024 moved by at most 0.23% (Estonia), and the EU Institutions euro rate by at most 2e-6 relative.
+- Russia (`87`, `RUS`) is new in the DAC table, so its exchange rates for 2010 to 2020 are its own where they were the DAC total's.
 
 ### Deprecated
 
@@ -30,8 +41,10 @@ These are removed in 3.0. The first two emit a `DeprecationWarning`. `PydeflateC
 
 ### Fixed
 
-- With the DAC source, data keyed `"DAC"` came back with one row per DAC aggregate. Both DAC countries (20001) and DAC Members (20000) carried the `DAC` code, so each input row returned several times with two different values. Only DAC countries carries it now, matching the code `use_source_codes=True` falls back to.
-- EU Institutions is DAC donor code `918` again. With oda-reader 1.7.0 to 1.13.0 installed, the DAC source numbered it `20918`, so data keyed `918` with `use_source_codes=True` fell back to DAC countries' rates. oda-reader 1.13.1 converts it to `918`.
+- A missing exchange rate for the target currency and a missing base year in the deflator data now raise `pydeflate.MissingDataError` (also importable from `pydeflate.exceptions`) in place of a bare `ValueError`. `MissingDataError` subclasses `ValueError` as well as `PydeflateError`, so code that catches either keeps working.
+- Converting with the DAC source to or from a currency in a year where its country publishes no national-currency amount now gives a missing value. The DAC pipeline set the rate of every donor-year without a national-currency amount to 1, and the conversion read that 1 as the currency's rate per USD, so `oecd_dac_exchange`, `oecd_dac_deflate` and `get_oecd_dac_conversion_factors` labelled USD values as the target currency. On the DAC1 bulk file read on 2026-10-27, EUR (EU Institutions, `918`) has no rate for 1970 to 1972: current EUR factors there were 1.0 and are now missing, and constant 2023 EUR factors were finite (6.354 for France in 1970) and are now missing. From 1973 nothing changes, and USD and GBP results are unchanged for every year. A donor's own rate still falls back to 1 where it publishes no national-currency amount, since a conversion from USD divides it out. The DAC table gains `pydeflate_EXCHANGE_REPORTED` (the published rate, missing in those years), which `Source.lcu_usd_exchange` returns when present.
+- With the DAC source, data keyed `"DAC"`, or any entity that falls back to the DAC total with `use_source_codes=False`, gets one output row per input row at the DAC total (`20001`) rate. The 2.6.2 table gave both `20000` and `20001` the `DAC` code, so each input row came back several times with the "DAC Members" and DAC total rates mixed. The `get_oecd_dac_deflators` and `get_oecd_dac_exchange_rates` tables now have one `DAC` row per year.
+- Data keyed `918` with `use_source_codes=True` gets EU Institutions' own rates. With oda-reader 1.7.0 to 1.13.0 installed, 2.6.2 numbered EU Institutions `20918`, so data keyed `918` fell back to the DAC total's rates (EUR deflator for 2015: 103.901, was 104.858).
 
 ## [2.6.2] - 2026-10-21
 

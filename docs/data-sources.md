@@ -223,6 +223,28 @@ result = oecd_dac_deflate(
 )
 ```
 
+### Conversion factors from your own DAC1 table
+
+`get_oecd_dac_conversion_factors` derives factors from a DAC1 table you pass in, so the factors and your ODA figures come from the same DAC1 release. Pass the table `oda_reader.scan("dac1")` returns, or the path of a Parquet file with the same columns.
+
+```python
+import oda_reader
+from pydeflate import get_oecd_dac_conversion_factors
+
+dac1 = oda_reader.scan("dac1")
+result = get_oecd_dac_conversion_factors(
+    dac1,
+    entities=[4, 302, 918, 20002],
+    years=range(2018, 2024),
+    target_currency="EUR",
+    base_year=2022,  # None for current prices
+)
+result.release   # the DAC1 release token, or None for a plain path
+result.factors   # entity_code, year, factor, fallback
+```
+
+Multiply a value in current US dollars by `factor` to convert it. The factors equal what `oecd_dac_exchange` (current prices) and `oecd_dac_deflate` (constant prices) apply with `source_currency="USA"` and `use_source_codes=True`. An entity absent from the table, such as a multilateral, takes the factors of the DAC total (code 20001) and has `fallback=True`. A year the table lacks for an entity it holds gives a missing `factor`. The function caches nothing and reads the table on every call.
+
 ### Data Characteristics
 
 - **DAC deflator**: Composite deflator for aid flows

@@ -96,15 +96,6 @@ wheels = [
 ]
 
 [[package]]
-name = "chardet"
-version = "6.0.0.post1"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/7f/42/fb9436c103a881a377e34b9f58d77b5f503461c702ff654ebe86151bcfe9/chardet-6.0.0.post1.tar.gz", hash = "sha256:6b78048c3c97c7b2ed1fbad7a18f76f5a6547f7d34dbab536cc13887c9a92fa4", size = 12521798, upload-time = "2026-02-22T15:09:17.925Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/66/42/5de54f632c2de53cd3415b3703383d5fff43a94cbc0567ef362515261a21/chardet-6.0.0.post1-py3-none-any.whl", hash = "sha256:c894a36800549adf7bb5f2af47033281b75fdfcd2aa0f0243be0ad22a52e2dcb", size = 627245, upload-time = "2026-02-22T15:09:15.876Z" },
-]
-
-[[package]]
 name = "charset-normalizer"
 version = "3.4.4"
 source = { registry = "https://pypi.org/simple" }
@@ -380,21 +371,18 @@ wheels = [
 
 [[package]]
 name = "imf-reader"
-version = "1.5.0"
+version = "2.3.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "beautifulsoup4" },
-    { name = "chardet" },
-    { name = "filelock" },
     { name = "pandas" },
-    { name = "platformdirs" },
     { name = "pyarrow" },
+    { name = "readerkit" },
     { name = "requests" },
-    { name = "requests-cache" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f8/3e/e92e43879fdef1807e1ca267abac4ff203c64e83e4798241214e65325c30/imf_reader-1.5.0.tar.gz", hash = "sha256:131c8c68f96c37844fa8c38853e5dce98549d29eeda541379a2a0c5c3cb568ca", size = 25546, upload-time = "2026-04-30T02:38:43.153Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/35/3b/67edd08e13c35886a0fcc56f3bd58f904286ec5e7dc5a7f6f05ed7d70c23/imf_reader-2.3.0.tar.gz", hash = "sha256:9cab989a4fd93f311b97439531f2e67797bd6b401a80182650029aff4c7e6afd", size = 52467, upload-time = "2026-10-28T10:53:05.227Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e0/33/eab89f17c4ea12656d0f7cdf1d335f9e728bdcd888d50836c68115c9ebdb/imf_reader-1.5.0-py3-none-any.whl", hash = "sha256:11956314416c2175e40ba2ad930c8451b84a734cd9cb209778518a4f8bb8e15e", size = 34409, upload-time = "2026-04-30T02:38:41.93Z" },
+    { url = "https://files.pythonhosted.org/packages/a6/11/6a2908720eeec1d946d010d5631f7dbf4fcf1ee473ae24e7faf1bf2bfef5/imf_reader-2.3.0-py3-none-any.whl", hash = "sha256:e0d56ad284ff79d0f2602384fab1281ca83d7524fcd34bf4441651b33edd19e5", size = 59490, upload-time = "2026-10-28T10:53:03.671Z" },
 ]
 
 [[package]]
@@ -777,7 +765,7 @@ wheels = [
 
 [[package]]
 name = "oda-reader"
-version = "1.13.1"
+version = "1.15.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "filelock" },
@@ -790,9 +778,9 @@ dependencies = [
     { name = "requests" },
     { name = "requests-cache" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/3c/c8/98843e92ce529628a830da1c43f994f9da2fd823fe910b1a525c65f75dd4/oda_reader-1.13.1.tar.gz", hash = "sha256:2c08f890103aa693fd0144c3a609611684a19a45441ffe18bca2146386d27e73", size = 139773, upload-time = "2026-10-27T19:31:31.62Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/89/10/251574e326775bae721cc7da347de54bb1a1c2a8bd2f3d762038a7892158/oda_reader-1.15.0.tar.gz", hash = "sha256:92f6bc5cc7d9147960c6c876d3c6e45ba53596d3b7363acddeba7dd855955123", size = 155400, upload-time = "2026-10-28T10:08:19.282Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/2d/6a/5c256600820a0f2860a10543d2b29b5f1129c667ebbfb06f16e64094bcc5/oda_reader-1.13.1-py3-none-any.whl", hash = "sha256:2ac05ea41e3a01951e6ee20ca441cf9ed7675274a76cda8be4e6067ce989ae67", size = 160794, upload-time = "2026-10-27T19:31:30.455Z" },
+    { url = "https://files.pythonhosted.org/packages/21/1d/cbaad26803cb103a0332a1aafeb8c219b9e200903175bbeb9c68feeba4b7/oda_reader-1.15.0-py3-none-any.whl", hash = "sha256:e96b617c3729300978d76cab607cb49a30d362d28337c484a1bfe3249a89b306", size = 177070, upload-time = "2026-10-28T10:08:17.828Z" },
 ]
 
 [[package]]
@@ -1129,8 +1117,8 @@ docs = [
 [package.metadata]
 requires-dist = [
     { name = "filelock", specifier = ">=3.15.0" },
-    { name = "imf-reader", specifier = ">=1.5.0" },
-    { name = "oda-reader", specifier = ">=1.13.1" },
+    { name = "imf-reader", specifier = ">=2.3.0" },
+    { name = "oda-reader", specifier = ">=1.14.0" },
     { name = "pandas", specifier = ">=2.0" },
     { name = "pandera", specifier = ">=0.20.0" },
     { name = "platformdirs", specifier = ">=3.0.0" },
